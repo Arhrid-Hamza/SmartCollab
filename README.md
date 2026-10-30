@@ -15,15 +15,16 @@
 1. [Vue d'Ensemble & Vision du Projet](#-1-vue-densemble--vision-du-projet)
 2. [Architecture Microservices & Stack Technique](#-2-architecture-microservices--stack-technique)
 3. [Entités & Modèle de Données Détaillé (ERD)](#-3-entités--modèle-de-données-détaillé-erd)
-4. [Moteur Algorithmique de Matching de Compétences](#-4-moteur-algorithmique-de-matching-de-compétences)
-5. [Spécification Complète des Dashboards par Rôle](#-5-spécification-complète-des-dashboards-par-rôle)
-   - [5.1 Dashboard Étudiant (Student)](#51-dashboard-étudiant-student)
-   - [5.2 Dashboard Professeur (Professor)](#52-dashboard-professeur-professor)
-   - [5.3 Dashboard Administrateur (Admin)](#53-dashboard-administrateur-admin)
-6. [Diagrammes de Séquence & Cycles de Vie](#-6-diagrammes-de-séquence--cycles-de-vie)
-7. [Contrats d'APIs & Endpoints REST](#-7-contrats-dapis--endpoints-rest)
-8. [Guide du Développeur & Répartition des Tâches Collaborateurs](#-8-guide-du-développeur--répartition-des-tâches-collaborateurs)
-9. [Installation, Déploiement & Comptes de Démonstration](#-9-installation-déploiement--comptes-de-démonstration)
+4. [Diagramme des Cas d'Utilisation UML (Use Cases)](#-4-diagramme-des-cas-dutilisation-uml-use-cases)
+5. [Moteur Algorithmique de Matching de Compétences](#-5-moteur-algorithmique-de-matching-de-compétences)
+6. [Spécification Complète des Dashboards par Rôle](#-6-spécification-complète-des-dashboards-par-rôle)
+   - [6.1 Dashboard Étudiant (Student)](#61-dashboard-étudiant-student)
+   - [6.2 Dashboard Professeur (Professor)](#62-dashboard-professeur-professor)
+   - [6.3 Dashboard Administrateur (Admin)](#63-dashboard-administrateur-admin)
+7. [Diagrammes de Séquence & Cycles de Vie](#-7-diagrammes-de-séquence--cycles-de-vie)
+8. [Contrats d'APIs & Endpoints REST](#-8-contrats-dapis--endpoints-rest)
+9. [Guide du Développeur & Répartition des Tâches Collaborateurs](#-9-guide-du-développeur--répartition-des-tâches-collaborateurs)
+10. [Installation, Déploiement & Comptes de Démonstration](#-10-installation-déploiement--comptes-de-démonstration)
 
 ---
 
@@ -32,11 +33,11 @@
 **SmartCollab** est une plateforme académique cloud-native conçue pour résoudre l'un des problèmes majeurs de l'enseignement supérieur : **la constitution inefficace ou déséquilibrée des équipes d'étudiants pour les projets techniques**.
 
 ### Problématique Résolue :
-Dans les cursus d'ingénierie et d'informatique, les projets complexes (Microservices, IA, Full-Stack, IoT) exigent un éventail diversifié de compétences (Backend, Frontend, DevOps, Data Science). Les étudiants forment souvent leurs équipes par affinité personnelle, conduisant à des équipes homogènes (ex: 4 profils backend sans compétences frontend ou UI), provoquant des échecs de projet ou des surcharges individuelles.
+Dans les cursus d'ingénierie et d'informatique, les projets complexes (Microservices, IA, Full-Stack, Cloud, DevOps) exigent un éventail diversifié de compétences. Les étudiants forment souvent leurs équipes par affinité personnelle, conduisant à des équipes homogènes (ex: 4 profils backend sans compétences frontend ou UI), provoquant des retards, des déséquilibres de charge de travail et des échecs de projet.
 
 ### Solution SmartCollab :
-- **Profilage fin des compétences** : Chaque étudiant déclare ses compétences techniques avec un niveau d'expertise (1 à 5) et son expérience.
-- **Définition granulaire des besoins de projet** : Les professeurs publient des projets assortis d'exigences techniques précises (niveaux requis, pondérations, compétences obligatoires/veto).
+- **Profilage fin des compétences** : Chaque étudiant déclare ses compétences techniques avec un niveau d'expertise (1 à 5) et ses années d'expérience.
+- **Définition granulaire des besoins de projet** : Les professeurs publient des projets assortis d'exigences techniques précises (niveaux requis, pondérations $w_i$, compétences obligatoires/veto).
 - **Moteur d'adéquation pondérée (Skills Compatibility Engine)** : Évaluation automatique et en temps réel de l'adéquation d'une équipe avec un sujet, alertes sur les compétences manquantes et recommandations de coéquipiers.
 - **Gestion du cycle de vie complet** : De la constitution d'équipe à la soumission, l'évaluation et la validation par l'enseignant.
 
@@ -52,17 +53,17 @@ Le projet adopte les principes du **Domain-Driven Design (DDD)**, la séparation
 flowchart TD
     Client["Client Web (React 18 SPA / Vite / Tailwind) :5173"]
 
-    subgraph Infrastructure_Cloud["Infrastructure & Support"]
-        Eureka["Eureka Discovery Service :8761"]
-        Config["Spring Cloud Config Server :8888"]
-        Gateway["API Gateway :8080 (Reactive JWT Filter & Load Balancing)"]
-        Kafka["Apache Kafka (KRaft Mode) :9092"]
+    subgraph Infrastructure_Cloud["Infrastructure & Support Cloud-Native"]
+        Eureka["Eureka Discovery Service :8761\n(Registre dynamique des instances)"]
+        Config["Spring Cloud Config Server :8888\n(Configurations externalisées)"]
+        Gateway["API Gateway :8080\n(Filtre JWT Réactif & Découverte Eureka)"]
+        Kafka["Apache Kafka (KRaft Mode) :9092\nTopics: projects.v1, teams.v1"]
     end
 
-    subgraph Microservices_Metier["Microservices Métier"]
+    subgraph Microservices_Metier["Microservices Métier (DDD)"]
         AuthSvc["auth-service :8081\n(Utilisateurs, Rôles, Compétences)"]
         ProjSvc["project-service :8082\n(Sujets, Exigences, Quotas)"]
-        MatchSvc["team-matching-service :8083\n(Équipes, Algorithme, Scores)"]
+        MatchSvc["team-matching-service :8083\n(Équipes, Moteur Matching, Scores)"]
     end
 
     subgraph Bases_De_Donnees["Persistance (Database-per-Service)"]
@@ -71,24 +72,24 @@ flowchart TD
         MatchDB[("PostgreSQL team_matching_db :5434")]
     end
 
-    Client -->|REST / JSON| Gateway
+    Client -->|"HTTPS / REST (Bearer JWT)"| Gateway
     Gateway --> Eureka
     AuthSvc --> Eureka
     ProjSvc --> Eureka
     MatchSvc --> Eureka
 
-    Gateway -->|/api/v1/auth/**, /api/v1/users/**, /api/v1/skills/**| AuthSvc
-    Gateway -->|/api/v1/projects/**| ProjSvc
-    Gateway -->|/api/v1/teams/**, /api/v1/matching/**| MatchSvc
+    Gateway -->|"Headers: X-User-Id, X-User-Role\n/api/v1/auth/**, /api/v1/users/**"| AuthSvc
+    Gateway -->|"/api/v1/projects/**"| ProjSvc
+    Gateway -->|"/api/v1/teams/**, /api/v1/matching/**"| MatchSvc
 
     AuthSvc --- AuthDB
     ProjSvc --- ProjDB
     MatchSvc --- MatchDB
 
-    ProjSvc -.->|Kafka: ProjectCreatedEvent| Kafka
-    Kafka -.->|Consumer: ProjectEventListener| MatchSvc
-    MatchSvc -->|OpenFeign Inter-service| AuthSvc
-    MatchSvc -->|OpenFeign Inter-service| ProjSvc
+    ProjSvc -.->|"Kafka Event: ProjectCreatedEvent"| Kafka
+    Kafka -.->|"Consumer: ProjectEventListener"| MatchSvc
+    MatchSvc -->|"OpenFeign Inter-service (Profils & Skills)"| AuthSvc
+    MatchSvc -->|"OpenFeign Inter-service (Exigences Projet)"| ProjSvc
 ```
 
 ### Inventaire des Services et Composants
@@ -99,7 +100,7 @@ flowchart TD
 | **`discovery-service`** | Spring Cloud Netflix Eureka | `8761` | Service Registry permettant l'enregistrement et la résolution dynamique des instances sans IP codées en dur. |
 | **`config-service`** | Spring Cloud Config Server | `8888` | Gestionnaire centralisé des configurations et profils applicatifs (`application.yml`) pour l'ensemble des microservices. |
 | **`auth-service`** | Spring Boot, Spring Security, BCrypt | `8081` | Authentification, émission des JWT, gestion des utilisateurs (Étudiant, Professeur, Admin) et référentiel global des compétences (`skills`). |
-| **`project-service`** | Spring Boot, Data JPA, Kafka Producer | `8082` | Gestion du cycle de vie des projets académiques, assignation des exigences de compétences pondérées, émission d'événements Kafka lors de la création d'un projet. |
+| **`project-service`** | Spring Boot, Data JPA, Kafka Producer | `8082` | Gestion du cycle de vie des projets académiques, assignation des exigences de compétences pondérées, émission d'événements Kafka lors de la création d'un sujet. |
 | **`team-matching-service`** | Spring Boot, OpenFeign, Kafka Consumer | `8083` | Gestion des équipes d'étudiants, calcul matriciel d'affinité algorithmique, stockage des scores et historiques de compatibilité. |
 | **`frontend`** | React 18, Vite, Tailwind CSS, Lucide | `5173` | Interface utilisateur monopage réactive proposant les 3 espaces dédiés : Étudiant, Professeur et Administrateur. |
 | **`Apache Kafka`** | Confluent Kafka 7.5.3 (KRaft) | `9092` | Broker d'événements asynchrones garantissant le découplage événementiel (ex: notifications de projet, changements d'équipe). |
@@ -115,8 +116,8 @@ La séparation en microservices impose une séparation stricte des schémas. Auc
 ```mermaid
 erDiagram
     %% Auth Service DB
-    USERS ||--o{ USER_SKILLS : "possède"
-    SKILLS ||--o{ USER_SKILLS : "référencé dans"
+    USERS ||--o{ USER_SKILLS : "possede"
+    SKILLS ||--o{ USER_SKILLS : "reference dans"
 
     USERS {
         uuid id PK
@@ -142,7 +143,7 @@ erDiagram
     USER_SKILLS {
         uuid user_id PK, FK
         uuid skill_id PK, FK
-        int proficiency_level "1 à 5"
+        int proficiency_level "CHECK: 1 a 5"
         numeric years_of_experience
     }
 
@@ -155,8 +156,8 @@ erDiagram
         text description
         uuid professor_id "Logical FK -> auth_db.users"
         string status "DRAFT | PUBLISHED | ASSIGNED | COMPLETED | ARCHIVED"
-        int min_team_size
-        int max_team_size
+        int min_team_size "CHECK: > 0"
+        int max_team_size "CHECK: >= min_team_size"
         string academic_year
         timestamp submission_deadline
         timestamp created_at
@@ -167,14 +168,14 @@ erDiagram
         uuid id PK
         uuid project_id FK
         uuid skill_id "Logical FK -> auth_db.skills"
-        int minimum_level "1 à 5"
-        numeric weight "0.1 à 1.0"
+        int minimum_level "CHECK: 1 a 5"
+        numeric weight "CHECK: 0.1 a 1.0"
         boolean is_mandatory
     }
 
     %% Team Matching Service DB
     TEAMS ||--o{ TEAM_MEMBERS : "comprend"
-    TEAMS ||--o{ MATCHING_SCORES : "évaluée par"
+    TEAMS ||--o{ MATCHING_SCORES : "evaluee par"
 
     TEAMS {
         uuid id PK
@@ -198,7 +199,7 @@ erDiagram
         uuid id PK
         uuid team_id FK
         uuid project_id "Logical FK -> project_db.projects"
-        numeric overall_score "0.00 à 100.00"
+        numeric overall_score "CHECK: 0.00 a 100.00"
         boolean mandatory_skills_satisfied
         jsonb score_breakdown
         timestamp calculated_at
@@ -268,7 +269,121 @@ erDiagram
 
 ---
 
-## ⚙️ 4. Moteur Algorithmique de Matching de Compétences
+## 🎯 4. Diagramme des Cas d'Utilisation UML (Use Cases)
+
+Le diagramme ci-dessous modélise les interactions complètes entre les acteurs humains (**Étudiant**, **Professeur**, **Administrateur**), le sous-système de calcul (**Moteur Algorithmique**), ainsi que les relations de dépendance fonctionnelle standard **`«include»`** (inclusions systématiques) et **`«extend»`** (extensions conditionnelles déclenchées sous conditions spécifiques).
+
+### Diagramme de Cas d'Utilisation Global
+
+```mermaid
+flowchart LR
+    subgraph Acteurs["👥 Acteurs du Système"]
+        Etu["🎓 Étudiant (STUDENT)"]
+        Prof["👨‍🏫 Professeur (PROFESSOR)"]
+        Admin["🛡️ Administrateur (ADMIN)"]
+        System["⚙️ Moteur Algorithmique (Système)"]
+    end
+
+    subgraph Module_Securite["🔐 Module Sécurité & Profil"]
+        UC_Login(["S'authentifier (JWT)"])
+        UC_Profile(["Gérer son profil & bio"])
+        UC_Skills(["Déclarer compétences (1 à 5)"])
+        UC_Radar(["Visualiser Radar de compétences"])
+    end
+
+    subgraph Module_Projets["📁 Module Gestion des Sujets"]
+        UC_CreateProj(["Publier un sujet de projet"])
+        UC_DefReq(["Définir exigences pondérées (w_i)"])
+        UC_SetVeto(["Activer critère obligatoire (Veto)"])
+        UC_BrowseProj(["Consulter catalogue des sujets"])
+        UC_LockProj(["Verrouiller le sujet (Statut ASSIGNED)"])
+    end
+
+    subgraph Module_Equipes["👥 Module Constitution & Matching"]
+        UC_CreateTeam(["Créer une équipe (Leader)"])
+        UC_InviteMember(["Inviter / Ajouter des membres"])
+        UC_CheckTeamSize(["Contrôler quotas taille (min/max)"])
+        UC_SimMatch(["Simuler matching équipe-projet"])
+        UC_CalcScore(["Calculer score adéquation pondéré"])
+        UC_RecruitHelp(["Suggérer profils à recruter"])
+        UC_SubmitTeam(["Déposer candidature de l'équipe"])
+    end
+
+    subgraph Module_Revue["📋 Module Revue & Décision Enseignant"]
+        UC_ReviewTeams(["Consulter classement des équipes"])
+        UC_InspectBreakdown(["Analyser décomposition (Breakdown)"])
+        UC_ValidateTeam(["Approuver l'équipe candidate"])
+        UC_RejectTeam(["Rejeter candidature avec motif"])
+    end
+
+    subgraph Module_Admin["⚙️ Module Administration & Supervision"]
+        UC_ManageUsers(["Gérer les utilisateurs (CRUD)"])
+        UC_ImportCSV(["Importer étudiants par lot (CSV)"])
+        UC_ManageSkills(["Gérer catalogue des compétences"])
+        UC_MonitorSystem(["Surveiller santé microservices"])
+    end
+
+    %% Associations Acteurs -> Cas d'utilisation principaux
+    Etu --> UC_Login
+    Etu --> UC_Profile
+    Etu --> UC_Skills
+    Etu --> UC_BrowseProj
+    Etu --> UC_CreateTeam
+    Etu --> UC_SimMatch
+    Etu --> UC_SubmitTeam
+
+    Prof --> UC_Login
+    Prof --> UC_Profile
+    Prof --> UC_CreateProj
+    Prof --> UC_ReviewTeams
+    Prof --> UC_ValidateTeam
+    Prof --> UC_RejectTeam
+
+    Admin --> UC_Login
+    Admin --> UC_ManageUsers
+    Admin --> UC_ManageSkills
+    Admin --> UC_MonitorSystem
+
+    %% Relations «include» (Inclusions obligatoires)
+    UC_Profile -.->|"«include»"| UC_Login
+    UC_Skills -.->|"«include»"| UC_Login
+    UC_CreateProj -.->|"«include»"| UC_Login
+    UC_CreateProj -.->|"«include»"| UC_DefReq
+    UC_CreateTeam -.->|"«include»"| UC_Login
+    UC_CreateTeam -.->|"«include»"| UC_InviteMember
+    UC_SubmitTeam -.->|"«include»"| UC_CheckTeamSize
+    UC_SimMatch -.->|"«include»"| UC_CalcScore
+    UC_CalcScore --- System
+    UC_ReviewTeams -.->|"«include»"| UC_InspectBreakdown
+    UC_ValidateTeam -.->|"«include»"| UC_Login
+    UC_ManageUsers -.->|"«include»"| UC_Login
+    UC_ManageSkills -.->|"«include»"| UC_Login
+
+    %% Relations «extend» avec Points d'Extension & Conditions explicites
+    UC_Radar -.->|"«extend» [Condition: Profil complété]"| UC_Skills
+    UC_SetVeto -.->|"«extend» [Condition: Compétence critique]"| UC_DefReq
+    UC_RecruitHelp -.->|"«extend» [Condition: Veto activé ou Score < 70%]"| UC_SimMatch
+    UC_LockProj -.->|"«extend» [Condition: Quota max validé atteint]"| UC_ValidateTeam
+    UC_ImportCSV -.->|"«extend» [Condition: Fichier CSV conforme]"| UC_ManageUsers
+```
+
+### Grille d'Analyse des Relations Use Case
+
+| Cas d'Utilisation Source | Relation | Cas d'Utilisation Cible | Condition d'Extension / Déclencheur |
+| :--- | :--- | :--- | :--- |
+| **`UC_Skills` (Déclarer compétences)** | `«include»` | **`UC_Login`** | Un token JWT valide avec rôle `STUDENT` est obligatoire. |
+| **`UC_Radar` (Visualiser Radar)** | `«extend»` | **`UC_Skills`** | Condition : Déclenché lorsque l'étudiant a renseigné au moins 3 compétences. |
+| **`UC_CreateProj` (Publier sujet)** | `«include»` | **`UC_DefReq`** | Tout projet exige obligatoirement au moins une compétence pondérée ($w_i > 0$). |
+| **`UC_SetVeto` (Activer veto)** | `«extend»` | **`UC_DefReq`** | Condition : L'enseignant coche l'exigence comme critique (`isMandatory = true`). |
+| **`UC_SubmitTeam` (Candidater)** | `«include»` | **`UC_CheckTeamSize`**| Vérifie que l'équipe respecte : $\text{minTeamSize} \le |\text{membres}| \le \text{maxTeamSize}$. |
+| **`UC_SimMatch` (Simuler)** | `«include»` | **`UC_CalcScore`** | Exécution systématique du `SkillMatchingEngine` par le backend. |
+| **`UC_RecruitHelp` (Recommandation)**| `«extend»` | **`UC_SimMatch`** | Condition : Déclenché si une compétence obligatoire manque ou si le score est insuffisant. |
+| **`UC_LockProj` (Verrouiller projet)** | `«extend»` | **`UC_ValidateTeam`**| Condition : Déclenché automatiquement lorsque le nombre d'équipes approuvées atteint le quota. |
+| **`UC_ImportCSV` (Import en masse)** | `«extend»` | **`UC_ManageUsers`**| Condition : Déclenché si l'administrateur téléverse un fichier CSV institutionnel. |
+
+---
+
+## ⚙️ 5. Moteur Algorithmique de Matching de Compétences
 
 Le cœur d'innovation de SmartCollab repose sur le composant **`SkillMatchingEngine`**.
 
@@ -312,7 +427,7 @@ $$\text{Score Global} = \frac{\sum_{i=1}^{n} w_i \times \text{Ratio}(s_i)}{\sum_
 
 ---
 
-## 🖥️ 5. Spécification Complète des Dashboards par Rôle
+## 🖥️ 6. Spécification Complète des Dashboards par Rôle
 
 Chaque utilisateur accède à un espace personnalisé selon son rôle JWT (`STUDENT`, `PROFESSOR`, `ADMIN`).
 
@@ -337,7 +452,7 @@ flowchart LR
 
 ---
 
-### 5.1 Dashboard Étudiant (Student)
+### 6.1 Dashboard Étudiant (Student)
 
 L'espace de l'étudiant est centré sur la valorisation de son profil, la formation de son équipe et l'analyse de compatibilité avec les sujets proposés.
 
@@ -367,7 +482,7 @@ L'espace de l'étudiant est centré sur la valorisation de son profil, la format
 
 ---
 
-### 5.2 Dashboard Professeur (Professor)
+### 6.2 Dashboard Professeur (Professor)
 
 L'espace du professeur lui permet d'encadrer les projets, de formaliser avec précision ses attentes techniques et de sélectionner les équipes les plus compétentes de manière objective.
 
@@ -395,7 +510,7 @@ L'espace du professeur lui permet d'encadrer les projets, de formaliser avec pr�
 
 ---
 
-### 5.3 Dashboard Administrateur (Admin)
+### 6.3 Dashboard Administrateur (Admin)
 
 L'espace administrateur assure la gouvernance de la plateforme, la gestion des référentiels, la sécurité et le monitoring des flux système.
 
@@ -419,99 +534,121 @@ L'espace administrateur assure la gouvernance de la plateforme, la gestion des r
 4. **Monitoring & Santé de l'Écosystème Microservices** :
    - État de santé des instances enregistrées sur Eureka (`UP` / `DOWN`).
    - Surveillance de l'état des 3 bases de données PostgreSQL.
-   - Suivi de la connectivité du cluster Kafka et des topics actifs (`project-created-topic`, etc.).
+   - Suivi de la connectivité du cluster Kafka et des topics actifs (`smartcollab.projects.v1`, etc.).
 
 ---
 
-## 🔄 6. Diagrammes de Séquence & Cycles de Vie
+## 🔄 7. Diagrammes de Séquence & Cycles de Vie
 
-### Diagramme de Séquence : Workflow Complet (Création, Matching, Validation)
+### Diagramme de Séquence Événementiel avec Alternatives (Alt / Else)
+
+Ce diagramme illustre le parcours de bout en bout avec gestion des cas de succès, des blocages de veto et des décisions d'arbitrage de l'enseignant.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Prof as Professeur
-    actor EtuLeader as Étudiant (Leader)
-    participant Front as Frontend React SPA
-    participant Gateway as API Gateway (:8080)
-    participant AuthSvc as auth-service (:8081)
-    participant ProjSvc as project-service (:8082)
-    participant MatchSvc as team-matching-service (:8083)
-    participant Kafka as Broker Kafka (:9092)
+    actor Prof as 👨‍🏫 Professeur
+    actor EtuLeader as 🎓 Étudiant (Leader)
+    participant Front as 💻 Frontend React SPA (:5173)
+    participant Gateway as 🚪 API Gateway (:8080)
+    participant AuthSvc as 🔐 auth-service (:8081)
+    participant ProjSvc as 📁 project-service (:8082)
+    participant MatchSvc as ⚙️ team-matching-service (:8083)
+    participant Kafka as 📨 Apache Kafka (:9092)
 
-    %% 1. Professeur crée un projet
-    Note over Prof, ProjSvc: 1. Publication d'un Sujet de Projet
-    Prof->>Front: Saisit le projet + exigences pondérées
-    Front->>Gateway: POST /api/v1/projects (Bearer JWT Prof)
-    Gateway->>ProjSvc: Reroute avec headers (X-User-Id, X-User-Role)
-    ProjSvc->>ProjSvc: Enregistre dans project_db
-    ProjSvc->>Kafka: Publie ProjectCreatedEvent
+    Note over Prof, ProjSvc: Phase 1 : Publication du Sujet avec Exigences & Veto
+    Prof->>Front: Saisie du projet + compétences requises (poids w_i, isMandatory)
+    Front->>Gateway: POST /api/v1/projects (Bearer JWT)
+    Gateway->>Gateway: Valide JWT & extrait (X-User-Id, X-User-Role=PROFESSOR)
+    Gateway->>ProjSvc: Reroute requête avec en-têtes d'identité
+    ProjSvc->>ProjSvc: Sauvegarde projet & contraintes dans project_db
+    ProjSvc->>Kafka: Publie ProjectCreatedEvent (Topic: smartcollab.projects.v1)
     ProjSvc-->>Front: 201 Created (ProjectDto)
-    Kafka-->>MatchSvc: Consomme ProjectCreatedEvent (Initialisation cache)
+    Kafka-->>MatchSvc: Consomme événement (Mise en cache du nouveau sujet)
 
-    %% 2. Formation d'équipe par l'étudiant
-    Note over EtuLeader, MatchSvc: 2. Formation de l'Équipe Étudiante
-    EtuLeader->>Front: Crée l'équipe "CodeCrafters" & ajoute ses membres
+    Note over EtuLeader, MatchSvc: Phase 2 : Constitution de l'Équipe & Candidature
+    EtuLeader->>Front: Crée l'équipe 'CodeCrafters' & ajoute les étudiants
     Front->>Gateway: POST /api/v1/teams
     Gateway->>MatchSvc: Reroute avec X-User-Id du leader
-    MatchSvc->>MatchSvc: Crée l'équipe (Statut: FORMING)
+    MatchSvc->>MatchSvc: Enregistre équipe (Statut: FORMING) dans team_matching_db
     MatchSvc-->>Front: 201 Created (TeamDto)
 
-    %% 3. Calcul de Matching
-    Note over EtuLeader, MatchSvc: 3. Évaluation Algorithmique de Compatibilité
-    EtuLeader->>Front: Lance l'évaluation d'affinité pour le projet
+    Note over EtuLeader, MatchSvc: Phase 3 : Calcul Algorithmique de Matching
+    EtuLeader->>Front: Lance la simulation d'affinité pour le projet
     Front->>Gateway: POST /api/v1/matching/calculate?teamId=...&projectId=...
     Gateway->>MatchSvc: Reroute vers MatchingController
     MatchSvc->>ProjSvc: GET /api/v1/projects/{id} (via OpenFeign)
-    ProjSvc-->>MatchSvc: Détails du projet & exigences pondérées
-    MatchSvc->>AuthSvc: GET /api/v1/users/{memberId} (pour chaque membre)
-    AuthSvc-->>MatchSvc: Profils & Niveaux de compétences des membres
-    MatchSvc->>MatchSvc: Exécute SkillMatchingEngine (Formule & Veto)
-    MatchSvc->>MatchSvc: Sauvegarde dans matching_scores
-    MatchSvc-->>Front: 200 OK (MatchResultDto : score, statut, breakdown)
+    ProjSvc-->>MatchSvc: Exigences techniques {skillId, minLevel, weight, isMandatory}
+    loop Pour chaque membre de l'équipe
+        MatchSvc->>AuthSvc: GET /api/v1/users/{memberId} (via OpenFeign)
+        AuthSvc-->>MatchSvc: Profil & matrice de compétences {skillId, level}
+    end
+    MatchSvc->>MatchSvc: Exécute SkillMatchingEngine : L_team = max(niveau)
 
-    %% 4. Soumission et Approbation
-    Note over EtuLeader, Prof: 4. Candidature & Validation Enseignant
+    alt Compétences obligatoires satisfaites (isMandatory = true et L_team >= L_req)
+        MatchSvc->>MatchSvc: Calcule Score Global Pondéré (0 à 100%)
+        MatchSvc->>MatchSvc: Attribue statut (EXCELLENT, GOOD ou MODERATE)
+    else Compétence obligatoire manquante (L_team < L_req)
+        MatchSvc->>MatchSvc: Déclenche Veto : statut BLOCKED_MANDATORY_MISSING
+        MatchSvc->>MatchSvc: Identifie les compétences bloquantes et profils à recruter
+    end
+    MatchSvc->>MatchSvc: Sauvegarde score & breakdown JSONB dans matching_scores
+    MatchSvc-->>Front: 200 OK (MatchResultDto)
+
+    Note over EtuLeader, Prof: Phase 4 : Soumission et Décision Enseignant
     EtuLeader->>Front: Valide et soumet la candidature de l'équipe
     Front->>Gateway: PUT /api/v1/teams/{id}/submit
-    Gateway->>MatchSvc: Passe le statut à SUBMITTED
+    Gateway->>MatchSvc: Statut passe à SUBMITTED
     Prof->>Front: Ouvre son Dashboard Professeur
     Front->>Gateway: GET /api/v1/matching/project/{projectId}
-    Gateway->>MatchSvc: Récupère les scores des équipes candidates
-    MatchSvc-->>Front: Liste ordonnée des candidatures
-    Prof->>Front: Clique sur "Approuver l'équipe"
-    Front->>Gateway: PUT /api/v1/teams/{id}/approve
-    Gateway->>MatchSvc: Statut mis à APPROVED
-    MatchSvc-->>Front: Confirmation validation
+    Gateway->>MatchSvc: Récupère les équipes candidates ordonnées par score
+    MatchSvc-->>Front: Classement des équipes (Scores, Statuts, Veto)
+
+    alt Le professeur approuve l'équipe
+        Prof->>Front: Clique sur 'Approuver la candidature'
+        Front->>Gateway: PUT /api/v1/teams/{id}/approve
+        Gateway->>MatchSvc: Statut mis à APPROVED
+        MatchSvc->>Kafka: Publie TeamApprovedEvent
+        Kafka-->>ProjSvc: Consomme événement & vérifie quotas
+        MatchSvc-->>Front: Confirmation validation (200 OK)
+    else Le professeur refuse ou demande un réajustement
+        Prof->>Front: Clique sur 'Rejeter avec motif'
+        Front->>Gateway: PUT /api/v1/teams/{id}/reject
+        Gateway->>MatchSvc: Statut remis à FORMING (Ajustement requis)
+        MatchSvc-->>Front: Notification transmise à l'équipe
+    end
 ```
 
 ### Diagramme d'États : Cycles de Vie Projet et Équipe
 
 ```mermaid
 stateDiagram-v2
-    direction LR
+    direction TB
 
-    state "Cycle de Vie Projet" as ProjLifecycle {
-        [*] --> DRAFT : Création enseignant
-        DRAFT --> PUBLISHED : Publication officielle
-        PUBLISHED --> ASSIGNED : Équipe validée par le prof
-        ASSIGNED --> COMPLETED : Évaluation & soutenance
-        COMPLETED --> ARCHIVED : Fin d'année académique
+    state "Cycle de Vie d'un Projet Académique" as ProjModel {
+        [*] --> DRAFT : Création par l'enseignant
+        DRAFT --> PUBLISHED : Validation des exigences & quotas
+        PUBLISHED --> ASSIGNED : Équipe candidate approuvée
+        ASSIGNED --> IN_PROGRESS : Démarrage du semestre
+        IN_PROGRESS --> COMPLETED : Soutenance et évaluation finale
+        COMPLETED --> ARCHIVED : Fin d'année universitaire
+        PUBLISHED --> CANCELLED : Annulation par l'enseignant
     }
 
-    state "Cycle de Vie Équipe" as TeamLifecycle {
-        [*] --> FORMING : Création par l'étudiant leader
+    state "Cycle de Vie d'une Équipe Étudiante" as TeamModel {
+        [*] --> FORMING : Création par le leader
         FORMING --> FORMING : Ajout / Retrait de membres
-        FORMING --> SUBMITTED : Soumission au sujet du prof
-        SUBMITTED --> APPROVED : Acceptation par le professeur
-        SUBMITTED --> FORMING : Refus / Ajustement requis
-        FORMING --> DISBANDED : Dissolution
+        FORMING --> SUBMITTED : Candidature déposée (Taille min/max valide)
+        SUBMITTED --> APPROVED : Validation par l'enseignant (Score suffisant)
+        SUBMITTED --> FORMING : Refus avec motif (Réajustement compétences)
+        FORMING --> DISBANDED : Dissolution volontaire
+        APPROVED --> COMPLETED_TEAM : Projet soutenu et validé
     }
 ```
 
 ---
 
-## 📡 7. Contrats d'APIs & Endpoints REST
+## 📡 8. Contrats d'APIs & Endpoints REST
 
 Toutes les requêtes passent par l'API Gateway sur le port **`8080`**.
 
@@ -548,7 +685,7 @@ Toutes les requêtes passent par l'API Gateway sur le port **`8080`**.
 
 ---
 
-## 👥 8. Guide du Développeur & Répartition des Tâches Collaborateurs
+## 👥 9. Guide du Développeur & Répartition des Tâches Collaborateurs
 
 Pour permettre à chaque collaborateur de travailler en autonomie et sans conflit, les chantiers sont découpés en modules clairs :
 
@@ -582,7 +719,7 @@ flowchart TD
 
 ---
 
-## 🚀 9. Installation, Déploiement & Comptes de Démonstration
+## 🚀 10. Installation, Déploiement & Comptes de Démonstration
 
 ### Prérequis Système
 - **Java** : JDK 21 LTS
@@ -675,4 +812,4 @@ Tous les comptes ci-dessous sont pré-insérés en base avec le mot de passe uni
 
 ---
 
-> 💡 **Conseil pour l'équipe** : Consultez régulièrement la section [Guide du Développeur](#-8-guide-du-développeur--répartition-des-tâches-collaborateurs) pour synchroniser vos développements et enrichir les DTOs communs dans `backend/common-dtos` avant d'implémenter de nouveaux endpoints inter-services.
+> 💡 **Conseil pour l'équipe** : Consultez régulièrement la section [Guide du Développeur](#-9-guide-du-développeur--répartition-des-tâches-collaborateurs) pour synchroniser vos développements et enrichir les DTOs communs dans `backend/common-dtos` avant d'implémenter de nouveaux endpoints inter-services.
