@@ -23,8 +23,9 @@
    - [6.3 Dashboard Administrateur (Admin)](#63-dashboard-administrateur-admin)
 7. [Diagrammes de Séquence & Cycles de Vie](#-7-diagrammes-de-séquence--cycles-de-vie)
 8. [Contrats d'APIs & Endpoints REST](#-8-contrats-dapis--endpoints-rest)
-9. [Guide du Développeur & Répartition des Tâches Collaborateurs](#-9-guide-du-développeur--répartition-des-tâches-collaborateurs)
-10. [Installation, Déploiement & Comptes de Démonstration](#-10-installation-déploiement--comptes-de-démonstration)
+9. [Stratégie de Branches Git & Organisation du Projet](#-9-stratégie-de-branches-git--organisation-du-projet)
+10. [Guide du Développeur & Répartition des Tâches Collaborateurs](#-10-guide-du-développeur--répartition-des-tâches-collaborateurs)
+11. [Installation, Déploiement & Comptes de Démonstration](#-11-installation-déploiement--comptes-de-démonstration)
 
 ---
 
@@ -102,6 +103,7 @@ flowchart TD
 | **`auth-service`** | Spring Boot, Spring Security, BCrypt | `8081` | Authentification, émission des JWT, gestion des utilisateurs (Étudiant, Professeur, Admin) et référentiel global des compétences (`skills`). |
 | **`project-service`** | Spring Boot, Data JPA, Kafka Producer | `8082` | Gestion du cycle de vie des projets académiques, assignation des exigences de compétences pondérées, émission d'événements Kafka lors de la création d'un sujet. |
 | **`team-matching-service`** | Spring Boot, OpenFeign, Kafka Consumer | `8083` | Gestion des équipes d'étudiants, calcul matriciel d'affinité algorithmique, stockage des scores et historiques de compatibilité. |
+| **`common-dtos`** | Maven Module Java | — | Bibliothèque partagée contenant les DTOs communs (`UserDto`, `ProjectDto`, `MatchResultDto`, `TeamDto`) et les schémas d'événements Kafka. |
 | **`frontend`** | React 18, Vite, Tailwind CSS, Lucide | `5173` | Interface utilisateur monopage réactive proposant les 3 espaces dédiés : Étudiant, Professeur et Administrateur. |
 | **`Apache Kafka`** | Confluent Kafka 7.5.3 (KRaft) | `9092` | Broker d'événements asynchrones garantissant le découplage événementiel (ex: notifications de projet, changements d'équipe). |
 
@@ -685,41 +687,102 @@ Toutes les requêtes passent par l'API Gateway sur le port **`8080`**.
 
 ---
 
-## 👥 9. Guide du Développeur & Répartition des Tâches Collaborateurs
+## 🌿 9. Stratégie de Branches Git & Organisation du Projet
 
-Pour permettre à chaque collaborateur de travailler en autonomie et sans conflit, les chantiers sont découpés en modules clairs :
+Pour garantir une collaboration sans heurt et éviter la dispersion du code dans des dizaines de branches éphémères, le repository GitHub est structuré autour de **3 branches principales d'équipe** en plus de la branche `main` :
+
+```mermaid
+gitGraph
+    commit id: "Initial Documentation"
+    branch devops
+    branch backend
+    branch frontend
+    checkout frontend
+    commit id: "React UI & Dashboards"
+    checkout backend
+    commit id: "Spring Boot Microservices"
+    checkout devops
+    commit id: "Docker Compose & Kafka"
+    checkout main
+    merge backend id: "Merge Backend v1.0"
+    merge frontend id: "Merge Frontend v1.0"
+    merge devops id: "Release Production"
+```
+
+### Rôle et Périmètre des Branches Principales
+
+| Branche Git | Équipe Responsable | Périmètre Technique & Dossiers Dédiés |
+| :--- | :--- | :--- |
+| 🛡️ **`main`** | **Toute l'équipe** | Branche de référence stable / production. Elle contient la documentation maîtresse ([README.md](file:///home/arhrid-hamza/SmartCollab/README.md)) et reçoit uniquement les fusions validées (Pull Requests) des branches `backend`, `frontend` et `devops`. |
+| 💻 **`frontend`** | **Équipe Front-End** | Développement de l'interface monopage React 18, Tailwind CSS, Lucide icons, formulaires, diagrammes Radar et dashboards Étudiant/Professeur/Admin (Dossier : `frontend/`). |
+| ⚙️ **`backend`** | **Équipe Back-End** | Développement de l'ensemble des microservices Spring Boot (`auth-service`, `project-service`, `team-matching-service`, `gateway-service`, `discovery-service`, `config-service`) et du module partagé (`common-dtos`). |
+| 🐳 **`devops`** | **Équipe Infrastructure**| Scripts de déploiement, orchestration `docker-compose.yml`, bases PostgreSQL indépendantes, cluster Apache Kafka KRaft et configurations de pipelines (Dossiers : `docker/`, `scripts/`). |
+
+### Workflow de Développement au Quotidien (Feature Branches)
+
+Chaque collaborateur travaille selon le principe du **Feature Branching** rattaché à son pôle :
+1. **Cloner le repository** :
+   ```bash
+   git clone https://github.com/Arhrid-Hamza/SmartCollab.git
+   cd SmartCollab
+   ```
+2. **Basculer sur sa branche de pôle** (`backend` ou `frontend`) :
+   ```bash
+   git checkout backend
+   # ou : git checkout frontend
+   ```
+3. **Créer une branche de tâche spécifique** :
+   ```bash
+   git checkout -b feat/nom-de-votre-fonctionnalite
+   ```
+4. **Développer, committer et pousser** :
+   ```bash
+   git add .
+   git commit -m "feat(module): description claire du changement"
+   git push -u origin feat/nom-de-votre-fonctionnalite
+   ```
+5. **Ouvrir une Pull Request (PR)** sur GitHub vers sa branche de pôle (`backend` ou `frontend`). Une fois validée par les pairs, la fusion s'effectue vers `main`.
+
+---
+
+## 👥 10. Guide du Développeur & Répartition des Tâches Collaborateurs
 
 ```mermaid
 flowchart TD
-    subgraph Collab_Front["Équipe Front-End (React / Tailwind)"]
-        F1["Chantier F1 : Dashboard Étudiant\n- Édition des compétences personnelles\n- Gestion d'équipe & invitations\n- Studio de Matching interactif"]
-        F2["Chantier F2 : Dashboard Professeur\n- Formulaire de création de sujet\n- Constructeur d'exigences & poids\n- Tableau de revue des candidatures"]
-        F3["Chantier F3 : Dashboard Administrateur\n- Gestion des utilisateurs (CRUD / Rôles)\n- Gestion du dictionnaire des skills\n- Métriques & santé microservices"]
+    subgraph Collab_Front["Équipe Front-End (Branche : frontend)"]
+        F1["Chantier F1 : Dashboard Étudiant\n- Profil, radar de compétences & bio\n- Gestion de l'équipe & invitations\n- Studio de matching interactif"]
+        F2["Chantier F2 : Dashboard Professeur\n- Création de projets & quotas d'équipe\n- Constructeur d'exigences & veto\n- Revue et approbation des candidatures"]
+        F3["Chantier F3 : Console Administrateur\n- Gestion des comptes et des rôles\n- Taxonomie des compétences globales\n- Monitoring système & santé microservices"]
     end
 
-    subgraph Collab_Back["Équipe Back-End (Spring Boot / Microservices)"]
-        B1["Chantier B1 : Auth & Utilisateurs\n- API CRUD Utilisateurs pour l'Admin\n- Upload de photo / Import CSV\n- API CRUD Compétences"]
-        B2["Chantier B2 : Projets & Workflow\n- Transitions d'état (Draft -> Published -> Assigned)\n- Validation des quotas d'équipe\n- Historique des modifications"]
-        B3["Chantier B3 : Matching & Intelligence\n- Recommandation d'étudiants complémentaires\n- Événements Kafka (notification candidature acceptée)\n- Mise en cache Redis des scores de matching"]
+    subgraph Collab_Back["Équipe Back-End (Branche : backend)"]
+        B1["Chantier B1 : auth-service & common-dtos\n- Modèle de données User & Skills\n- Endpoints JWT, sécurité & filtres Gateway\n- DTOs partagés inter-services"]
+        B2["Chantier B2 : project-service\n- Gestion du cycle de vie des sujets\n- Quotas min/max d'équipe et deadlines\n- Émission d'événements Kafka"]
+        B3["Chantier B3 : team-matching-service\n- Moteur SkillMatchingEngine & Veto\n- Clients OpenFeign synchrones\n- Stockage JSONB des breakdowns"]
+    end
+
+    subgraph Collab_DevOps["Équipe DevOps (Branche : devops)"]
+        D1["Chantier D1 : Conteneurisation & DBs\n- Configuration Docker Compose multi-DBs\n- Scripts SQL initiaux (auth, project, team)\n- Broker Apache Kafka en mode KRaft"]
     end
 ```
 
 ### Matrice RACI des Tâches Techniques
 
-| Module / Fonctionnalité | Responsable Technique | Tâche Précise à Réaliser | Fichiers Cibles Clés |
+| Pôle / Branche | Fonctionnalité Clé | Tâche Développeur Précise | Fichiers Cibles Clés |
 | :--- | :--- | :--- | :--- |
-| **Profil & Compétences** | Dev Frontend 1 | Créer la page de profil étudiant avec sliders de niveau (1-5) et graphique Radar. | `frontend/src/pages/ProfilePage.jsx` |
-| **Gestion d'Équipe UI** | Dev Frontend 1 | Interface de recherche de coéquipiers et gestion des statuts de l'équipe. | `frontend/src/pages/TeamsPage.jsx` |
-| **Studio Sujets Professeur** | Dev Frontend 2 | Interface dynamique d'ajout d'exigences avec toggle `isMandatory` et sliders de poids. | `frontend/src/pages/ProfessorStudioPage.jsx` |
-| **Console Administration UI** | Dev Frontend 2 | Tableaux de bord Admin avec gestion des rôles et catalogue des compétences. | `frontend/src/pages/AdminDashboardPage.jsx` |
-| **Endpoints Admin Backend** | Dev Backend 1 | Ajouter les endpoints d'administration des utilisateurs et des rôles dans `auth-service`. | `UserController.java`, `SkillController.java` |
-| **Workflow d'Approbation** | Dev Backend 2 | Implémenter les statuts de candidature et le verrouillage de projet dans `project-service`. | `ProjectService.java`, `Project.java` |
-| **Algorithme & Suggestion** | Dev Backend 3 | Étendre `SkillMatchingEngine` pour suggérer les profils idéaux manquants à une équipe. | `SkillMatchingEngine.java`, `MatchingService.java` |
-| **Événements Asynchrones** | Dev Backend 3 | Finaliser les producteurs/consommateurs Kafka pour la synchronisation inter-services. | `ProjectEventListener.java`, `TeamFormedEvent.java` |
+| **`frontend`** | **Profil & Compétences** | Créer la page de profil étudiant avec sliders de niveau (1-5) et graphique Radar. | `frontend/src/pages/ProfilePage.jsx` |
+| **`frontend`** | **Gestion d'Équipe UI** | Interface de recherche de coéquipiers et gestion des statuts de l'équipe. | `frontend/src/pages/TeamsPage.jsx` |
+| **`frontend`** | **Studio Sujets Professeur** | Interface dynamique d'ajout d'exigences avec toggle `isMandatory` et sliders de poids. | `frontend/src/pages/ProfessorStudioPage.jsx` |
+| **`frontend`** | **Console Administration UI** | Tableaux de bord Admin avec gestion des rôles et catalogue des compétences. | `frontend/src/pages/AdminDashboardPage.jsx` |
+| **`backend`** | **Endpoints Admin Backend** | Ajouter les endpoints d'administration des utilisateurs et des rôles dans `auth-service`. | `UserController.java`, `SkillController.java` |
+| **`backend`** | **Workflow d'Approbation** | Implémenter les statuts de candidature et le verrouillage de projet dans `project-service`. | `ProjectService.java`, `Project.java` |
+| **`backend`** | **Algorithme & Suggestion** | Étendre `SkillMatchingEngine` pour suggérer les profils idéaux manquants à une équipe. | `SkillMatchingEngine.java`, `MatchingService.java` |
+| **`backend`** | **Événements Asynchrones** | Finaliser les producteurs/consommateurs Kafka pour la synchronisation inter-services. | `ProjectEventListener.java`, `TeamFormedEvent.java` |
+| **`devops`** | **Infrastructure & Conteneurs**| Finaliser l'orchestration des 3 bases de données PostgreSQL et du broker Kafka. | `docker/docker-compose.yml`, `init-sql/` |
 
 ---
 
-## 🚀 10. Installation, Déploiement & Comptes de Démonstration
+## 🚀 11. Installation, Déploiement & Comptes de Démonstration
 
 ### Prérequis Système
 - **Java** : JDK 21 LTS
@@ -812,4 +875,4 @@ Tous les comptes ci-dessous sont pré-insérés en base avec le mot de passe uni
 
 ---
 
-> 💡 **Conseil pour l'équipe** : Consultez régulièrement la section [Guide du Développeur](#-9-guide-du-développeur--répartition-des-tâches-collaborateurs) pour synchroniser vos développements et enrichir les DTOs communs dans `backend/common-dtos` avant d'implémenter de nouveaux endpoints inter-services.
+> 💡 **Conseil pour l'équipe** : Consultez régulièrement la section [Guide du Développeur](#-10-guide-du-développeur--répartition-des-tâches-collaborateurs) pour synchroniser vos développements sur vos branches respectives (`frontend`, `backend`, `devops`).
