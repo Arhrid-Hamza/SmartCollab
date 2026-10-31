@@ -1,0 +1,23 @@
+target/
+*.class
+*.jar
+*.war
+.DS_Store
+.idea/
+*.iml
+.vscode/
+
+# Node
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Docker local data
+postgres-data/
