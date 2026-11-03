@@ -34,27 +34,31 @@ backend/
 | **`discovery-service`**| `8761` | — | Annuaire Netflix Eureka permettant la découverte dynamique sans IPs codées en dur. |
 | **`config-service`** | `8888` | — | Externalisation des profils et configurations applicatives (`application.yml`). |
 | **`auth-service`** | `8081` | `auth_db` (:5431) | Authentification, hachage BCrypt, émission JWT, gestion des profils (Étudiant, Professeur, Admin) et référentiel de compétences. |
-| **`project-service`** | `8082` | `project_db` (:5433) | Publication des sujets par les enseignants, quotas de groupe, exigences pondérées ($w_i$), critères de veto, émission d'événements Kafka. |
-| **`team-matching-service`**| `8083` | `team_matching_db` (:5434)| Gestion des équipes étudiantes, exécution de l'algorithme d'adéquation, persistance des scores et des décompositions JSONB. |
-| **`common-dtos`** | — | — | DTOs partagés (`UserDto`, `ProjectDto`, `TeamDto`, `MatchResultDto`) et événements Kafka (`ProjectCreatedEvent`). |
+| **`project-service`** | `8082` | `project_db` (:5433) | Publication des sujets PFE et projets académiques par les enseignants (description, quotas min/max d'étudiants, échéances), exigences pondérées ($w_i$), critères de veto, émission d'événements Kafka. |
+| **`team-matching-service`**| `8083` | `team_matching_db` (:5434)| Gestion des équipes étudiantes, exécution de l'algorithme d'adéquation, persistance des scores et moteur de recommandation personnalisée de sujets PFE pour chaque étudiant. |
+| **`common-dtos`** | — | — | DTOs partagés (`UserDto`, `ProjectDto`, `TeamDto`, `MatchResultDto`, `PfeRecommendationDto`) et événements Kafka (`ProjectCreatedEvent`). |
 
 ---
 
 ## ⚙️ 2. Moteur Algorithmique (`SkillMatchingEngine`)
 
-Le composant central `SkillMatchingEngine` évalue l'adéquation d'une équipe avec les exigences d'un projet académique selon la formule mathématique suivante :
+Le composant central `SkillMatchingEngine` évalue l'adéquation technique sous deux modes opérationnels :
+- **Mode Équipe $\leftrightarrow$ Projet** (Projets collaboratifs ou PFE en binôme).
+- **Mode Étudiant $\leftrightarrow$ Sujets PFE** (Recommandation et orientation individuelle).
 
-### 1. Niveau Maximal de l'Équipe pour une Compétence
+### A. Évaluation Collective (Équipe $\leftrightarrow$ Projet)
+
+#### 1. Niveau Maximal de l'Équipe pour une Compétence
 $$L_{team}(s) = \max_{m \in \text{Membres}} \left( \text{Niveau}(m, s) \right)$$
 
-### 2. Ratio de Satisfaction par Compétence
+#### 2. Ratio de Satisfaction par Compétence
 Pour chaque compétence requise $s_i$ avec un niveau minimum attendu $L_{req}(s_i)$ :
 $$\text{Ratio}(s_i) = \min\left(1.0, \frac{L_{team}(s_i)}{L_{req}(s_i)}\right)$$
 
-### 3. Score Global Pondéré
+#### 3. Score Global Pondéré
 $$\text{Score Global} = \frac{\sum_{i=1}^{n} w_i \times \text{Ratio}(s_i)}{\sum_{i=1}^{n} w_i} \times 100$$
 
-### 4. Règle de Veto (Compétence Obligatoire)
+#### 4. Règle de Veto (Compétence Obligatoire)
 - Si une compétence est marquée `isMandatory = true` et que $L_{team}(s_i) < L_{req}(s_i)$ :
   - L'équipe est classée **`BLOCKED_MANDATORY_MISSING`**.
   - Une liste explicite des compétences bloquantes est renvoyée pour suggérer les profils à recruter.
@@ -63,6 +67,20 @@ $$\text{Score Global} = \frac{\sum_{i=1}^{n} w_i \times \text{Ratio}(s_i)}{\sum_
   - $\ge 70\%$ : **`GOOD`** (Équipe équilibrée)
   - $\ge 50\%$ : **`MODERATE`** (Compétences partielles)
   - $< 50\%$ : **`INSUFFICIENT`** (Inadéquat)
+
+### B. Moteur de Recommandation Individuelle de Sujets PFE (Étudiant $\leftrightarrow$ PFE)
+
+Pour alimenter le flux personnalisé de l'étudiant (`GET /api/v1/matching/recommendations/students/{studentId}`) :
+
+1. **Niveau individuel** :
+   $$L_{student}(s) = \text{Niveau}(\text{étudiant}, s)$$
+2. **Ratio de couverture individuel** :
+   $$\text{Ratio}_{student}(s_i) = \min\left(1.0, \frac{L_{student}(s_i)}{L_{req}(s_i)}\right)$$
+3. **Score d'affinité PFE** :
+   $$\text{Score}_{PFE} = \frac{\sum_{i=1}^{n} w_i \times \text{Ratio}_{student}(s_i)}{\sum_{i=1}^{n} w_i} \times 100$$
+4. **Classement et Feed** :
+   - Les sujets PFE publiés sont classés par `Score_PFE` décroissant.
+   - Le breakdown JSON détaille pour chaque techno requise : le niveau de l'étudiant vs niveau attendu, son poids, et si un critère veto est non satisfait.
 
 ---
 
