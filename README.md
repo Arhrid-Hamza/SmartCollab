@@ -29,10 +29,10 @@ frontend/
 │   ├── pages/              # Écrans et Tableaux de bord
 │   │   ├── LoginPage.jsx               # Authentification & sélection rapide des comptes démo
 │   │   ├── ProfilePage.jsx             # Profil étudiant, sliders 1-5 & radar de compétences
-│   │   ├── ProjectsPage.jsx            # Catalogue des sujets publiés, filtres et recherche
+│   │   ├── ProjectsPage.jsx            # Catalogue des sujets publiés & Feed de Recommandations PFE
 │   │   ├── TeamsPage.jsx               # Gestion de mon équipe, recherche et invitations
 │   │   ├── MatchingStudioPage.jsx      # Studio de matching interactif, scores, veto & breakdown
-│   │   ├── ProfessorStudioPage.jsx     # Création de sujets, constructeur d'exigences & veto
+│   │   ├── ProfessorStudioPage.jsx     # Publication sujets PFE/projets, constructeur d'exigences & veto
 │   │   ├── SubmissionsReviewPage.jsx   # Revue des candidatures par le professeur & validation
 │   │   └── AdminDashboardPage.jsx      # Console admin : KPIs, CRUD utilisateurs & skills
 │   ├── App.jsx             # Configuration des routes (React Router 6)
@@ -56,14 +56,14 @@ flowchart TD
 
     subgraph Espace_Etudiant["Espace Étudiant (STUDENT)"]
         ProfPage["ProfilePage\n- Sliders niveaux compétences (1-5)\n- Radar Chart compétences"]
-        ProjPage["ProjectsPage\n- Liste des sujets ouverts\n- Détail exigences & quotas"]
-        TeamPage["TeamsPage\n- Création équipe\n- Matrice compétences groupe"]
+        ProjPage["ProjectsPage (Feed PFE)\n- Recommandations PFE personnalisées (% Match)\n- Badges technos maîtrisées / manquantes"]
+        TeamPage["TeamsPage\n- Création équipe / binôme\n- Matrice compétences groupe"]
         MatchPage["MatchingStudioPage\n- Simulateur affinité en direct\n- Alerte veto & suggestions"]
     end
 
     subgraph Espace_Professeur["Espace Professeur (PROFESSOR)"]
-        ProfStudio["ProfessorStudioPage\n- Éditeur de sujet & quotas\n- Constructeur exigences (poids, veto)"]
-        SubReview["SubmissionsReviewPage\n- Leaderboard candidatures\n- Boutons Approuver / Rejeter"]
+        ProfStudio["ProfessorStudioPage\n- Publication sujets PFE & Projets\n- Constructeur exigences (poids, veto)"]
+        SubReview["SubmissionsReviewPage\n- Leaderboard candidatures PFE/Équipes\n- Boutons Approuver / Rejeter"]
     end
 
     subgraph Espace_Admin["Espace Administrateur (ADMIN)"]
@@ -77,6 +77,10 @@ flowchart TD
 
 ### 1. Espace Étudiant (`STUDENT`)
 - **`ProfilePage.jsx`** : Formulaire interactif permettant à l'étudiant de noter son niveau d'expertise (étoiles ou sliders de 1 à 5) pour chaque technologie et d'observer son graphe radar se dessiner en temps réel.
+- **`ProjectsPage.jsx` (Feed Recommandations PFE)** : Flux intelligent personnalisé classant les sujets PFE et projets académiques publiés par **Score de Compatibilité Décroissant** avec les compétences de son profil.
+  - Badges de score instantanés : **⭐ 95% Match**, **👍 80% Match**, etc.
+  - Visualisation des exigences : technos maîtrisées (vertes) vs lacunes / critères veto (rouges/ambrées).
+  - Bouton de candidature directe pour les PFE individuels (`min_team_size = 1`) ou création d'un binôme.
 - **`TeamsPage.jsx`** : Vue de l'équipe active, bouton de création pour le leader, barre de recherche de coéquipiers par nom/email, et matrice croisée affichant les points forts du groupe.
 - **`MatchingStudioPage.jsx`** : L'étudiant sélectionne son équipe et un projet :
   - Calcul dynamique du score global ($0$ à $100\%$).
@@ -85,8 +89,8 @@ flowchart TD
   - Alerte explicite si une compétence obligatoire manque avec proposition de recrutement.
 
 ### 2. Espace Professeur (`PROFESSOR`)
-- **`ProfessorStudioPage.jsx`** : Formulaire de publication de sujet avec ajout dynamique de compétences exigées, réglage des coefficients de poids ($w_i$), et toggle switch pour activer le critère obligatoire (*Veto*).
-- **`SubmissionsReviewPage.jsx`** : Tableau de bord classant les équipes candidates par ordre de score décroissant, avec accès au breakdown complet et boutons d'action **Approuver (`APPROVE`)** ou **Refuser (`REJECT`)**.
+- **`ProfessorStudioPage.jsx`** : Formulaire complet de publication de sujets PFE (individuel `min=1` ou binôme/équipe `min=2..4`) avec ajout dynamique de compétences exigées depuis le catalogue, réglage des coefficients de poids ($w_i$), et toggle switch pour activer le critère obligatoire (*Veto*).
+- **`SubmissionsReviewPage.jsx`** : Tableau de bord classant les étudiants et équipes candidats par ordre de score décroissant, avec accès au breakdown complet et boutons d'action **Approuver (`APPROVE`)** ou **Refuser (`REJECT`)**.
 
 ### 3. Espace Administrateur (`ADMIN`)
 - **`AdminDashboardPage.jsx`** : Statistiques globales (KPIs), gestion des utilisateurs (changement de rôles, activation/désactivation), et catalogue central des compétences avec catégorisation (`BACKEND`, `FRONTEND`, `DEVOPS`, `DATA_AI`, `MOBILE`).
@@ -128,12 +132,13 @@ export default api;
 | Liste des étudiants | `GET` | `/api/v1/users/students` | Authentifié |
 | Catalogue des compétences | `GET` | `/api/v1/skills` | Authentifié |
 | Projets publiés | `GET` | `/api/v1/projects` | Authentifié |
-| Publier un sujet | `POST` | `/api/v1/projects` | `PROFESSOR`, `ADMIN` |
+| **Recommandations PFE (Feed)** | `GET` | `/api/v1/matching/recommendations/students/{studentId}` | `STUDENT` |
+| Publier un sujet PFE/Projet | `POST` | `/api/v1/projects` | `PROFESSOR`, `ADMIN` |
 | Liste des équipes | `GET` | `/api/v1/teams` | Authentifié |
 | Créer une équipe | `POST` | `/api/v1/teams` | `STUDENT` |
 | Ajouter un membre | `POST` | `/api/v1/teams/{id}/members/{studentId}` | `STUDENT` |
-| Calculer le matching | `POST` | `/api/v1/matching/calculate?teamId=...&projectId=...` | Authentifié |
-| Candidatures d'un projet | `GET` | `/api/v1/matching/project/{projectId}` | `PROFESSOR` |
+| Calculer le matching d'équipe | `POST` | `/api/v1/matching/calculate?teamId=...&projectId=...` | Authentifié |
+| Candidatures d'un projet / PFE | `GET` | `/api/v1/matching/project/{projectId}` | `PROFESSOR` |
 
 ---
 
