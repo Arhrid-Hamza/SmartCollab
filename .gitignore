@@ -21,3 +21,4 @@ yarn-error.log*
 
 # Docker local data
 postgres-data/
+.docker_legacy/
