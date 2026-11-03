@@ -39,8 +39,8 @@ flowchart TD
 | Conteneur | Image Docker | Port Hôte : Interne | Base / Rôle | Volumes de Données |
 | :--- | :--- | :--- | :--- | :--- |
 | **`smartcollab-postgres-auth`** | `postgres:16-alpine` | `5431:5432` | `auth_db` (Utilisateurs, JWT, Compétences) | `postgres-auth-data` |
-| **`smartcollab-postgres-project`**| `postgres:16-alpine` | `5433:5432` | `project_db` (Sujets, Exigences, Quotas) | `postgres-project-data` |
-| **`smartcollab-postgres-team`** | `postgres:16-alpine` | `5434:5432` | `team_matching_db` (Équipes, Membres, Scores) | `postgres-team-data` |
+| **`smartcollab-postgres-project`**| `postgres:16-alpine` | `5433:5432` | `project_db` (Sujets PFE & Projets, Exigences, Quotas) | `postgres-project-data` |
+| **`smartcollab-postgres-team`** | `postgres:16-alpine` | `5434:5432` | `team_matching_db` (Équipes, Membres, Scores, Recommandations) | `postgres-team-data` |
 | **`smartcollab-kafka`** | `confluentinc/cp-kafka:7.5.3` | `9092:9092` | Broker Apache Kafka (Mode KRaft) | `/tmp/kraft-combined-logs` |
 
 ---
@@ -57,7 +57,7 @@ Les scripts SQL montés dans `/docker-entrypoint-initdb.d/` préparent automatiq
 2. **`02-project-init.sql`** :
    - Tables : `projects`, `project_requirements`.
    - Contraintes : `min_team_size > 0`, `max_team_size >= min_team_size`, `CHECK(minimum_level BETWEEN 1 AND 5)`.
-   - Jeu d'essai : 2 sujets de projets ouverts avec contraintes d'équipes et exigences techniques obligatoires et pondérées.
+   - Jeu d'essai : Sujets de projets académiques et sujets PFE (Projets de Fin d'Études) individuels (`min_team_size = 1, max_team_size = 1`) et collaboratifs (`min = 2, max = 4`) avec exigences techniques obligatoires (veto) et pondérées ($w_i$) couvrant plusieurs stacks (Spring Boot, React, DevOps, IA/Python).
 3. **`03-team-matching-init.sql`** :
    - Tables : `teams`, `team_members`, `matching_scores`.
    - Colonne `score_breakdown` au format `JSONB` pour un requêtage haute performance.
