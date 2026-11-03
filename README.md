@@ -1,4 +1,4 @@
-# 🎓 SmartCollab — Plateforme Microservices Intelligente de Gestion de Projets & Matching de Compétences
+# 🎓 SmartCollab — Plateforme Microservices Intelligente de Gestion de Projets Académiques, Sujets PFE & Matching de Compétences
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2023.0.3-blue.svg)](https://spring.io/projects/spring-cloud)
@@ -17,7 +17,7 @@
 2. [Architecture Microservices & Stack Technique](#-2-architecture-microservices--stack-technique)
 3. [Entités & Modèle de Données Détaillé (ERD)](#-3-entités--modèle-de-données-détaillé-erd)
 4. [Diagramme des Cas d'Utilisation UML (Use Cases)](#-4-diagramme-des-cas-dutilisation-uml-use-cases)
-5. [Moteur Algorithmique de Matching de Compétences](#-5-moteur-algorithmique-de-matching-de-compétences)
+5. [Moteur Algorithmique de Matching & Recommandation](#-5-moteur-algorithmique-de-matching--recommandation)
 6. [Spécification Complète des Dashboards par Rôle](#-6-spécification-complète-des-dashboards-par-rôle)
    - [6.1 Dashboard Étudiant (Student)](#61-dashboard-étudiant-student)
    - [6.2 Dashboard Professeur (Professor)](#62-dashboard-professeur-professor)
@@ -32,16 +32,19 @@
 
 ## 🌟 1. Vue d'Ensemble & Vision du Projet
 
-**SmartCollab** est une plateforme académique cloud-native conçue pour résoudre l'un des problèmes majeurs de l'enseignement supérieur : **la constitution inefficace ou déséquilibrée des équipes d'étudiants pour les projets techniques**.
+**SmartCollab** est une plateforme académique cloud-native conçue pour orchestrer la gestion des **Sujets PFE (Projets de Fin d'Études)** et **Projets Académiques Complexes**, en s'appuyant sur un moteur algorithmique d'adéquation et de recommandation de compétences.
 
 ### Problématique Résolue :
-Dans les cursus d'ingénierie et d'informatique, les projets complexes (Microservices, IA, Full-Stack, Cloud, DevOps) exigent un éventail diversifié de compétences. Les étudiants forment souvent leurs équipes par affinité personnelle, conduisant à des équipes homogènes (ex: 4 profils backend sans compétences frontend ou UI), provoquant des retards, des déséquilibres de charge de travail et des échecs de projet.
+Dans les cursus d'ingénierie et d'informatique :
+1. **Attribution et choix des sujets PFE** : Les étudiants ont souvent du mal à identifier les sujets PFE qui correspondent précisément à leurs compétences réelles et à leurs aspirations professionnelles. De leur côté, les professeurs reçoivent des candidatures inadéquates nécessitant un tri manuel fastidieux.
+2. **Constitution inefficace ou déséquilibrée des équipes** : Pour les projets menés en binôme ou en groupe, les étudiants s'associent généralement par affinité, conduisant à des équipes déséquilibrées (ex: 4 profils backend sans compétences frontend ou DevOps), sources de retards et d'échecs.
 
 ### Solution SmartCollab :
-- **Profilage fin des compétences** : Chaque étudiant déclare ses compétences techniques avec un niveau d'expertise (1 à 5) et ses années d'expérience.
-- **Définition granulaire des besoins de projet** : Les professeurs publient des projets assortis d'exigences techniques précises (niveaux requis, pondérations $w_i$, compétences obligatoires/veto).
-- **Moteur d'adéquation pondérée (Skills Compatibility Engine)** : Évaluation automatique et en temps réel de l'adéquation d'une équipe avec un sujet, alertes sur les compétences manquantes et recommandations de coéquipiers.
-- **Gestion du cycle de vie complet** : De la constitution d'équipe à la soumission, l'évaluation et la validation par l'enseignant.
+- **Profilage fin des compétences** : Chaque étudiant déclare ses compétences techniques avec un niveau d'expertise (1 à 5) et ses années d'expérience, visualisées sous forme de Radar d'expertise.
+- **Publication granulaire des sujets PFE & Projets** : Les enseignants publient des sujets de projets (individuels `min=1` ou en équipe `min=2..4`) avec une description détaillée et des exigences technologiques précises (niveaux requis, pondérations $w_i$, compétences obligatoires/veto).
+- **Moteur de recommandation PFE personnalisé pour chaque étudiant** : L'étudiant dispose d'un flux personnalisé de sujets PFE classés par score de compatibilité décroissant (ex: *95% Match*), avec mise en évidence des prérequis satisfaits et des compétences manquantes.
+- **Moteur d'adéquation pondérée d'équipe (Skills Compatibility Engine)** : Évaluation automatique et en temps réel de l'adéquation d'une équipe avec un sujet, alertes sur les compétences manquantes et recommandations de coéquipiers.
+- **Gestion du cycle de vie complet** : De la publication du PFE, la recommandation, la postulation, jusqu'à la revue et la validation par l'enseignant.
 
 ---
 
@@ -294,11 +297,12 @@ flowchart LR
         UC_Radar(["Visualiser Radar de compétences"])
     end
 
-    subgraph Module_Projets["📁 Module Gestion des Sujets"]
-        UC_CreateProj(["Publier un sujet de projet"])
+    subgraph Module_Projets["📁 Module Gestion des Sujets & PFE"]
+        UC_CreateProj(["Publier un sujet de projet / PFE"])
         UC_DefReq(["Définir exigences pondérées (w_i)"])
         UC_SetVeto(["Activer critère obligatoire (Veto)"])
         UC_BrowseProj(["Consulter catalogue des sujets"])
+        UC_BrowsePfeRec(["Consulter sujets PFE recommandés (Feed)"])
         UC_LockProj(["Verrouiller le sujet (Statut ASSIGNED)"])
     end
 
@@ -309,13 +313,13 @@ flowchart LR
         UC_SimMatch(["Simuler matching équipe-projet"])
         UC_CalcScore(["Calculer score adéquation pondéré"])
         UC_RecruitHelp(["Suggérer profils à recruter"])
-        UC_SubmitTeam(["Déposer candidature de l'équipe"])
+        UC_SubmitTeam(["Déposer candidature (Individuelle ou Équipe)"])
     end
 
     subgraph Module_Revue["📋 Module Revue & Décision Enseignant"]
-        UC_ReviewTeams(["Consulter classement des équipes"])
+        UC_ReviewTeams(["Consulter classement des candidatures"])
         UC_InspectBreakdown(["Analyser décomposition (Breakdown)"])
-        UC_ValidateTeam(["Approuver l'équipe candidate"])
+        UC_ValidateTeam(["Approuver l'étudiant ou l'équipe"])
         UC_RejectTeam(["Rejeter candidature avec motif"])
     end
 
@@ -331,6 +335,7 @@ flowchart LR
     Etu --> UC_Profile
     Etu --> UC_Skills
     Etu --> UC_BrowseProj
+    Etu --> UC_BrowsePfeRec
     Etu --> UC_CreateTeam
     Etu --> UC_SimMatch
     Etu --> UC_SubmitTeam
@@ -354,6 +359,7 @@ flowchart LR
     UC_CreateProj -.->|"«include»"| UC_DefReq
     UC_CreateTeam -.->|"«include»"| UC_Login
     UC_CreateTeam -.->|"«include»"| UC_InviteMember
+    UC_BrowsePfeRec -.->|"«include»"| UC_CalcScore
     UC_SubmitTeam -.->|"«include»"| UC_CheckTeamSize
     UC_SimMatch -.->|"«include»"| UC_CalcScore
     UC_CalcScore --- System
@@ -378,7 +384,8 @@ flowchart LR
 | **`UC_Radar` (Visualiser Radar)** | `«extend»` | **`UC_Skills`** | Condition : Déclenché lorsque l'étudiant a renseigné au moins 3 compétences. |
 | **`UC_CreateProj` (Publier sujet)** | `«include»` | **`UC_DefReq`** | Tout projet exige obligatoirement au moins une compétence pondérée ($w_i > 0$). |
 | **`UC_SetVeto` (Activer veto)** | `«extend»` | **`UC_DefReq`** | Condition : L'enseignant coche l'exigence comme critique (`isMandatory = true`). |
-| **`UC_SubmitTeam` (Candidater)** | `«include»` | **`UC_CheckTeamSize`**| Vérifie que l'équipe respecte : $\text{minTeamSize} \le |\text{membres}| \le \text{maxTeamSize}$. |
+| **`UC_SubmitTeam` (Candidater)** | `«include»` | **`UC_CheckTeamSize`**| Vérifie que l'équipe respecte : $\text{minTeamSize} \le |\text{membres}| \le \text{maxTeamSize}$ (1 pour PFE individuel). |
+| **`UC_BrowsePfeRec` (Recommandations PFE)** | `«include»` | **`UC_CalcScore`** | Évalue et classe automatiquement les sujets PFE ouverts selon les compétences de l'étudiant connecté. |
 | **`UC_SimMatch` (Simuler)** | `«include»` | **`UC_CalcScore`** | Exécution systématique du `SkillMatchingEngine` par le backend. |
 | **`UC_RecruitHelp` (Recommandation)**| `«extend»` | **`UC_SimMatch`** | Condition : Déclenché si une compétence obligatoire manque ou si le score est insuffisant. |
 | **`UC_LockProj` (Verrouiller projet)** | `«extend»` | **`UC_ValidateTeam`**| Condition : Déclenché automatiquement lorsque le nombre d'équipes approuvées atteint le quota. |
@@ -386,9 +393,9 @@ flowchart LR
 
 ---
 
-## ⚙️ 5. Moteur Algorithmique de Matching de Compétences
+## ⚙️ 5. Moteur Algorithmique de Matching & Recommandation
 
-Le cœur d'innovation de SmartCollab repose sur le composant **`SkillMatchingEngine`**.
+Le cœur d'innovation de SmartCollab repose sur le composant **`SkillMatchingEngine`**, capable d'opérer aussi bien à l'échelle **collective (Équipe $\leftrightarrow$ Projet)** qu'à l'échelle **individuelle (Étudiant $\leftrightarrow$ Sujets PFE)**.
 
 ### 1. Calcul du Niveau d'Équipe pour une Compétence
 Pour une compétence requise $s$, le niveau disponible au sein de l'équipe est déterminé par le niveau maximal détenu par l'un des membres de l'équipe :
@@ -407,7 +414,7 @@ Le score global d'adéquation (exprimé en pourcentage de 0 à 100) est la moyen
 
 $$\text{Score Global} = \frac{\sum_{i=1}^{n} w_i \times \text{Ratio}(s_i)}{\sum_{i=1}^{n} w_i} \times 100$$
 
-### 4. Règle de Veto et Classification des Équipes
+### 4. Règle de Veto et Classification des Candidatures
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -415,18 +422,36 @@ $$\text{Score Global} = \frac{\sum_{i=1}^{n} w_i \times \text{Ratio}(s_i)}{\sum_
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │
                   Y a-t-il une compétence obligatoire    
-                  (isMandatory = true) avec L_team < L_req ?
+                  (isMandatory = true) avec L_disponible < L_req ?
                                     │
                    ┌────────────────┴────────────────┐
                  OUI                                NON
                    │                                 │
                    ▼                                 ▼
       [BLOCKED_MANDATORY_MISSING]        Évaluation selon le Score :
-      - Statut non éligible              - Score >= 85% : [EXCELLENT] (Idéal)
-      - Liste explicite des manques      - Score >= 70% : [GOOD] (Équilibré)
+      - Statut non éligible / bloqué     - Score >= 85% : [EXCELLENT] (Idéal / Fortement recommandé)
+      - Liste explicite des manques      - Score >= 70% : [GOOD] (Équilibré / Recommandé)
       - Suggestion de profils à recruter - Score >= 50% : [MODERATE] (Moyen)
                                          - Score <  50% : [INSUFFICIENT] (Inadéquat)
 ```
+
+### 5. Recommandation Personnalisée de Sujets PFE pour chaque Étudiant
+
+Pour orienter un étudiant vers les sujets PFE les plus pertinents par rapport à son profil, le moteur applique l'algorithme sur l'ensemble des sujets PFE publiés (`status = 'PUBLISHED'`) :
+
+1. **Niveau individuel de l'étudiant** :
+   $$L_{student}(s) = \text{Niveau}(\text{étudiant}, s) \quad (\text{0 si non déclarée})$$
+
+2. **Ratio de couverture individuel** :
+   $$\text{Ratio}_{student}(s_i) = \min\left(1.0, \frac{L_{student}(s_i)}{L_{req}(s_i)}\right)$$
+
+3. **Score de Match PFE** :
+   $$\text{Score}_{PFE}(\text{étudiant}, \text{projet}) = \frac{\sum_{i=1}^{n} w_i \times \text{Ratio}_{student}(s_i)}{\sum_{i=1}^{n} w_i} \times 100$$
+
+4. **Génération du Feed de Recommandations** :
+   - Requête via l'endpoint Gateway : `GET /api/v1/matching/recommendations/students/{studentId}`.
+   - Tri automatique de la collection par `Score_PFE` décroissant.
+   - Présentation à l'étudiant des sujets avec mise en évidence des technologies maîtrisées (badges verts) et des technologies à acquérir ou bloquantes (badges ambrés/rouges).
 
 ---
 
@@ -457,7 +482,7 @@ flowchart LR
 
 ### 6.1 Dashboard Étudiant (Student)
 
-L'espace de l'étudiant est centré sur la valorisation de son profil, la formation de son équipe et l'analyse de compatibilité avec les sujets proposés.
+L'espace de l'étudiant est centré sur la valorisation de son profil, la découverte personnalisée de sujets PFE adaptés à ses compétences, et la formation éventuelle d'équipes.
 
 #### Composants Clés & Fonctionnalités :
 1. **Fiche Profil & Compétences Personnelles** :
@@ -466,50 +491,56 @@ L'espace de l'étudiant est centré sur la valorisation de son profil, la format
    - Visualisation sous forme de **Diagramme Radar** mettant en valeur ses forces (ex: Backend 5/5, DevOps 4/5).
    - Bio et numéro d'étudiant (`student_identifier`).
 
-2. **Espace « Mon Équipe »** :
+2. **Feed Intelligent de Recommandations PFE & Sujets** :
+   - Flux automatisé classant tous les sujets PFE publiés par les enseignants selon le **Score d'Adéquation Individuel** de l'étudiant.
+   - Badge d'affinité instantané sur chaque carte de sujet : **⭐ 95% Match**, **👍 80% Match**, etc.
+   - Décomposition visuelle des exigences : technologies maîtrisées (badges verts), niveau partiel (badges jaunes), et compétences manquantes ou critères veto (badges rouges).
+   - Bouton de candidature directe pour les sujets PFE individuels (`min_team_size = 1`).
+
+3. **Espace « Mon Équipe » & Binômes** :
    - **Mode Leader** : Créer une équipe, choisir le nom, rechercher des camarades par email ou nom, envoyer des invitations, désigner les rôles (`LEADER`, `MEMBER`).
    - **Mode Membre** : Consulter son équipe active, voir les autres membres et leurs compétences combinées.
    - **Matrice des Compétences d'Équipe** : Tableau croisé récapitulant les forces du groupe et identifiant les points faibles (lacunes en UI, en déploiement, etc.).
 
-3. **Catalogue des Projets & Matching Studio** :
-   - Liste des projets ouverts avec filtres par technologie ou professeur.
+4. **Catalogue des Projets & Matching Studio d'Équipe** :
+   - Liste des projets collaboratifs avec filtres par technologie ou professeur.
    - **Simulateur de Matching en temps réel** : L'étudiant sélectionne son équipe et un projet :
      - Affichage du Score Global (% de compatibilité).
      - Badge visuel : `EXCELLENT`, `GOOD`, `MODERATE` ou `BLOCKED`.
      - Tableau détaillé compétence par compétence : Niveau de l'équipe vs Niveau exigé par le professeur, coefficient de poids, indicateur de veto.
      - **Assistant de recrutement prédictif** : Si une compétence obligatoire manque, le studio suggère le profil type à recruter pour débloquer la candidature.
 
-4. **Suivi des Candidatures** :
-   - Statut de la candidature de l'équipe (`EN ATTENTE`, `APPROUVÉE`, `REFUSÉE`).
+5. **Suivi des Candidatures** :
+   - Statut des candidatures individuelles ou d'équipe (`EN ATTENTE`, `APPROUVÉE`, `REFUSÉE`).
    - Consultation des retours ou remarques du professeur encadrant.
 
 ---
 
 ### 6.2 Dashboard Professeur (Professor)
 
-L'espace du professeur lui permet d'encadrer les projets, de formaliser avec précision ses attentes techniques et de sélectionner les équipes les plus compétentes de manière objective.
+L'espace du professeur lui permet de déposer ses sujets PFE et projets académiques, de formaliser avec précision ses attentes technologiques et de sélectionner les candidats les plus compétents de manière objective.
 
 #### Composants Clés & Fonctionnalités :
-1. **Atelier de Conception de Sujets (Project Studio)** :
-   - Formulaire de création de projet : Titre, description détaillée, livrables attendus, année académique, date limite de soumission.
-   - Définition des quotas : Nombre d'étudiants minimum et maximum par groupe (ex: 3 à 4).
+1. **Atelier de Conception de Sujets PFE & Projets (Project Studio)** :
+   - Formulaire de création : Titre du sujet, description détaillée, contexte et livrables attendus, année académique, date limite de candidature.
+   - Définition du format et des quotas : Sujet PFE individuel (`min_team_size = 1, max_team_size = 1`) ou projet en groupe (`min = 2, max = 4`).
    - **Éditeur d'Exigences Techniques Avancées** :
-     - Ajout de compétences depuis le catalogue.
+     - Sélection des technologies souhaitées depuis le catalogue de compétences.
      - Définition du niveau minimum requis (1 à 5).
-     - Définition de la pondération (ex: `1.0` pour la techno principale, `0.5` pour les outils secondaires).
-     - Bascule **Critère Obligatoire (Veto)** : coche pour rendre la compétence bloquante.
+     - Définition de la pondération (ex: `1.0` pour la technologie centrale du PFE, `0.5` pour un outil d'accompagnement).
+     - Bascule **Critère Obligatoire (Veto)** : activation pour bloquer les candidatures ne disposant pas du niveau minimum exigé.
    - Enregistrement en brouillon (`DRAFT`) ou publication immédiate (`PUBLISHED`).
 
-2. **Tableau de Bord des Candidatures & Équipes** :
-   - Vue Kanban ou tabulaire des équipes ayant postulé à chaque projet du professeur.
-   - Classement automatique des équipes par **Score de Matching décroissant**.
-   - Alerte visuelle immédiate sur les équipes en veto (`BLOCKED_MANDATORY_MISSING`) avec le détail des compétences défaillantes.
-   - Vue détaillée de la composition de chaque équipe (noms des étudiants, niveaux individuels et cumulés).
+2. **Tableau de Bord des Candidatures & Sélection** :
+   - Vue tabulaire et Kanban des candidatures d'étudiants (pour les PFE) ou des équipes (pour les projets de groupe).
+   - Classement automatique des candidats par **Score de Matching décroissant**.
+   - Alerte visuelle immédiate sur les candidatures bloquées par veto (`BLOCKED_MANDATORY_MISSING`) avec mise en évidence des lacunes.
+   - Vue détaillée du profil de l'étudiant candidat (compétences, niveau, bio) ou de la composition du binôme/groupe.
 
 3. **Centre de Décision & Validation** :
-   - Boutons d'action rapide : **Valider l'équipe (`APPROVE`)** ou **Refuser (`REJECT`)**.
-   - En cas d'approbation : clôture automatique ou décrémentation des places disponibles sur le sujet, et notification aux étudiants.
-   - Export récapitulatif de la composition finale des groupes (CSV / PDF).
+   - Boutons d'action rapide : **Valider la candidature (`APPROVE`)** ou **Refuser (`REJECT`)**.
+   - En cas d'approbation : clôture automatique ou décrémentation des places disponibles sur le sujet, et notification instantanée.
+   - Export récapitulatif des attributions de sujets PFE (CSV / PDF).
 
 ---
 
@@ -684,6 +715,7 @@ Toutes les requêtes passent par l'API Gateway sur le port **`8080`**.
 | `POST` | `/api/v1/teams` | `STUDENT` | Création d'une nouvelle équipe | Req: `{ name, projectId? }` |
 | `POST` | `/api/v1/teams/{id}/members/{studentId}` | `STUDENT` | Ajout d'un étudiant dans l'équipe | Path params : `id`, `studentId` |
 | `POST` | `/api/v1/matching/calculate` | Authentifié | Calcul d'affinité d'équipe | Query params: `teamId`, `projectId`<br>Res: `MatchResultDto` |
+| `GET` | `/api/v1/matching/recommendations/students/{studentId}` | `STUDENT`, `PROFESSOR` | **Recommandation PFE :** Liste des sujets PFE classés par score de compatibilité pour l'étudiant | Res: `List<PfeRecommendationDto>` (project, score, mandatorySatisfied, breakdown) |
 | `GET` | `/api/v1/matching/project/{projectId}` | `PROFESSOR`, `ADMIN` | Scores de toutes les équipes candidates | Res: `List<MatchingScore>` |
 
 ---

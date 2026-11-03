@@ -1,16 +1,20 @@
 # 🌟 À Propos de SmartCollab (About)
 
-> **Plateforme Cloud-Native Intelligente de Gestion de Projets Académiques et de Matching de Compétences Étudiantes**
+> **Plateforme Cloud-Native Intelligente de Gestion de Projets Académiques, Sujets PFE et de Matching / Recommandation de Compétences Étudiantes**
 
 ---
 
 ## 🎯 1. Vision & Mission du Projet
 
-Dans les écoles d'ingénieurs et universités techniques, la réussite d'un projet informatique complexe (Microservices, Intelligence Artificielle, Full-Stack, IoT, Cloud) repose avant tout sur la **complémentarité des compétences** au sein de l'équipe étudiante.
+Dans les écoles d'ingénieurs et universités techniques, la réussite d'un projet informatique complexe (Projets de Fin d'Études - PFE, Projets d'Intégration, Microservices, Intelligence Artificielle, Full-Stack, IoT, Cloud) repose sur deux piliers majeurs :
+1. **L'adéquation profil-sujet** : Trouver le sujet PFE idéal correspondant aux aptitudes et ambitions technologiques de l'étudiant.
+2. **La complémentarité des compétences** au sein des équipes d'étudiants lorsqu'il s'agit de projets collaboratifs ou en binôme.
 
-Traditionnellement, les équipes se forment par affinité personnelle ou géographique, aboutissant souvent à des équipes déséquilibrées (ex: 4 profils backend sans aucune compétence frontend ou DevOps). Ce manque d'équilibre entraîne des surcharges individuelles, des retards de livraison et des projets inachevés.
+Traditionnellement, le choix des sujets PFE et la formation des équipes se font de manière manuelle, arbitraire ou par affinité personnelle, aboutissant souvent à des inadéquations techniques (ex: un étudiant affecté à un sujet exigeant des technologies qu'il ne maîtrise pas, ou des équipes déséquilibrées sans compétences UI ou DevOps).
 
-**SmartCollab** répond à ce défi en introduisant un moteur algorithmique d'adéquation de compétences (*Skills Compatibility Engine*). La plateforme permet aux étudiants de constituer des équipes équilibrées et aide les enseignants à évaluer objectivement l'adéquation technique des groupes candidats à leurs projets.
+**SmartCollab** répond à ce défi en introduisant un double moteur algorithmique d'adéquation de compétences (*Skills Compatibility & Recommendation Engine*) :
+- **Recommandation individualisée de sujets PFE** pour orienter chaque étudiant vers les sujets les plus pertinents par rapport à son profil technique.
+- **Constitution et évaluation stratégique d'équipes** pour garantir la viabilité technique des projets académiques de groupe.
 
 ---
 
@@ -18,13 +22,14 @@ Traditionnellement, les équipes se forment par affinité personnelle ou géogra
 
 ### 🎓 Pour les Étudiants
 - **Valorisation du Profil Technique** : Déclaration fine de compétences standardisées par niveau (1 à 5) et visualisation sous forme de diagramme Radar d'expertise.
+- **Recommandation Intelligente de Sujets PFE** : Flux personnalisé de sujets PFE proposés par les enseignants, classés par score d'adéquation décroissant (ex: *95% Match*), avec mise en exergue des technologies acquises et des prérequis manquants.
 - **Constitution Stratégique d'Équipes** : Recherche de coéquipiers et analyse en direct des forces et faiblesses du groupe.
 - **Matching Studio Prédictif** : Simulation de compatibilité avec les sujets proposés par les professeurs, calcul d'un score d'adéquation pondéré (0 à 100%) et recommandations ciblées de profils à recruter pour combler les lacunes bloquantes (veto).
 
 ### 👨‍🏫 Pour les Professeurs
-- **Atelier de Conception de Sujets** : Publication de projets académiques avec contraintes de taille d'équipe (min/max), échéances et exigences techniques pondérées ($w_i$).
+- **Atelier de Conception de Sujets PFE & Projets** : Publication de sujets PFE ou projets académiques avec description détaillée, livrables attendus, contraintes de taille d'équipe (individuel `min=1, max=1` ou binôme/groupe `min=2, max=4`), échéances et exigences techniques pondérées ($w_i$).
 - **Critères Obligatoires (Veto)** : Possibilité de rendre certaines compétences indispensables pour empêcher les candidatures inadéquates.
-- **Revue Objective des Candidatures** : Classement automatisé des équipes postulantes par score de compatibilité décroissant et validation en un clic.
+- **Revue Objective des Candidatures** : Classement automatisé des étudiants et équipes postulants par score de compatibilité décroissant et validation en un clic.
 
 ### 🛡️ Pour les Administrateurs
 - **Gouvernance Globale** : Gestion des utilisateurs (étudiants, enseignants), attribution des rôles et contrôle d'accès (RBAC).
