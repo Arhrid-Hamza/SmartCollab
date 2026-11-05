@@ -35,7 +35,6 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Seed default skills
         if (skillRepository.count() == 0) {
             List<Skill> defaultSkills = List.of(
                     new Skill("Java / Spring Boot", "BACKEND", "Développement backend robuste avec Spring Boot et Spring Cloud"),
@@ -51,7 +50,6 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ [DataInitializer] Seeded 8 default skills");
         }
 
-        // 1. Seed or update Student: hamza.arhrid@emsi-edu.ma
         User hamza = userRepository.findByEmail("hamza.arhrid@emsi-edu.ma").orElse(null);
         if (hamza == null) {
             hamza = new User();
@@ -72,7 +70,6 @@ public class DataInitializer implements CommandLineRunner {
         hamza = userRepository.save(hamza);
         System.out.println("✅ [DataInitializer] Seeded/Updated student: hamza.arhrid@emsi-edu.ma");
 
-        // 2. Seed or update Professor: karim.benali@emsi-edu.ma
         User profKarim = userRepository.findByEmail("karim.benali@emsi-edu.ma").orElse(null);
         if (profKarim == null) {
             profKarim = new User();
@@ -88,7 +85,6 @@ public class DataInitializer implements CommandLineRunner {
         profKarim = userRepository.save(profKarim);
         System.out.println("✅ [DataInitializer] Seeded/Updated professor: karim.benali@emsi-edu.ma");
 
-        // 3. Seed or update Admin: admin@emsi-edu.ma
         User adminEmsi = userRepository.findByEmail("admin@emsi-edu.ma").orElse(null);
         if (adminEmsi == null) {
             adminEmsi = new User();
@@ -103,14 +99,12 @@ public class DataInitializer implements CommandLineRunner {
         adminEmsi = userRepository.save(adminEmsi);
         System.out.println("✅ [DataInitializer] Seeded/Updated admin: admin@emsi-edu.ma");
 
-        // 4. Update legacy admin@smartcollab.edu password to Admin123!
         User adminLegacy = userRepository.findByEmail("admin@smartcollab.edu").orElse(null);
         if (adminLegacy != null) {
             adminLegacy.setPasswordHash(passwordEncoder.encode("Admin123!"));
             userRepository.save(adminLegacy);
         }
 
-        // Seed EMSI project subjects if empty
         if (subjectRepository.count() == 0) {
             ProjectSubject pfe1 = new ProjectSubject(
                     "Conception & Déploiement d'une Architecture Microservices et CI/CD Cloud-Native",
@@ -187,7 +181,6 @@ public class DataInitializer implements CommandLineRunner {
             subjectRepository.saveAll(List.of(pfe1, pfe2, pfe3, pfa1, pfa2));
             System.out.println("✅ [DataInitializer] Seeded 5 EMSI project subjects (PFE & PFA)");
 
-            // Seed a student group
             StudentGroup group = new StudentGroup(
                     "5DSIO Group Alpha",
                     "Ingénierie Informatique et Réseaux",
@@ -200,7 +193,6 @@ public class DataInitializer implements CommandLineRunner {
             groupRepository.save(group);
             System.out.println("✅ [DataInitializer] Seeded EMSI student group: 5DSIO Group Alpha");
 
-            // Seed an application for Hamza
             SubjectApplication application = new SubjectApplication(
                     pfe1.getId(),
                     pfe1.getTitle(),

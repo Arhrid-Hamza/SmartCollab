@@ -87,7 +87,6 @@ public class SubjectApplicationService {
         }
         app.setReviewedAt(OffsetDateTime.now());
 
-        // If approved, update subject assigned count
         if (request.status() == ApplicationStatus.ACCEPTE) {
             ProjectSubject subject = subjectRepository.findById(app.getSubjectId()).orElse(null);
             if (subject != null) {
