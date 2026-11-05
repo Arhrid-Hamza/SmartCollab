@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { EmsiLogo } from './EmsiLogo';
 import { Menu, Bell } from 'lucide-react';
 
-export const HeaderBar = ({ onToggleSidebar }) => {
+export const HeaderBar = ({ onToggleSidebar, onNavigateProfile }) => {
   const { user } = useAuth();
   const isHamza = user?.email === 'hamza.arhrid@emsi-edu.ma' || user?.firstName === 'Hamza';
 
@@ -39,7 +39,12 @@ export const HeaderBar = ({ onToggleSidebar }) => {
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400"></span>
           </button>
 
-          <div className="flex items-center space-x-2.5 pl-2">
+          <button
+            type="button"
+            onClick={onNavigateProfile}
+            title="Accéder à mon profil"
+            className="flex items-center space-x-2.5 pl-2 p-1.5 rounded-xl hover:bg-white/10 transition-all text-left focus:outline-none"
+          >
             {isHamza ? (
               <img
                 src="/hamza-avatar.png"
@@ -59,7 +64,7 @@ export const HeaderBar = ({ onToggleSidebar }) => {
                 {user?.role === 'PROFESSOR' ? 'Enseignant / Encadrant' : user?.role === 'ADMIN' ? 'Coordination EMSI' : '5DSIO G2 - G22'}
               </span>
             </div>
-          </div>
+          </button>
         </div>
       </div>
     </header>
