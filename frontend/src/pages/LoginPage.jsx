@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { EmsiLogo } from '../components/EmsiLogo';
 import {
   GraduationCap,
   Lock,
@@ -12,7 +13,9 @@ import {
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  BookOpen
+  BookOpen,
+  Building,
+  CheckCircle2
 } from 'lucide-react';
 
 export const LoginPage = () => {
@@ -31,31 +34,37 @@ export const LoginPage = () => {
   const [lastName, setLastName] = useState('');
   const [role, setRole] = useState('STUDENT');
   const [studentId, setStudentId] = useState('');
+  const [filiere, setFiliere] = useState('Ingénierie Informatique et Réseaux');
+  const [niveau, setNiveau] = useState('5ème année');
+  const [campus, setCampus] = useState('CASA ORANGERS');
 
   const demoAccounts = [
     {
       role: 'STUDENT',
-      label: 'Étudiant Démo',
-      email: 'student@smartcollab.edu',
+      label: 'Hamza Arhrid',
+      sub: 'Élève Ingénieur (5DSIO)',
+      email: 'hamza.arhrid@emsi-edu.ma',
       password: 'Student123!',
       icon: GraduationCap,
-      color: 'hover:border-indigo-500 hover:bg-indigo-50/50 text-indigo-700',
+      color: 'border-emerald-600 bg-emerald-50/60 text-emerald-900 hover:bg-emerald-100/70',
     },
     {
       role: 'PROFESSOR',
-      label: 'Professeur Démo',
-      email: 'prof@smartcollab.edu',
+      label: 'Prof. Karim Benali',
+      sub: 'Enseignant Encadrant',
+      email: 'karim.benali@emsi-edu.ma',
       password: 'Prof123!',
       icon: BookOpen,
-      color: 'hover:border-emerald-500 hover:bg-emerald-50/50 text-emerald-700',
+      color: 'border-blue-600 bg-blue-50/60 text-blue-900 hover:bg-blue-100/70',
     },
     {
       role: 'ADMIN',
-      label: 'Administrateur',
-      email: 'admin@smartcollab.edu',
+      label: 'Direction EMSI',
+      sub: 'Coordination PFE',
+      email: 'admin@emsi-edu.ma',
       password: 'Admin123!',
       icon: ShieldCheck,
-      color: 'hover:border-purple-500 hover:bg-purple-50/50 text-purple-700',
+      color: 'border-purple-600 bg-purple-50/60 text-purple-900 hover:bg-purple-100/70',
     },
   ];
 
@@ -80,6 +89,12 @@ export const LoginPage = () => {
           lastName,
           role,
           studentIdentifier: role === 'STUDENT' ? studentId : null,
+          matricule: role === 'STUDENT' ? studentId : null,
+          filiere,
+          niveau,
+          campus,
+          classeGroup: role === 'STUDENT' ? '5DSIO G2 - G22' : null,
+          academicYear: '2026-2027'
         });
       } else {
         await login(email, password);
@@ -95,27 +110,31 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-indigo-50/30 to-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white shadow-xl shadow-indigo-200 mb-4">
-          <GraduationCap className="w-9 h-9" />
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-slate-50 to-slate-100 flex flex-col justify-center py-10 sm:px-6 lg:px-8">
+      {/* Top EMSI Branding */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
+        <div className="flex justify-center mb-2">
+          <EmsiLogo variant="green" size="large" showSubtitle={true} />
         </div>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          SmartCollab
-        </h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Plateforme Intelligente de Matching PFE & Compétences
-        </p>
+
+        <div>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+            EmsiCollab
+          </h2>
+          <p className="text-xs text-slate-600 mt-1">
+            Portail Officiel de Gestion des Sujets PFE, PFA et Choix de Projets
+          </p>
+        </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl shadow-slate-200/50 sm:rounded-2xl sm:px-10 border border-slate-200/80">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
+        <div className="bg-white py-7 px-6 shadow-xl shadow-slate-200/60 sm:rounded-3xl sm:px-9 border border-slate-200/90 space-y-6">
           {/* Quick Demo Accounts Selection */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                Connexion Rapide (Comptes Démo)
+                Accès Rapide (Comptes Démo EMSI)
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -126,167 +145,189 @@ export const LoginPage = () => {
                     key={acc.role}
                     type="button"
                     onClick={() => handleFillDemo(acc)}
-                    className={`flex flex-col items-center p-2.5 rounded-xl border border-slate-200 text-xs font-medium transition-all ${acc.color}`}
+                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-xs font-bold transition-all text-center ${acc.color}`}
                   >
                     <Icon className="w-4 h-4 mb-1" />
-                    <span className="truncate w-full text-center">{acc.label}</span>
+                    <span className="truncate w-full text-[11px] font-bold leading-tight">{acc.label}</span>
+                    <span className="text-[9px] opacity-75 font-normal truncate w-full">{acc.sub}</span>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <div className="relative my-4">
+          <div className="relative my-2">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-slate-400 font-medium">Ou avec vos identifiants</span>
+            <div className="relative flex justify-center text-[11px] uppercase">
+              <span className="bg-white px-3 text-slate-400 font-semibold tracking-wider">
+                Ou avec vos identifiants institutionnels
+              </span>
             </div>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-rose-700 text-sm">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-500 mt-0.5" />
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-rose-700 text-xs">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-500 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Registration specific fields */}
             {isRegister && (
-              <>
+              <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Prénom</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Prénom</label>
                     <input
                       type="text"
                       required
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                       placeholder="Hamza"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emsi-600"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nom</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Nom</label>
                     <input
                       type="text"
                       required
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                       placeholder="Arhrid"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emsi-600"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Rôle sur la plateforme</label>
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white"
-                  >
-                    <option value="STUDENT">Étudiant (STUDENT)</option>
-                    <option value="PROFESSOR">Professeur (PROFESSOR)</option>
-                    <option value="ADMIN">Administrateur (ADMIN)</option>
-                  </select>
-                </div>
-
-                {role === 'STUDENT' && (
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">N° Étudiant / CNE</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Rôle</label>
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emsi-600 bg-white"
+                    >
+                      <option value="STUDENT">Élève Ingénieur</option>
+                      <option value="PROFESSOR">Professeur</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Matricule</label>
                     <input
                       type="text"
                       value={studentId}
                       onChange={(e) => setStudentId(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                      placeholder="STU-2026-001"
+                      placeholder="C-2025-000564"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emsi-600 font-mono"
                     />
                   </div>
-                )}
-              </>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Filière</label>
+                    <select
+                      value={filiere}
+                      onChange={(e) => setFiliere(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emsi-600 bg-white"
+                    >
+                      <option value="Ingénierie Informatique et Réseaux">IIR</option>
+                      <option value="Ingénierie Financière & Audit">IFA</option>
+                      <option value="Génie Civil">Génie Civil</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Niveau</label>
+                    <select
+                      value={niveau}
+                      onChange={(e) => setNiveau(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emsi-600 bg-white"
+                    >
+                      <option value="5ème année">5ème année</option>
+                      <option value="4ème année">4ème année</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             )}
 
+            {/* Email */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Adresse Email</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Email Éducatif EMSI :
+              </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                  placeholder="nom@smartcollab.edu"
+                  placeholder="nom.prenom@emsi-edu.ma"
+                  className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emsi-600"
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Mot de Passe</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Mot de passe :
+              </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-10 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                   placeholder="••••••••"
+                  className="w-full pl-9 pr-9 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emsi-600"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md shadow-indigo-200 transition-all disabled:opacity-50"
+              className="w-full py-3 px-4 rounded-xl bg-emsi-700 hover:bg-emsi-800 text-white text-xs font-bold transition-all shadow-md shadow-emerald-800/20 flex items-center justify-center gap-2 mt-2"
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>{isRegister ? 'Créer mon compte' : 'Se connecter'}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
+              <span>{loading ? 'Connexion en cours...' : (isRegister ? "S'inscrire sur EmsiCollab" : 'Se connecter')}</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-slate-500">
-            {isRegister ? (
-              <p>
-                Vous possédez déjà un compte ?{' '}
-                <button
-                  type="button"
-                  onClick={() => setIsRegister(false)}
-                  className="font-semibold text-indigo-600 hover:underline"
-                >
-                  Connectez-vous
-                </button>
-              </p>
-            ) : (
-              <p>
-                Nouveau sur SmartCollab ?{' '}
-                <button
-                  type="button"
-                  onClick={() => setIsRegister(true)}
-                  className="font-semibold text-indigo-600 hover:underline"
-                >
-                  Créer un compte
-                </button>
-              </p>
-            )}
+          {/* Toggle Register / Login */}
+          <div className="text-center pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegister(!isRegister);
+                setError('');
+              }}
+              className="text-xs font-semibold text-emsi-700 hover:text-emsi-800"
+            >
+              {isRegister ? 'Déjà un compte ? Connectez-vous' : "Première visite ? Créer un profil étudiant"}
+            </button>
           </div>
         </div>
+
+        {/* Footer info */}
+        <p className="text-center text-[11px] text-slate-500 mt-6">
+          © {new Date().getFullYear()} École Marocaine des Sciences de l'Ingénieur (EMSI) — Membre d'Honoris United Universities
+        </p>
       </div>
     </div>
   );
