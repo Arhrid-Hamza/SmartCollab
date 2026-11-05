@@ -29,6 +29,10 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
+        if (!request.email().toLowerCase().endsWith("@emsi-edu.ma")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Seules les adresses institutionnelles @emsi-edu.ma sont autorisées");
+        }
+
         if (userRepository.existsByEmail(request.email())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is already registered");
         }
