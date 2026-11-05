@@ -1,165 +1,110 @@
-# ⚙️ SmartCollab — Pôle Back-End (Microservices Spring Boot & Cloud)
+# ⚙️ EmsiCollab — Pôle Back-End (Architecture Microservices Spring Boot)
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2023.0.3-blue.svg)](https://spring.io/projects/spring-cloud)
-[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
-[![Apache Kafka](https://img.shields.io/badge/Kafka-KRaft-black.svg)](https://kafka.apache.org/)
+[![Java](https://img.shields.io/badge/Java-21%20LTS-orange.svg)](https://www.oracle.com/java/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20Alpine-336791.svg)](https://www.postgresql.org/)
+[![Spring Security](https://img.shields.io/badge/Spring%20Security-6.3-red.svg)](https://spring.io/projects/spring-security)
+[![JWT](https://img.shields.io/badge/JWT-jjwt%200.12.6-purple.svg)](https://jwt.io/)
 
-Bienvenue sur la branche **`backend`** de SmartCollab ! Cette branche regroupe l'ensemble des microservices métier et d'infrastructure développés en **Java 21 LTS** avec **Spring Boot 3** et **Spring Cloud**.
+Bienvenue sur la branche **`backend`** d'**EmsiCollab** ! Cette branche regroupe les microservices métier développés en **Java 21 LTS** avec **Spring Boot 3.3.4**, persistance relationnelle PostgreSQL et sécurisation par tokens JWT sans état (Stateless).
 
 ---
 
-## 🏛️ 1. Architecture des Modules & Microservices
-
-Le backend applique le patron d'isolation **Database-per-Service** et les principes du **Domain-Driven Design (DDD)** :
+## 🏛️ 1. Architecture & Responsabilités des Microservices
 
 ```text
 backend/
-├── pom.xml                     # POM parent multi-modules (gestion des dépendances & versions)
-├── common-dtos/                # Bibliothèque partagée : DTOs communs & Événements Kafka
-├── discovery-service/          # Netflix Eureka Server (Registre dynamique des instances)
-├── config-service/             # Spring Cloud Config Server (Configurations centralisées)
-├── gateway-service/            # Spring Cloud Gateway (Filtre JWT réactif & Routage)
-├── auth-service/               # Gestion des utilisateurs, rôles, JWT & catalogue des skills
-├── project-service/            # Sujets de projets, exigences pondérées, quotas & Kafka producer
-└── team-matching-service/      # Moteur d'adéquation pondéré, Feign clients & scores
+├── pom.xml                     # POM parent multi-modules (Spring Boot 3.3.4, Java 21)
+└── auth-service/               # Service central d'authentification, profils EMSI, sujets & candidatures
+    ├── pom.xml
+    └── src/main/java/com/smartcollab/auth/
+        ├── config/             # Spring Security, SecurityFilterChain, PasswordEncoder, JWT Auth Filter
+        ├── controller/         # Contrôleurs REST (/api/v1/auth, /api/v1/subjects, /api/v1/groups, /api/v1/applications)
+        ├── dto/                # Request & Response DTOs
+        ├── entity/             # Entités JPA (User, Role, Skill, ProjectSubject, StudentGroup, SubjectApplication)
+        ├── repository/         # Repositories Spring Data JPA
+        ├── security/           # JwtTokenProvider, CustomUserDetailsService
+        ├── service/            # AuthService, SubjectService, GroupService, ApplicationService
+        └── util/               # DataInitializer (Seeding des comptes officiels EMSI)
 ```
 
-### Inventaire des Services, Ports et Bases de Données :
+---
 
-| Service | Port | Base de Données | Rôle & Responsabilité |
+## 🔒 2. Authentification Institutionnelle EMSI (`@emsi-edu.ma`)
+
+Le backend applique une politique stricte de validation du domaine institutionnel :
+- **Règle de validation** : Tout utilisateur qui s'enregistre ou s'authentifie sur la plateforme doit obligatoirement posséder une adresse email se terminant par `@emsi-edu.ma`.
+- **Implémentation** dans `AuthService.java` :
+  ```java
+  if (request.getEmail() == null || !request.getEmail().trim().toLowerCase().endsWith("@emsi-edu.ma")) {
+      throw new IllegalArgumentException("L'adresse email doit obligatoirement appartenir au domaine institutionnel @emsi-edu.ma");
+  }
+  ```
+- **Hachage des mots de passe** : `BCryptPasswordEncoder(12)`.
+- **Signature JWT** : Algorithme HMAC-SHA512 avec expiration configurable (24 heures).
+
+---
+
+## 🗄️ 3. Entités & Modèle de Données JPA
+
+### 1. `User` (`users`)
+- Champs d'identité : `id` (UUID), `email` (Unique, `@emsi-edu.ma`), `password` (BCrypt), `firstName`, `lastName`, `role` (`STUDENT`, `PROFESSOR`, `ADMIN`).
+- Champs académiques EMSI :
+  - `matricule` : ex. `C-2025-000564` (Étudiant) ou `ENS-2026-042` (Enseignant)
+  - `filiere` : ex. *Ingénierie Informatique et Réseaux (IIR)*, *IFA*, *Génie Civil*
+  - `niveau` : ex. *5ème année*, *4ème année*
+  - `classeGroup` : ex. *5DSIO G2 - G22*
+  - `campus` : ex. *CASA ORANGERS*, *Rabat*, *Marrakech*
+  - `academicYear` : ex. *2026-2027*
+
+### 2. `ProjectSubject` (`pfe_subjects`)
+- `id`, `title`, `description`, `type` (`PFE`, `PFA`), `technologies`, `objectives`, `filiereTarget`, `niveauTarget`, `maxStudentsPerGroup`, `deadlineDate`, `status` (`PROPOSE`, `VALIDE`, `ATTRIBUE`, `ARCHIVE`), `professorId`, `professorName`.
+
+### 3. `StudentGroup` (`student_groups`)
+- `id`, `name`, `leaderId`, `leaderName`, `filiere`, `academicYear`, `status` (`OUVERT`, `VALIDE`, `AFFECTE`).
+
+### 4. `SubjectApplication` (`subject_applications`)
+- `id`, `subjectId`, `subjectTitle`, `studentId`, `studentName`, `groupId`, `groupName`, `priorityOrder` (1, 2, 3), `motivation`, `status` (`EN_ATTENTE`, `ACCEPTE`, `REFUSE`), `feedback`.
+
+---
+
+## 🌐 4. Contrats d'APIs REST (`/api/v1`)
+
+| Méthode | Endpoint | Accès | Description |
 | :--- | :--- | :--- | :--- |
-| **`gateway-service`** | `8080` | — | Point d'entrée unique (Reverse Proxy), filtre `JwtAuthenticationFilter`, propagation d'identité (`X-User-Id`, `X-User-Role`, `X-User-Email`) et CORS. |
-| **`discovery-service`**| `8761` | — | Annuaire Netflix Eureka permettant la découverte dynamique sans IPs codées en dur. |
-| **`config-service`** | `8888` | — | Externalisation des profils et configurations applicatives (`application.yml`). |
-| **`auth-service`** | `8081` | `auth_db` (:5431) | Authentification, hachage BCrypt, émission JWT, gestion des profils (Étudiant, Professeur, Admin) et référentiel de compétences. |
-| **`project-service`** | `8082` | `project_db` (:5433) | Publication des sujets PFE et projets académiques par les enseignants (description, quotas min/max d'étudiants, échéances), exigences pondérées ($w_i$), critères de veto, émission d'événements Kafka. |
-| **`team-matching-service`**| `8083` | `team_matching_db` (:5434)| Gestion des équipes étudiantes, exécution de l'algorithme d'adéquation, persistance des scores et moteur de recommandation personnalisée de sujets PFE pour chaque étudiant. |
-| **`common-dtos`** | — | — | DTOs partagés (`UserDto`, `ProjectDto`, `TeamDto`, `MatchResultDto`, `PfeRecommendationDto`) et événements Kafka (`ProjectCreatedEvent`). |
+| `POST` | `/api/v1/auth/login` | Public | Authentification et émission du token Bearer JWT |
+| `POST` | `/api/v1/auth/register` | Public | Inscription avec validation obligatoire `@emsi-edu.ma` |
+| `GET` | `/api/v1/auth/me` | Authentifié | Profil de l'utilisateur actuellement connecté |
+| `GET` | `/api/v1/subjects` | Authentifié | Catalogue des sujets PFE/PFA avec filtres filière et type |
+| `POST` | `/api/v1/subjects` | Prof / Admin | Publication d'un nouveau sujet PFE/PFA |
+| `GET` | `/api/v1/groups` | Authentifié | Consultation des groupes et binômes constitués |
+| `POST` | `/api/v1/groups` | Étudiant | Création d'un groupe ou invitation d'un binôme |
+| `GET` | `/api/v1/applications` | Authentifié | Liste des candidatures (reçues pour prof, soumises pour étudiant) |
+| `POST` | `/api/v1/applications` | Étudiant | Soumission d'un vœu de sujet PFE avec ordre de priorité |
+| `PUT` | `/api/v1/applications/{id}/status` | Prof / Admin | Validation (`ACCEPTE`) ou refus (`REFUSE`) d'une candidature |
 
 ---
 
-## ⚙️ 2. Moteur Algorithmique (`SkillMatchingEngine`)
+## 👥 5. Comptes de Démonstration EMSI (`DataInitializer`)
 
-Le composant central `SkillMatchingEngine` évalue l'adéquation technique sous deux modes opérationnels :
-- **Mode Équipe $\leftrightarrow$ Projet** (Projets collaboratifs ou PFE en binôme).
-- **Mode Étudiant $\leftrightarrow$ Sujets PFE** (Recommandation et orientation individuelle).
+Au démarrage du service, `DataInitializer.java` initialise automatiquement les comptes officiels suivants :
 
-### A. Évaluation Collective (Équipe $\leftrightarrow$ Projet)
-
-#### 1. Niveau Maximal de l'Équipe pour une Compétence
-$$L_{team}(s) = \max_{m \in \text{Membres}} \left( \text{Niveau}(m, s) \right)$$
-
-#### 2. Ratio de Satisfaction par Compétence
-Pour chaque compétence requise $s_i$ avec un niveau minimum attendu $L_{req}(s_i)$ :
-$$\text{Ratio}(s_i) = \min\left(1.0, \frac{L_{team}(s_i)}{L_{req}(s_i)}\right)$$
-
-#### 3. Score Global Pondéré
-$$\text{Score Global} = \frac{\sum_{i=1}^{n} w_i \times \text{Ratio}(s_i)}{\sum_{i=1}^{n} w_i} \times 100$$
-
-#### 4. Règle de Veto (Compétence Obligatoire)
-- Si une compétence est marquée `isMandatory = true` et que $L_{team}(s_i) < L_{req}(s_i)$ :
-  - L'équipe est classée **`BLOCKED_MANDATORY_MISSING`**.
-  - Une liste explicite des compétences bloquantes est renvoyée pour suggérer les profils à recruter.
-- Sinon, le score détermine la classification :
-  - $\ge 85\%$ : **`EXCELLENT`** (Équipe optimale)
-  - $\ge 70\%$ : **`GOOD`** (Équipe équilibrée)
-  - $\ge 50\%$ : **`MODERATE`** (Compétences partielles)
-  - $< 50\%$ : **`INSUFFICIENT`** (Inadéquat)
-
-### B. Moteur de Recommandation Individuelle de Sujets PFE (Étudiant $\leftrightarrow$ PFE)
-
-Pour alimenter le flux personnalisé de l'étudiant (`GET /api/v1/matching/recommendations/students/{studentId}`) :
-
-1. **Niveau individuel** :
-   $$L_{student}(s) = \text{Niveau}(\text{étudiant}, s)$$
-2. **Ratio de couverture individuel** :
-   $$\text{Ratio}_{student}(s_i) = \min\left(1.0, \frac{L_{student}(s_i)}{L_{req}(s_i)}\right)$$
-3. **Score d'affinité PFE** :
-   $$\text{Score}_{PFE} = \frac{\sum_{i=1}^{n} w_i \times \text{Ratio}_{student}(s_i)}{\sum_{i=1}^{n} w_i} \times 100$$
-4. **Classement et Feed** :
-   - Les sujets PFE publiés sont classés par `Score_PFE` décroissant.
-   - Le breakdown JSON détaille pour chaque techno requise : le niveau de l'étudiant vs niveau attendu, son poids, et si un critère veto est non satisfait.
+| Rôle | Nom & Prénom | Email Institutionnel | Mot de passe | Détails Académiques |
+| :--- | :--- | :--- | :--- | :--- |
+| **Étudiant** | Hamza ARHRID | `hamza.arhrid@emsi-edu.ma` | `Student123!` | 5DSIO G2 - G22 • Matricule: C-2025-000564 • Casa Orangers |
+| **Professeur** | Karim BENALI | `karim.benali@emsi-edu.ma` | `Prof123!` | Chef Dép. Génie Logiciel • Matricule: ENS-2026-042 |
+| **Direction** | Direction Pédagogique | `admin@emsi-edu.ma` | `Admin123!` | Coordination Centrale PFE • Matricule: ADM-2026-001 |
 
 ---
 
-## 📡 3. Communication Inter-Services (Synchrone & Asynchrone)
+## 🚀 6. Compilation & Démarrage
 
-```mermaid
-flowchart LR
-    subgraph Synchronous["Communication Synchrone (OpenFeign)"]
-        MatchSvc["team-matching-service"]
-        AuthClient["AuthServiceClient\n(GET /api/v1/users/{id})"]
-        ProjClient["ProjectServiceClient\n(GET /api/v1/projects/{id})"]
-        
-        MatchSvc --> AuthClient --> AuthSvc["auth-service"]
-        MatchSvc --> ProjClient --> ProjSvc["project-service"]
-    end
-
-    subgraph Asynchronous["Communication Asynchrone (Kafka Events)"]
-        ProjSvc -->|"Topic: smartcollab.projects.v1\n(ProjectCreatedEvent)"| Kafka["Apache Kafka :9092"]
-        Kafka -->|"ProjectEventListener"| MatchSvc
-    end
-```
-
----
-
-## 📦 4. Guide de Compilation & Démarrage
-
-### Prérequis
-- **Java** : JDK 21 LTS
-- **Maven** : Version 3.9+
-- **Docker** : Conteneurs des bases de données et Kafka démarrés (via la branche `devops`).
-
-### Étape 1 : Compilation Complète du Projet
-À la racine du dossier `backend/` :
 ```bash
-mvn clean package -DskipTests
+# Compilation du backend complet
+mvn -f backend/pom.xml clean compile
+
+# Démarrage de auth-service
+cd backend/auth-service
+mvn spring-boot:run
+# Le service écoute sur http://localhost:8081 (Base API: http://localhost:8081/api/v1)
 ```
-
-### Étape 2 : Ordre de Démarrage Impératif des Microservices
-Démarrez les services dans l'ordre suivant (dans des terminaux distincts) :
-
-1. **Discovery Server (Eureka)** :
-   ```bash
-   java -jar discovery-service/target/discovery-service-1.0.0-SNAPSHOT.jar
-   ```
-   *(Vérifiez la console Eureka sur : [http://localhost:8761](http://localhost:8761))*
-
-2. **Config Server** :
-   ```bash
-   java -jar config-service/target/config-service-1.0.0-SNAPSHOT.jar
-   ```
-
-3. **API Gateway** :
-   ```bash
-   java -jar gateway-service/target/gateway-service-1.0.0-SNAPSHOT.jar
-   ```
-
-4. **Auth Service** :
-   ```bash
-   java -jar auth-service/target/auth-service-1.0.0-SNAPSHOT.jar
-   ```
-
-5. **Project Service** :
-   ```bash
-   java -jar project-service/target/project-service-1.0.0-SNAPSHOT.jar
-   ```
-
-6. **Team Matching Service** :
-   ```bash
-   java -jar team-matching-service/target/team-matching-service-1.0.0-SNAPSHOT.jar
-   ```
-
----
-
-## 🌿 5. Règles de Contribution sur la Branche `backend`
-
-1. **Partir de `backend`** : Mettez à jour votre branche locale avec `git pull origin backend`.
-2. **Créer votre Feature Branch** :
-   ```bash
-   git checkout -b feat/back-nom-de-votre-service
-   ```
-3. **Convention pour les DTOs** : Tout DTO ou événement partagé entre plusieurs microservices **doit obligatoirement être déclaré dans `backend/common-dtos`** avant d'être utilisé dans un service métier.
-4. **Ouvrir une Pull Request** vers la branche **`backend`** pour validation par les pairs.
