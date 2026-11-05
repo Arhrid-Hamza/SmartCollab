@@ -1,136 +1,260 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
-  UserCheck,
-  GraduationCap,
-  Mail,
+  Printer,
+  CreditCard,
   Building,
+  GraduationCap,
   Users,
-  Calendar,
-  Sparkles,
-  Award,
-  CheckCircle2,
-  Code2
+  Bookmark,
+  Star,
+  User,
+  Users2
 } from 'lucide-react';
 
 export const ProfileView = () => {
   const { user } = useAuth();
-  const isProf = user?.role === 'PROFESSOR';
+  const isHamza = user?.email === 'hamza.arhrid@emsi-edu.ma' || user?.firstName === 'Hamza';
 
-  const defaultSkills = [
-    { name: 'Java / Spring Boot', level: 5, category: 'Backend' },
-    { name: 'React.js & Tailwind CSS', level: 4, category: 'Frontend' },
-    { name: 'Docker & Kubernetes', level: 4, category: 'DevOps' },
-    { name: 'Apache Kafka', level: 3, category: 'Messaging' },
-    { name: 'PostgreSQL', level: 4, category: 'Database' },
-    { name: 'Python / Machine Learning', level: 3, category: 'Data & AI' }
-  ];
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
     <div className="space-y-6">
-      {/* Profile Header */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6">
-        <div className="w-20 h-20 rounded-2xl bg-emsi-700 text-white font-extrabold text-2xl flex items-center justify-center shadow-lg shadow-emerald-700/20 flex-shrink-0">
-          {user?.firstName?.charAt(0) || 'H'}{user?.lastName?.charAt(0) || 'A'}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium mb-1">
+            <span>Accueil</span>
+            <span>›</span>
+            <span className="text-slate-600 font-semibold">Profil</span>
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            Mon Profil
+          </h1>
         </div>
 
-        <div className="space-y-2 text-center sm:text-left flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                {user?.lastName?.toUpperCase()} {user?.firstName}
-              </h2>
-              <p className="text-xs text-slate-500 font-medium">
-                {user?.email}
-              </p>
-            </div>
+        <button
+          onClick={handlePrint}
+          type="button"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
+        >
+          <Printer className="w-4 h-4 text-slate-500" />
+          <span>Imprimer</span>
+        </button>
+      </div>
 
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 self-center sm:self-auto">
-              {isProf ? 'Professeur Encadrant EMSI' : 'Élève Ingénieur EMSI'}
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-8">
+        <div className="relative">
+          {isHamza ? (
+            <img
+              src="/hamza-avatar.png"
+              alt="ARHRID Hamza"
+              className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-slate-100 shadow-md"
+            />
+          ) : (
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-emsi-700 text-white font-extrabold text-3xl flex items-center justify-center border-4 border-slate-100 shadow-md">
+              {user?.firstName?.charAt(0) || 'H'}{user?.lastName?.charAt(0) || 'A'}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4 flex-1 text-center md:text-left">
+          <div className="flex flex-col md:flex-row md:items-center gap-3">
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+              {user?.lastName?.toUpperCase() || 'ARHRID'} {user?.firstName || 'Hamza'}
+            </h2>
+            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 self-center md:self-auto">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Étudiant actif</span>
             </span>
           </div>
 
-          <p className="text-xs text-slate-600 max-w-2xl leading-relaxed pt-1">
-            {user?.bio || "Élève ingénieur en 5ème année IIR (5DSIO G2) à l'EMSI Les Orangers Casablanca. Spécialisé dans les architectures cloud-native et le génie logiciel moderne."}
-          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-xs pt-1">
+            <div className="flex items-center gap-3">
+              <CreditCard className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <div>
+                <span className="text-[10px] text-slate-400 block leading-tight">Matricule</span>
+                <span className="font-bold text-slate-800 font-mono">
+                  {user?.matricule || user?.studentIdentifier || 'C-2025-000564'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <GraduationCap className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <div>
+                <span className="text-[10px] text-slate-400 block leading-tight">Programme</span>
+                <span className="font-bold text-slate-800">
+                  {user?.filiere || 'Ingénierie Informatique et Réseaux'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Bookmark className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <div>
+                <span className="text-[10px] text-slate-400 block leading-tight">Niveau</span>
+                <span className="font-bold text-slate-800">
+                  {user?.niveau || '5ème année'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Building className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <div>
+                <span className="text-[10px] text-slate-400 block leading-tight">Campus</span>
+                <span className="font-bold text-slate-800">
+                  {user?.campus || 'CASA ORANGERS'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Users className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <div>
+                <span className="text-[10px] text-slate-400 block leading-tight">Groupe</span>
+                <span className="font-bold text-slate-800">
+                  {user?.classeGroup || '5DSIO G2 - G22'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Star className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <div>
+                <span className="text-[10px] text-slate-400 block leading-tight">Note diplôme</span>
+                <span className="font-bold text-slate-800">—</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Profile Academic Details Card */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2">
-            <GraduationCap className="w-4 h-4 text-emsi-700" />
-            <span>Informations Académiques EMSI</span>
-          </h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
+            <User className="w-4 h-4 text-emsi-700" />
+            <span>Informations personnelles</span>
+          </div>
 
-          <div className="space-y-3 text-xs">
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-500 font-medium">Matricule Étudiant</span>
-              <span className="font-bold text-slate-900 font-mono">
-                {user?.matricule || user?.studentIdentifier || 'C-2025-000564'}
-              </span>
+          <div className="space-y-2.5 text-xs">
+            <div className="flex justify-between py-1.5 border-b border-slate-50">
+              <span className="text-slate-500 font-medium">Nom</span>
+              <span className="font-bold text-slate-900">{user?.lastName?.toUpperCase() || 'ARHRID'}</span>
             </div>
 
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-500 font-medium">Filière d'ingénierie</span>
-              <span className="font-bold text-slate-900">
-                {user?.filiere || 'Ingénierie Informatique et Réseaux'}
-              </span>
+            <div className="flex justify-between py-1.5 border-b border-slate-50">
+              <span className="text-slate-500 font-medium">Prénom</span>
+              <span className="font-bold text-slate-900">{user?.firstName || 'Hamza'}</span>
             </div>
 
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-500 font-medium">Niveau d'études</span>
-              <span className="font-bold text-slate-900">
-                {user?.niveau || (isProf ? 'Enseignant' : '5ème année')}
-              </span>
+            <div className="flex justify-between py-1.5 border-b border-slate-50">
+              <span className="text-slate-500 font-medium">Date de naissance</span>
+              <span className="font-semibold text-slate-900">14/12/2003</span>
             </div>
 
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-500 font-medium">Classe & Groupe</span>
-              <span className="font-bold text-slate-900">
-                {user?.classeGroup || '5DSIO G2 - G22'}
-              </span>
+            <div className="flex justify-between py-1.5 border-b border-slate-50">
+              <span className="text-slate-500 font-medium">Lieu de naissance</span>
+              <span className="font-bold text-slate-900">CASABLANCA</span>
             </div>
 
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-500 font-medium">Campus</span>
-              <span className="font-bold text-slate-900">
-                {user?.campus || 'CASA ORANGERS'}
+            <div className="flex justify-between py-1.5 border-b border-slate-50">
+              <span className="text-slate-500 font-medium">Nationalité</span>
+              <span className="font-bold text-slate-900">Marocaine</span>
+            </div>
+
+            <div className="flex justify-between py-1.5 border-b border-slate-50">
+              <span className="text-slate-500 font-medium">Genre</span>
+              <span className="font-semibold text-slate-900">Homme</span>
+            </div>
+
+            <div className="flex justify-between py-1.5 border-b border-slate-50">
+              <span className="text-slate-500 font-medium">Téléphone</span>
+              <span className="font-mono text-slate-900 font-semibold">+212691107214</span>
+            </div>
+
+            <div className="flex justify-between py-1.5 border-b border-slate-50">
+              <span className="text-slate-500 font-medium">Email personnel</span>
+              <span className="text-slate-400">—</span>
+            </div>
+
+            <div className="flex justify-between py-1.5 border-b border-slate-50">
+              <span className="text-slate-500 font-medium">Email institutionnel</span>
+              <span className="font-medium text-blue-600 hover:underline">
+                {user?.email || 'hamza.arhrid@emsi-edu.ma'}
               </span>
             </div>
 
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-500 font-medium">Année Universitaire</span>
-              <span className="font-bold text-slate-900">
-                {user?.academicYear || '2026-2027'}
+              <span className="text-slate-500 font-medium">Adresse</span>
+              <span className="font-semibold text-slate-800 text-right max-w-[260px]">
+                OP AL FERDAOUS GH 5 IMM 141 APPT 17 EL
               </span>
             </div>
           </div>
         </div>
 
-        {/* Skills & Technologies Profile */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Code2 className="w-4 h-4 text-emsi-700" />
-            <span>Compétences Techniques & Spécialisations</span>
-          </h3>
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
+            <Users2 className="w-4 h-4 text-emsi-700" />
+            <span>Informations tuteur</span>
+          </div>
 
-          <div className="space-y-3">
-            {defaultSkills.map((sk, i) => (
-              <div key={i} className="space-y-1">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-slate-800">{sk.name}</span>
-                  <span className="text-emsi-700 font-bold">{sk.level}/5</span>
+          <div className="space-y-4 text-xs">
+            <div className="space-y-2">
+              <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wider block text-emsi-700">
+                Tuteur 1
+              </span>
+
+              <div className="space-y-2 pl-2 border-l-2 border-slate-100">
+                <div className="flex justify-between py-1 border-b border-slate-50">
+                  <span className="text-slate-500 font-medium">Nom</span>
+                  <span className="font-bold text-slate-900">Arhrid Ahmed</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                  <div
-                    className="h-full bg-emsi-700 rounded-full transition-all duration-500"
-                    style={{ width: `${(sk.level / 5) * 100}%` }}
-                  ></div>
+
+                <div className="flex justify-between py-1 border-b border-slate-50">
+                  <span className="text-slate-500 font-medium">Profession</span>
+                  <span className="text-slate-400">—</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-slate-50">
+                  <span className="text-slate-500 font-medium">Téléphone</span>
+                  <span className="font-mono text-slate-900 font-semibold">+212684524334</span>
+                </div>
+
+                <div className="flex justify-between py-1">
+                  <span className="text-slate-500 font-medium">Email tuteur</span>
+                  <span className="font-medium text-blue-600 hover:underline">
+                    {user?.email || 'hamza.arhrid@emsi-edu.ma'}
+                  </span>
                 </div>
               </div>
-            ))}
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wider block text-slate-500">
+                Tuteur 2
+              </span>
+
+              <div className="space-y-2 pl-2 border-l-2 border-slate-100">
+                <div className="flex justify-between py-1 border-b border-slate-50">
+                  <span className="text-slate-500 font-medium">Nom</span>
+                  <span className="text-slate-400">—</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-slate-50">
+                  <span className="text-slate-500 font-medium">Profession</span>
+                  <span className="text-slate-400">—</span>
+                </div>
+
+                <div className="flex justify-between py-1">
+                  <span className="text-slate-500 font-medium">Téléphone</span>
+                  <span className="font-mono text-slate-900 font-semibold">+212520199349</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

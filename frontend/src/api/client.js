@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Defaults to direct auth-service (port 8081) for Sprint 1, or Gateway (port 8080) when enabled
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api/v1';
 
 const api = axios.create({
@@ -10,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// Auto-inject JWT token in Authorization header
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('smartcollab_token');
@@ -22,12 +20,10 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle 401 Unauthorized
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear token if expired or invalid
       localStorage.removeItem('smartcollab_token');
       localStorage.removeItem('smartcollab_user');
       if (window.location.pathname !== '/login') {

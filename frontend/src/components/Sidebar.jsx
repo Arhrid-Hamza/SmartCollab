@@ -11,26 +11,24 @@ import {
   LogOut,
   FolderGit2,
   Users,
-  CheckSquare,
-  Sparkles,
-  BookOpen
+  CheckSquare
 } from 'lucide-react';
 
 export const Sidebar = ({ activeTab, onSelectTab, isOpen }) => {
   const { user, logout } = useAuth();
 
   const isProf = user?.role === 'PROFESSOR';
-  const isAdmin = user?.role === 'ADMIN';
+  const isHamza = user?.email === 'hamza.arhrid@emsi-edu.ma' || user?.firstName === 'Hamza';
 
   const menuItems = [
     { id: 'accueil', label: 'Accueil', icon: Home },
-    { id: 'subjects', label: isProf ? 'Gestion des Sujets PFE/PFA' : 'Sujets de Projets (PFE/PFA)', icon: FolderGit2, badge: '5' },
-    { id: 'groups', label: 'Mes Groupes', icon: Users },
-    { id: 'applications', label: isProf ? 'Candidatures reçues' : 'Mes Candidatures & Choix', icon: CheckSquare },
     { id: 'schedule', label: 'Mon emploi du temps', icon: Calendar },
     { id: 'absences', label: 'Mes absences', icon: CalendarCheck, badgeRed: '14' },
     { id: 'announcements', label: 'Mes annonces', icon: Megaphone, badgeBlue: '1' },
     { id: 'documents', label: 'Mes documents', icon: Folder },
+    { id: 'subjects', label: isProf ? 'Gestion des Sujets PFE/PFA' : 'Sujets de Projets (PFE/PFA)', icon: FolderGit2, badge: '5' },
+    { id: 'groups', label: 'Mes Groupes', icon: Users },
+    { id: 'applications', label: isProf ? 'Candidatures reçues' : 'Mes Candidatures & Choix', icon: CheckSquare },
   ];
 
   const infoItems = [
@@ -44,7 +42,6 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen }) => {
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}
     >
-      {/* Scrollable nav items */}
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
         <div>
           <h3 className="text-sm font-bold text-slate-900 tracking-wide mb-3 px-2">
@@ -93,7 +90,6 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen }) => {
           </nav>
         </div>
 
-        {/* General Info Section */}
         <div>
           <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">
             Informations Générales
@@ -124,18 +120,25 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen }) => {
         </div>
       </div>
 
-      {/* Sidebar Footer: User Card & Logout */}
       <div className="p-4 border-t border-slate-200 bg-slate-50/60 space-y-3">
         <div className="flex items-center gap-3 px-1">
-          <div className="w-9 h-9 rounded-full bg-emsi-700 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
-            {user?.firstName?.charAt(0) || 'H'}{user?.lastName?.charAt(0) || 'A'}
-          </div>
+          {isHamza ? (
+            <img
+              src="/hamza-avatar.png"
+              alt="Hamza Arhrid"
+              className="w-9 h-9 rounded-full object-cover border border-slate-300 shadow-sm flex-shrink-0"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-emsi-700 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
+              {user?.firstName?.charAt(0) || 'H'}{user?.lastName?.charAt(0) || 'A'}
+            </div>
+          )}
           <div className="truncate">
             <p className="text-xs font-bold text-slate-900 truncate">
-              {user?.lastName?.toUpperCase()} {user?.firstName}
+              {user?.lastName?.toUpperCase() || 'ARHRID'} {user?.firstName || 'Hamza'}
             </p>
             <p className="text-[10px] text-slate-500 truncate">
-              {user?.studentIdentifier || user?.matricule || user?.email}
+              {user?.studentIdentifier || user?.matricule || 'C-2025-000564'}
             </p>
           </div>
         </div>

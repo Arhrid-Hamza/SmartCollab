@@ -19,7 +19,6 @@ export const GroupsView = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Create Group Modal
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [membersText, setMembersText] = useState('');

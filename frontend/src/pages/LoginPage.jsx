@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { EmsiLogo } from '../components/EmsiLogo';
 import {
   GraduationCap,
   Lock,
   Mail,
-  User,
   AlertCircle,
   Eye,
   EyeOff,
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  BookOpen,
-  Building,
-  CheckCircle2
+  BookOpen
 } from 'lucide-react';
 
 export const LoginPage = () => {
@@ -27,7 +23,6 @@ export const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -42,11 +37,11 @@ export const LoginPage = () => {
     {
       role: 'STUDENT',
       label: 'Hamza Arhrid',
-      sub: 'Élève Ingénieur (5DSIO)',
+      sub: '5DSIO (Élève Ingénieur)',
       email: 'hamza.arhrid@emsi-edu.ma',
       password: 'Student123!',
       icon: GraduationCap,
-      color: 'border-emerald-600 bg-emerald-50/60 text-emerald-900 hover:bg-emerald-100/70',
+      color: 'border-emerald-500 bg-emerald-50/70 text-emerald-900 hover:bg-emerald-100',
     },
     {
       role: 'PROFESSOR',
@@ -55,7 +50,7 @@ export const LoginPage = () => {
       email: 'karim.benali@emsi-edu.ma',
       password: 'Prof123!',
       icon: BookOpen,
-      color: 'border-blue-600 bg-blue-50/60 text-blue-900 hover:bg-blue-100/70',
+      color: 'border-blue-500 bg-blue-50/70 text-blue-900 hover:bg-blue-100',
     },
     {
       role: 'ADMIN',
@@ -64,15 +59,26 @@ export const LoginPage = () => {
       email: 'admin@emsi-edu.ma',
       password: 'Admin123!',
       icon: ShieldCheck,
-      color: 'border-purple-600 bg-purple-50/60 text-purple-900 hover:bg-purple-100/70',
+      color: 'border-purple-500 bg-purple-50/70 text-purple-900 hover:bg-purple-100',
     },
   ];
 
-  const handleFillDemo = (acc) => {
+  const handleFillDemo = async (acc) => {
     setIsRegister(false);
     setEmail(acc.email);
     setPassword(acc.password);
     setError('');
+    setLoading(true);
+    try {
+      await login(acc.email, acc.password);
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      const msg = err.response?.data?.message || err.response?.data || 'Service backend indisponible ou identifiants incorrects';
+      setError(typeof msg === 'string' ? msg : 'Erreur');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -110,31 +116,33 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-slate-50 to-slate-100 flex flex-col justify-center py-10 sm:px-6 lg:px-8">
-      {/* Top EMSI Branding */}
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50/30 via-slate-50 to-slate-100 flex flex-col justify-center py-10 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
         <div className="flex justify-center mb-2">
-          <EmsiLogo variant="green" size="large" showSubtitle={true} />
+          <img
+            src="/emsi-logo.png"
+            alt="EMSI - Ecole Marocaine des Sciences de l'Ingenieur"
+            className="h-16 w-auto object-contain"
+          />
         </div>
 
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             EmsiCollab
-          </h2>
-          <p className="text-xs text-slate-600 mt-1">
-            Portail Officiel de Gestion des Sujets PFE, PFA et Choix de Projets
+          </h1>
+          <p className="text-xs text-slate-600 mt-0.5">
+            Portail PFE, PFA et Choix de Projets • Cycle Ingénieur
           </p>
         </div>
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-        <div className="bg-white py-7 px-6 shadow-xl shadow-slate-200/60 sm:rounded-3xl sm:px-9 border border-slate-200/90 space-y-6">
-          {/* Quick Demo Accounts Selection */}
+        <div className="bg-white py-7 px-6 shadow-xl shadow-slate-200/60 sm:rounded-3xl sm:px-9 border border-slate-200/90 space-y-5">
           <div>
-            <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                Accès Rapide (Comptes Démo EMSI)
+                Connexion Rapide (Comptes Démo)
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -145,6 +153,7 @@ export const LoginPage = () => {
                     key={acc.role}
                     type="button"
                     onClick={() => handleFillDemo(acc)}
+                    disabled={loading}
                     className={`flex flex-col items-center p-2.5 rounded-2xl border text-xs font-bold transition-all text-center ${acc.color}`}
                   >
                     <Icon className="w-4 h-4 mb-1" />
@@ -160,7 +169,7 @@ export const LoginPage = () => {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200" />
             </div>
-            <div className="relative flex justify-center text-[11px] uppercase">
+            <div className="relative flex justify-center text-[10px] uppercase">
               <span className="bg-white px-3 text-slate-400 font-semibold tracking-wider">
                 Ou avec vos identifiants institutionnels
               </span>
@@ -174,8 +183,7 @@ export const LoginPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Registration specific fields */}
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {isRegister && (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
@@ -255,10 +263,9 @@ export const LoginPage = () => {
               </div>
             )}
 
-            {/* Email */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Email Éducatif EMSI :
+                Email Éducatif EMSI
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -267,16 +274,15 @@ export const LoginPage = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nom.prenom@emsi-edu.ma"
+                  placeholder="hamza.arhrid@emsi-edu.ma"
                   className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emsi-600"
                 />
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Mot de passe :
+                Mot de passe
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -298,7 +304,6 @@ export const LoginPage = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -309,7 +314,6 @@ export const LoginPage = () => {
             </button>
           </form>
 
-          {/* Toggle Register / Login */}
           <div className="text-center pt-2 border-t border-slate-100">
             <button
               type="button"
@@ -324,7 +328,6 @@ export const LoginPage = () => {
           </div>
         </div>
 
-        {/* Footer info */}
         <p className="text-center text-[11px] text-slate-500 mt-6">
           © {new Date().getFullYear()} École Marocaine des Sciences de l'Ingénieur (EMSI) — Membre d'Honoris United Universities
         </p>
