@@ -1,184 +1,147 @@
-# 💻 SmartCollab — Pôle Front-End (React 18 SPA)
+# 💻 EmsiCollab — Pôle Front-End (React 18 SPA & Tailwind CSS)
 
 [![React](https://img.shields.io/badge/React-18.3-61dafb.svg)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4-646cff.svg)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
 [![Lucide Icons](https://img.shields.io/badge/Lucide-Icons-orange.svg)](https://lucide.dev/)
+[![EMSI Green](https://img.shields.io/badge/Brand%20Color-%23006837-green.svg)](https://emsi.ma/)
 
-Bienvenue sur la branche **`frontend`** de SmartCollab ! Cette branche est exclusivement dédiée au développement de l'application cliente Web monopage (SPA) intégrant les interfaces interactives pour les **Étudiants**, **Professeurs** et **Administrateurs**.
+Bienvenue sur la branche **`frontend`** d'**EmsiCollab** ! Cette branche est exclusivement dédiée à l'application cliente Web (Single Page Application) développée avec **React 18**, **Vite** et **Tailwind CSS**. Elle implémente l'identité officielle de l'**École Marocaine des Sciences de l'Ingénieur (EMSI)** et offre des espaces de travail strictement séparés et adaptés à chaque profil utilisateur (**Étudiants**, **Professeurs Encadrants**, **Direction Pédagogique & Administration**).
 
 ---
 
-## 🏛️ 1. Architecture du Code Front-End
-
-Le projet est structuré selon les standards modernes React avec Vite et Tailwind CSS :
+## 🏛️ 1. Architecture & Organisation des Composants
 
 ```text
 frontend/
-├── public/                 # Assets statiques publics (favicon, logos)
+├── public/                     # Assets statiques publics
+│   ├── emsi-logo.png           # Logo officiel EMSI (Membre d'Honoris United Universities)
+│   └── hamza-avatar.png        # Photo de profil étudiant (Hamza Arhrid)
 ├── src/
 │   ├── api/
-│   │   └── client.js       # Client Axios configuré, intercepteurs JWT & Gateway Base URL
-│   ├── components/         # Composants réutilisables d'UI
-│   │   ├── Navbar.jsx      # Barre de navigation responsive avec affichage du profil & rôle
-│   │   ├── RadarChart.jsx  # Graphique Radar de visualisation des compétences
-│   │   ├── ProtectedRoute.jsx # Garde de route par authentification et rôle JWT
-│   │   └── Modal.jsx       # Boîtes de dialogue interactives
+│   │   └── client.js           # Client Axios avec intercepteur JWT & Base URL (/api/v1)
+│   ├── assets/                 # Images et logos bundlés
+│   ├── components/             # Composants réutilisables
+│   │   ├── EmsiLogo.jsx        # Composant logo vectoriel / image institutionnelle
+│   │   ├── HeaderBar.jsx       # Barre supérieure EMSI (vert #006837, cloche, profil cliquable)
+│   │   ├── Sidebar.jsx         # Barre latérale dynamique avec menus séparés par rôle
+│   │   └── ProtectedRoute.jsx  # Garde de route par authentification JWT
 │   ├── context/
-│   │   └── AuthContext.jsx # État global d'authentification (user, token, login, logout)
-│   ├── pages/              # Écrans et Tableaux de bord
-│   │   ├── LoginPage.jsx               # Authentification & sélection rapide des comptes démo
-│   │   ├── ProfilePage.jsx             # Profil étudiant, sliders 1-5 & radar de compétences
-│   │   ├── ProjectsPage.jsx            # Catalogue des sujets publiés & Feed de Recommandations PFE
-│   │   ├── TeamsPage.jsx               # Gestion de mon équipe, recherche et invitations
-│   │   ├── MatchingStudioPage.jsx      # Studio de matching interactif, scores, veto & breakdown
-│   │   ├── ProfessorStudioPage.jsx     # Publication sujets PFE/projets, constructeur d'exigences & veto
-│   │   ├── SubmissionsReviewPage.jsx   # Revue des candidatures par le professeur & validation
-│   │   └── AdminDashboardPage.jsx      # Console admin : KPIs, CRUD utilisateurs & skills
-│   ├── App.jsx             # Configuration des routes (React Router 6)
-│   ├── index.css           # Directives Tailwind CSS & styles globaux
-│   └── main.jsx            # Point d'entrée React DOM
-├── index.html              # Template HTML principal
-├── package.json            # Dépendances et scripts npm
-├── tailwind.config.js      # Thème et configuration Tailwind
-└── vite.config.js          # Configuration du serveur de dev Vite
+│   │   └── AuthContext.jsx     # Contexte React global d'authentification (login, register, logout)
+│   ├── pages/                  # Écrans et Tableaux de Bord par Rôle
+│   │   ├── LoginPage.jsx               # Login institutionnel (@emsi-edu.ma) & boutons démo
+│   │   ├── DashboardPage.jsx           # Routeur principal des vues selon le rôle
+│   │   ├── AccueilView.jsx             # Clone exact du portail étudiant EMSI (Bonjour Hamza, 5DSIO)
+│   │   ├── ScheduleView.jsx            # Emploi du temps complet (Semaine S1, Lundi à Samedi)
+│   │   ├── AbsencesView.jsx            # Clone du portail d'absences EMSI (14 absences & filtres)
+│   │   ├── AnnouncementsView.jsx       # Dernières annonces pédagogiques et plannings d'examens
+│   │   ├── ProfileView.jsx             # Dossier étudiant / enseignant / direction imprimable
+│   │   ├── SubjectsView.jsx            # Catalogue des sujets PFE/PFA & formulaire de dépôt prof
+│   │   ├── GroupsView.jsx              # Constitution et gestion des équipes et binômes
+│   │   ├── ApplicationsView.jsx        # Suivi des candidatures et validation professeur
+│   │   ├── ProfessorDashboardView.jsx  # Tableau de bord dédié aux professeurs
+│   │   ├── ProfessorMentoringView.jsx  # Suivi de l'encadrement, livrables PFE & soutenances
+│   │   ├── ProfessorGradesView.jsx     # Pointage des présences et saisie des notes CC
+│   │   ├── AdminDashboardView.jsx      # Tableau de bord Direction des Études (KPIs filières)
+│   │   ├── AdminUsersView.jsx          # Annuaire et gestion des comptes utilisateurs
+│   │   ├── AdminReportsView.jsx        # Procès-verbaux de délibérations et bilans PFE
+│   │   └── StaticViews.jsx             # Mesures disciplinaires & questionnaires de fin d'année
+│   ├── App.jsx                 # Configuration des routes
+│   ├── index.css               # Directives Tailwind et styles globaux
+│   ├── tailwind-compiled.css   # Bundle CSS statique précompilé (garantie de style permanent)
+│   └── main.jsx                # Point d'entrée de l'application
+├── package.json                # Dépendances et scripts (build:css, dev, build)
+├── tailwind.config.js          # Palette officielle EMSI (emsi-50 à emsi-950)
+└── vite.config.js              # Configuration Vite avec PostCSS plugins
 ```
 
 ---
 
-## 🎨 2. Spécification des Écrans à Développer
+## 🎨 2. Spécification Détaillée des 3 Dashboards par Rôle
 
-```mermaid
-flowchart TD
-    subgraph Authentification["Espace Public"]
-        Login["LoginPage\n- Formulaire email/password\n- Raccourcis de connexion comptes démo"]
-    end
-
-    subgraph Espace_Etudiant["Espace Étudiant (STUDENT)"]
-        ProfPage["ProfilePage\n- Sliders niveaux compétences (1-5)\n- Radar Chart compétences"]
-        ProjPage["ProjectsPage (Feed PFE)\n- Recommandations PFE personnalisées (% Match)\n- Badges technos maîtrisées / manquantes"]
-        TeamPage["TeamsPage\n- Création équipe / binôme\n- Matrice compétences groupe"]
-        MatchPage["MatchingStudioPage\n- Simulateur affinité en direct\n- Alerte veto & suggestions"]
-    end
-
-    subgraph Espace_Professeur["Espace Professeur (PROFESSOR)"]
-        ProfStudio["ProfessorStudioPage\n- Publication sujets PFE & Projets\n- Constructeur exigences (poids, veto)"]
-        SubReview["SubmissionsReviewPage\n- Leaderboard candidatures PFE/Équipes\n- Boutons Approuver / Rejeter"]
-    end
-
-    subgraph Espace_Admin["Espace Administrateur (ADMIN)"]
-        AdminDash["AdminDashboardPage\n- Métriques & KPIs\n- Annuaire & attribution des rôles\n- Dictionnaire global des compétences"]
-    end
-
-    Login --> ProfPage
-    Login --> ProfStudio
-    Login --> AdminDash
-```
-
-### 1. Espace Étudiant (`STUDENT`)
-- **`ProfilePage.jsx`** : Formulaire interactif permettant à l'étudiant de noter son niveau d'expertise (étoiles ou sliders de 1 à 5) pour chaque technologie et d'observer son graphe radar se dessiner en temps réel.
-- **`ProjectsPage.jsx` (Feed Recommandations PFE)** : Flux intelligent personnalisé classant les sujets PFE et projets académiques publiés par **Score de Compatibilité Décroissant** avec les compétences de son profil.
-  - Badges de score instantanés : **⭐ 95% Match**, **👍 80% Match**, etc.
-  - Visualisation des exigences : technos maîtrisées (vertes) vs lacunes / critères veto (rouges/ambrées).
-  - Bouton de candidature directe pour les PFE individuels (`min_team_size = 1`) ou création d'un binôme.
-- **`TeamsPage.jsx`** : Vue de l'équipe active, bouton de création pour le leader, barre de recherche de coéquipiers par nom/email, et matrice croisée affichant les points forts du groupe.
-- **`MatchingStudioPage.jsx`** : L'étudiant sélectionne son équipe et un projet :
-  - Calcul dynamique du score global ($0$ à $100\%$).
-  - Badge de statut : `EXCELLENT` ($\ge 85\%$), `GOOD` ($\ge 70\%$), `MODERATE` ($\ge 50\%$) ou `BLOCKED_MANDATORY_MISSING`.
-  - Tableau d'adéquation détaillée : niveau équipe vs niveau requis par l'enseignant.
-  - Alerte explicite si une compétence obligatoire manque avec proposition de recrutement.
-
-### 2. Espace Professeur (`PROFESSOR`)
-- **`ProfessorStudioPage.jsx`** : Formulaire complet de publication de sujets PFE (individuel `min=1` ou binôme/équipe `min=2..4`) avec ajout dynamique de compétences exigées depuis le catalogue, réglage des coefficients de poids ($w_i$), et toggle switch pour activer le critère obligatoire (*Veto*).
-- **`SubmissionsReviewPage.jsx`** : Tableau de bord classant les étudiants et équipes candidats par ordre de score décroissant, avec accès au breakdown complet et boutons d'action **Approuver (`APPROVE`)** ou **Refuser (`REJECT`)**.
-
-### 3. Espace Administrateur (`ADMIN`)
-- **`AdminDashboardPage.jsx`** : Statistiques globales (KPIs), gestion des utilisateurs (changement de rôles, activation/désactivation), et catalogue central des compétences avec catégorisation (`BACKEND`, `FRONTEND`, `DEVOPS`, `DATA_AI`, `MOBILE`).
+### 👨‍🎓 A. Dashboard Étudiant (`STUDENT`)
+- **Accueil** : Clone fidèle de la maquette du portail étudiant EMSI :
+  - En-tête : *Bonjour Hamza ! • Année 2026-2027 • Casablanca • Ingénierie Informatique et Réseaux • 5ème année • 5DSIO G2 - G22*.
+  - Slogan officiel : *« Chaque apprentissage est une étape vers ton avenir. »*
+  - Widget *Prochain cours* : DevOps (Vendredi 08:30 - 10:30, Salle SC34).
+  - Widget *Aujourd'hui* : 3 cours (Projet, ERP, Gouvernance des SI).
+  - Widget *Ma situation* : 14 Absences justifiées ou non, 1 Nouvelle annonce, 0 Rappel.
+  - Widget *Mon profil* : Bouton « Voir mon profil » cliquable ouvrant instantanément la fiche complète.
+- **Mon emploi du temps** : Planning hebdomadaire complet (du Lundi au Samedi) pour le semestre S1, avec boutons de sélection des jours, statut « Aujourd'hui » et bascule Jour / Semaine / Mois / Liste.
+- **Mes absences** : Interface conforme au portail des absences EMSI avec filtres par semestre et cours, récapitulatif (14 non justifiées), tableau d'historique et panneau latéral de détail.
+- **Sujets PFE & Choix** : Consultation des sujets validés, filtres par filière (IIR, IFA, GC, GE) et soumission de candidatures avec ordre de priorité (Choix 1, 2, 3) et motivation.
+- **Mes Groupes** : Création d'un binôme/trinôme et invitation d'étudiants par matricule.
 
 ---
 
-## 🔌 3. Intégration API & Communication Backend
-
-Toutes les requêtes HTTP passent par le point d'entrée unique **Spring Cloud Gateway** sur le port `8080`.
-
-### Configuration du Client API (`src/api/client.js`) :
-```javascript
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Injection automatique du token JWT dans l'en-tête Authorization
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('smartcollab_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export default api;
-```
-
-### Endpoints REST Consommés :
-| Action | Méthode | Endpoint | Rôle Requis |
-| :--- | :--- | :--- | :--- |
-| Connexion | `POST` | `/api/v1/auth/login` | Public |
-| Profil courant | `GET` | `/api/v1/users/me` | Authentifié |
-| Liste des étudiants | `GET` | `/api/v1/users/students` | Authentifié |
-| Catalogue des compétences | `GET` | `/api/v1/skills` | Authentifié |
-| Projets publiés | `GET` | `/api/v1/projects` | Authentifié |
-| **Recommandations PFE (Feed)** | `GET` | `/api/v1/matching/recommendations/students/{studentId}` | `STUDENT` |
-| Publier un sujet PFE/Projet | `POST` | `/api/v1/projects` | `PROFESSOR`, `ADMIN` |
-| Liste des équipes | `GET` | `/api/v1/teams` | Authentifié |
-| Créer une équipe | `POST` | `/api/v1/teams` | `STUDENT` |
-| Ajouter un membre | `POST` | `/api/v1/teams/{id}/members/{studentId}` | `STUDENT` |
-| Calculer le matching d'équipe | `POST` | `/api/v1/matching/calculate?teamId=...&projectId=...` | Authentifié |
-| Candidatures d'un projet / PFE | `GET` | `/api/v1/matching/project/{projectId}` | `PROFESSOR` |
+### 👨‍🏫 B. Dashboard Professeur (`PROFESSOR`)
+- **Tableau de Bord Enseignant** :
+  - KPIs en temps réel : Sujets déposés, candidatures à valider, groupes affectés, prochain créneau d'encadrement.
+  - Traitement rapide des candidatures en attente avec boutons directs *Valider & Affecter* ou *Refuser*.
+- **Gestion des Sujets PFE/PFA** : Modal de publication d'un nouveau sujet avec titre, objectifs, technologies, filière cible et taille maximale du groupe.
+- **Suivi de l'Encadrement PFE (`ProfessorMentoringView`)** :
+  - Suivi des groupes encadrés avec jauge de progression en pourcentage.
+  - Validation des livrables : *Cahier des charges*, *Sprint 1*, *Sprint 2*, *Rapport mi-parcours*, *Mémoire final*.
+  - Planification des points d'étape et date de soutenance prévisionnelle avec composition du jury.
+- **Saisie des Absences & Notes (`ProfessorGradesView`)** :
+  - Sélection de la classe (5DSIO G2, 5DSIO G1, 4IIR) et du module.
+  - Boutons interactifs Présent/Absent pour chaque étudiant.
+  - Saisie des notes de contrôle continu (CC1, CC2, Projet) avec calcul dynamique de la moyenne.
 
 ---
 
-## 🚀 4. Guide de Démarrage Rapide
+### 🏛️ C. Dashboard Direction Pédagogique & Administration (`ADMIN`)
+- **Tableau de Bord Global** :
+  - Supervision multi-campus (Casablanca Orangers, Roudani, Maarif).
+  - Taux d'affectation PFE en direct par filière : *IIR (92%)*, *IFA (75%)*, *Génie Civil (68%)*, *Génie Électrique (80%)*.
+- **Validation des Sujets** : Commission pédagogique pour approuver, demander correction ou rejeter les sujets soumis par les professeurs.
+- **Gestion des Comptes & Annuaire (`AdminUsersView`)** :
+  - Recherche universelle par nom, matricule ou email.
+  - Filtre par statut et par rôle.
+  - Boutons d'action pour activer ou suspendre les accès d'un utilisateur.
+- **Bilans & Délibérations (`AdminReportsView`)** :
+  - Téléchargement et impression des PVs officiels, matrices d'affectation et listes d'émargement.
 
-### Prérequis
-- **Node.js** : Version 20.x ou supérieure
-- **npm** : Version 10.x ou supérieure
+---
 
-### Installation & Lancement
+## 💎 3. Garantie de Style CSS & Thème EMSI
+
+Pour éliminer définitivement tout risque de styles manquants ou de flash CSS non compilé :
+1. **Compilation PostCSS directe** : `vite.config.js` configure explicitement `tailwindcss()` et `autoprefixer()`.
+2. **Bundle CSS statique de sécurité** : Le script `build:css` génère automatiquement `src/tailwind-compiled.css` qui est importé dans `main.jsx`.
+3. **Palette officielle EMSI** :
+   ```javascript
+   emsi: {
+     700: '#006837', // Vert Officiel EMSI
+     800: '#00532c',
+     900: '#003d20',
+   }
+   ```
+
+---
+
+## 🔐 4. Authentification Institutionnelle
+
+- **Validation `@emsi-edu.ma`** : Le formulaire de connexion et d'inscription rejette tout email non conforme au domaine éducatif officiel de l'EMSI.
+- **Comptes démo pré-remplis** : Les cartes démo remplissent les champs sans soumission automatique, invitant l'utilisateur à cliquer explicitement sur **« Se connecter »** pour valider la démarche d'authentification.
+  - Étudiant : `hamza.arhrid@emsi-edu.ma`
+  - Professeur : `karim.benali@emsi-edu.ma`
+  - Administration : `admin@emsi-edu.ma`
+
+---
+
+## 🚀 5. Scripts & Commandes de Développement
+
 ```bash
-# 1. Se placer dans le dossier frontend
-cd frontend
-
-# 2. Installer les dépendances
+# Installation des dépendances
 npm install
 
-# 3. Lancer le serveur de développement local
+# Démarrage du serveur de développement (avec génération du CSS statique)
 npm run dev
-```
 
-L'application est disponible immédiatement sur : **[http://localhost:5173](http://localhost:5173)**.
-
-### Build de Production
-```bash
+# Compilation de production (build CSS + bundle Vite optimisé dans dist/)
 npm run build
+
+# Prévisualisation du build de production
+npm run preview
 ```
-Les fichiers statiques optimisés sont générés dans le dossier `frontend/dist/`.
-
----
-
-## 🌿 5. Règles de Contribution sur la Branche `frontend`
-
-1. **Partir de `frontend`** : Vérifiez que vous êtes à jour avec `git pull origin frontend`.
-2. **Créer votre Feature Branch** :
-   ```bash
-   git checkout -b feat/front-nom-de-fonctionnalite
-   ```
-3. **Committer avec des messages explicites** :
-   ```bash
-   git commit -m "feat(ui): add radar chart component for student skills"
-   ```
-4. **Ouvrir une Pull Request** vers la branche **`frontend`** pour revue de code.
