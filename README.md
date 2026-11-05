@@ -1,38 +1,44 @@
-# 🎓 SmartCollab — Plateforme Microservices Intelligente de Gestion de Projets Académiques, Sujets PFE & Matching de Compétences
+# 🎓 EmsiCollab — Plateforme de Gestion des Sujets PFE, Projets Académiques & Matching de Compétences (EMSI)
 
+[![École Marocaine des Sciences de l'Ingénieur](https://img.shields.io/badge/EMSI-Honoris%20United%20Universities-006837.svg)](https://emsi.ma/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2023.0.3-blue.svg)](https://spring.io/projects/spring-cloud)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
-[![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://reactjs.org/)
+[![React](https://img.shields.io/badge/React-18.3-61dafb.svg)](https://reactjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
 [![Apache Kafka](https://img.shields.io/badge/Kafka-KRaft-black.svg)](https://kafka.apache.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
-[![About SmartCollab](https://img.shields.io/badge/Docs-About%20SmartCollab-8a2be2.svg)](ABOUT.md)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-006837.svg)](https://tailwindcss.com/)
 
 ---
 
 ## 📑 Sommaire
 
-1. [Vue d'Ensemble & Vision du Projet](#-1-vue-densemble--vision-du-projet)
+1. [Vue d'Ensemble & Identité Institutionnelle EMSI](#-1-vue-densemble--identité-institutionnelle-emsi)
 2. [Architecture Microservices & Stack Technique](#-2-architecture-microservices--stack-technique)
 3. [Entités & Modèle de Données Détaillé (ERD)](#-3-entités--modèle-de-données-détaillé-erd)
 4. [Diagramme des Cas d'Utilisation UML (Use Cases)](#-4-diagramme-des-cas-dutilisation-uml-use-cases)
 5. [Moteur Algorithmique de Matching & Recommandation](#-5-moteur-algorithmique-de-matching--recommandation)
-6. [Spécification Complète des Dashboards par Rôle](#-6-spécification-complète-des-dashboards-par-rôle)
-   - [6.1 Dashboard Étudiant (Student)](#61-dashboard-étudiant-student)
-   - [6.2 Dashboard Professeur (Professor)](#62-dashboard-professeur-professor)
-   - [6.3 Dashboard Administrateur (Admin)](#63-dashboard-administrateur-admin)
-7. [Diagrammes de Séquence & Cycles de Vie](#-7-diagrammes-de-séquence--cycles-de-vie)
-8. [Contrats d'APIs & Endpoints REST](#-8-contrats-dapis--endpoints-rest)
-9. [Stratégie de Branches Git & Organisation du Projet](#-9-stratégie-de-branches-git--organisation-du-projet)
-10. [Guide du Développeur & Répartition des Tâches Collaborateurs](#-10-guide-du-développeur--répartition-des-tâches-collaborateurs)
-11. [Installation, Déploiement & Comptes de Démonstration](#-11-installation-déploiement--comptes-de-démonstration)
+6. [Spécification Complète des 3 Dashboards par Rôle](#-6-spécification-complète-des-3-dashboards-par-rôle)
+   - [6.1 Dashboard Étudiant (Student) — Clone Portail EMSI](#61-dashboard-étudiant-student--clone-portail-emsi)
+   - [6.2 Dashboard Professeur (Professor) — Encadrement & Notes](#62-dashboard-professeur-professor--encadrement--notes)
+   - [6.3 Dashboard Direction & Administration (Admin)](#63-dashboard-direction--administration-admin)
+7. [Garantie du Rendu CSS & Thème Visuel EMSI](#-7-garantie-du-rendu-css--thème-visuel-emsi)
+8. [Authentification Institutionnelle Obligatoire (@emsi-edu.ma)](#-8-authentification-institutionnelle-obligatoire-emsi-eduma)
+9. [Contrats d'APIs & Endpoints REST](#-9-contrats-dapis--endpoints-rest)
+10. [Stratégie de Branches Git & Workflow Collaboratif](#-10-stratégie-de-branches-git--workflow-collaboratif)
+11. [Installation, Déploiement & Comptes de Démonstration Officiels](#-11-installation-déploiement--comptes-de-démonstration-officiels)
 
 ---
 
-## 🌟 1. Vue d'Ensemble & Vision du Projet
+## 🌟 1. Vue d'Ensemble & Identité Institutionnelle EMSI
 
-**SmartCollab** est une plateforme académique cloud-native conçue pour orchestrer la gestion des **Sujets PFE (Projets de Fin d'Études)** et **Projets Académiques Complexes**, en s'appuyant sur un moteur algorithmique d'adéquation et de recommandation de compétences.
+**EmsiCollab** est la plateforme officielle de collaboration académique et d'attribution des **Projets de Fin d'Études (PFE)** et **Projets de Fin d'Année (PFA)** pour l'**École Marocaine des Sciences de l'Ingénieur (EMSI)**, membre du réseau d'enseignement panafricain **Honoris United Universities**.
+
+### Identité Visuelle & Charte Graphique :
+- **Logo Officiel EMSI** : Intégration du logo officiel avec mention *Membre de Honoris United Universities*.
+- **Palette de Vert Institutionnel** : Couleur principale `#006837` (`bg-emsi-700`, `text-emsi-700`).
+- **Devise Pédagogique** : *« Chaque apprentissage est une étape vers ton avenir. »*
+- **Domaine Institutionnel Réservé** : Seules les adresses académiques se terminant par `@emsi-edu.ma` sont habilitées à créer un compte ou s'authentifier.
 
 ### Problématique Résolue :
 Dans les cursus d'ingénierie et d'informatique :
@@ -892,19 +898,17 @@ Accédez à l'application web sur **[http://localhost:5173](http://localhost:517
 
 ---
 
-### 🔑 Comptes de Test Pré-configurés
+### 🔑 Comptes de Démonstration Officiels EMSI
 
-Tous les comptes ci-dessous sont pré-insérés en base avec le mot de passe unique : **`Password123!`**
+Le service initialise automatiquement via `DataInitializer.java` les profils institutionnels suivants :
 
-| Utilisateur | Email | Rôle | Spécialité / Rôle Métier |
-| :--- | :--- | :--- | :--- |
-| **System Admin** | `admin@smartcollab.edu` | `ADMIN` | Administrateur global de la plateforme académique |
-| **Dr. Mehdi Alami** | `prof.alami@smartcollab.edu` | `PROFESSOR` | Professeur en Génie Logiciel & Architectures Cloud |
-| **Dr. Sara Bennani** | `prof.bennani@smartcollab.edu` | `PROFESSOR` | Professeure en Intelligence Artificielle & Big Data |
-| **Yassine Benali** | `yassine.benali@smartcollab.edu` | `STUDENT` | Étudiant Leader : Backend Java / Spring Boot (5/5), Kafka, Postgres |
-| **Fatima Zahra Mansouri**| `fatima.mansouri@smartcollab.edu`| `STUDENT` | Étudiante : DevOps, Docker & Kubernetes (5/5), Java |
-| **Omar Tazi** | `omar.tazi@smartcollab.edu` | `STUDENT` | Étudiant : Data Science, Python & Machine Learning (5/5), Kafka |
-| **Nour El Houda Idrissi**| `nour.houda@smartcollab.edu` | `STUDENT` | Étudiante : Frontend UI/UX, React.js (5/5), Tailwind |
+| Rôle | Nom & Prénom | Email Institutionnel | Mot de Passe | Détails Académiques EMSI |
+| :--- | :--- | :--- | :--- | :--- |
+| **🎓 Élève Ingénieur** | Hamza ARHRID | `hamza.arhrid@emsi-edu.ma` | `Student123!` | 5ème année • 5DSIO G2 - G22 • Matricule: `C-2025-000564` • Casa Orangers |
+| **👨‍🏫 Professeur Encadrant** | Karim BENALI | `karim.benali@emsi-edu.ma` | `Prof123!` | Chef Dép. Génie Logiciel & Cloud • Matricule: `ENS-2026-042` |
+| **🛡️ Direction Pédagogique** | Direction EMSI | `admin@emsi-edu.ma` | `Admin123!` | Coordination Centrale des PFE • Matricule: `ADM-2026-001` |
+
+> 📌 **Note sur l'authentification** : Les cartes de démonstration sur la page de connexion pré-remplissent automatiquement l'email et le mot de passe dans le formulaire. Pour des raisons de conformité et de sécurité, l'utilisateur doit obligatoirement cliquer sur le bouton vert **« Se connecter »** pour déclencher l'appel d'authentification JWT. Tout compte doit obligatoirement avoir une adresse se terminant par `@emsi-edu.ma`.
 
 ---
 

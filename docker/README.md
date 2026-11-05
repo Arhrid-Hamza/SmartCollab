@@ -1,11 +1,11 @@
-# 🐳 SmartCollab — Pôle DevOps & Infrastructure
+# 🐳 EmsiCollab — Pôle DevOps & Infrastructure
 
 [![Docker](https://img.shields.io/badge/Docker-Compose%20v2-2496ed.svg)](https://www.docker.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20Alpine-336791.svg)](https://www.postgresql.org/)
 [![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-KRaft%20Mode-black.svg)](https://kafka.apache.org/)
 [![Bash](https://img.shields.io/badge/Scripts-Bash%20Automated-4EAA25.svg)](https://www.gnu.org/software/bash/)
 
-Bienvenue sur la branche **`devops`** de SmartCollab ! Cette branche regroupe l'ensemble des configurations d'infrastructure conteneurisée, les scripts d'initialisation SQL des bases de données et le cluster Apache Kafka en mode KRaft.
+Bienvenue sur la branche **`devops`** d'**EmsiCollab** ! Cette branche regroupe l'ensemble des configurations d'infrastructure conteneurisée, les scripts d'initialisation SQL des bases de données et le cluster Apache Kafka en mode KRaft.
 
 ---
 
