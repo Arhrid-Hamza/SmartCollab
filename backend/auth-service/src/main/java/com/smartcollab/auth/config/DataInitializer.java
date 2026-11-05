@@ -51,103 +51,63 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ [DataInitializer] Seeded 8 default skills");
         }
 
-        // Seed or update EMSI demo users
+        // 1. Seed or update Student: hamza.arhrid@emsi-edu.ma
         User hamza = userRepository.findByEmail("hamza.arhrid@emsi-edu.ma").orElse(null);
         if (hamza == null) {
-            hamza = new User(
-                    "hamza.arhrid@emsi-edu.ma",
-                    passwordEncoder.encode("Student123!"),
-                    "Hamza",
-                    "Arhrid",
-                    Role.STUDENT
-            );
-            hamza.setStudentIdentifier("C-2025-000564");
-            hamza.setMatricule("C-2025-000564");
-            hamza.setFiliere("Ingénierie Informatique et Réseaux");
-            hamza.setNiveau("5ème année");
-            hamza.setClasseGroup("5DSIO G2 - G22");
-            hamza.setCampus("CASA ORANGERS");
-            hamza.setAcademicYear("2026-2027");
-            hamza.setBio("Élève ingénieur en 5ème année IIR (5DSIO G2) à l'EMSI Les Orangers Casablanca. Spécialité Cloud-Native, DevOps et Full-Stack.");
-            userRepository.save(hamza);
-            System.out.println("✅ [DataInitializer] Seeded EMSI student: hamza.arhrid@emsi-edu.ma");
+            hamza = new User();
+            hamza.setEmail("hamza.arhrid@emsi-edu.ma");
+            hamza.setFirstName("Hamza");
+            hamza.setLastName("Arhrid");
+            hamza.setRole(Role.STUDENT);
         }
+        hamza.setPasswordHash(passwordEncoder.encode("Student123!"));
+        hamza.setStudentIdentifier("C-2025-000564");
+        hamza.setMatricule("C-2025-000564");
+        hamza.setFiliere("Ingénierie Informatique et Réseaux");
+        hamza.setNiveau("5ème année");
+        hamza.setClasseGroup("5DSIO G2 - G22");
+        hamza.setCampus("CASA ORANGERS");
+        hamza.setAcademicYear("2026-2027");
+        hamza.setBio("Élève ingénieur en 5ème année IIR (5DSIO G2) à l'EMSI Les Orangers Casablanca. Spécialité Cloud-Native, DevOps et Full-Stack.");
+        hamza = userRepository.save(hamza);
+        System.out.println("✅ [DataInitializer] Seeded/Updated student: hamza.arhrid@emsi-edu.ma");
 
-        // Also ensure student@smartcollab.edu exists with updated details
-        User studentDemo = userRepository.findByEmail("student@smartcollab.edu").orElse(null);
-        if (studentDemo == null) {
-            studentDemo = new User(
-                    "student@smartcollab.edu",
-                    passwordEncoder.encode("Student123!"),
-                    "Hamza",
-                    "Arhrid",
-                    Role.STUDENT
-            );
-            studentDemo.setStudentIdentifier("C-2025-000564");
-            studentDemo.setMatricule("C-2025-000564");
-            studentDemo.setFiliere("Ingénierie Informatique et Réseaux");
-            studentDemo.setNiveau("5ème année");
-            studentDemo.setClasseGroup("5DSIO G2 - G22");
-            studentDemo.setCampus("CASA ORANGERS");
-            studentDemo.setAcademicYear("2026-2027");
-            userRepository.save(studentDemo);
-        }
-
+        // 2. Seed or update Professor: karim.benali@emsi-edu.ma
         User profKarim = userRepository.findByEmail("karim.benali@emsi-edu.ma").orElse(null);
         if (profKarim == null) {
-            profKarim = new User(
-                    "karim.benali@emsi-edu.ma",
-                    passwordEncoder.encode("Prof123!"),
-                    "Karim",
-                    "Benali",
-                    Role.PROFESSOR
-            );
-            profKarim.setFiliere("Ingénierie Informatique et Réseaux");
-            profKarim.setCampus("CASA ORANGERS");
-            profKarim.setBio("Professeur en Génie Logiciel, Cloud Computing et Architectures Distribuées. Responsable pédagogique des PFE.");
-            userRepository.save(profKarim);
-            System.out.println("✅ [DataInitializer] Seeded EMSI professor: karim.benali@emsi-edu.ma");
+            profKarim = new User();
+            profKarim.setEmail("karim.benali@emsi-edu.ma");
+            profKarim.setFirstName("Karim");
+            profKarim.setLastName("Benali");
+            profKarim.setRole(Role.PROFESSOR);
         }
+        profKarim.setPasswordHash(passwordEncoder.encode("Prof123!"));
+        profKarim.setFiliere("Ingénierie Informatique et Réseaux");
+        profKarim.setCampus("CASA ORANGERS");
+        profKarim.setBio("Professeur en Génie Logiciel, Cloud Computing et Architectures Distribuées. Responsable pédagogique des PFE.");
+        profKarim = userRepository.save(profKarim);
+        System.out.println("✅ [DataInitializer] Seeded/Updated professor: karim.benali@emsi-edu.ma");
 
-        User profDemo = userRepository.findByEmail("prof@smartcollab.edu").orElse(null);
-        if (profDemo == null) {
-            profDemo = new User(
-                    "prof@smartcollab.edu",
-                    passwordEncoder.encode("Prof123!"),
-                    "Karim",
-                    "Benali",
-                    Role.PROFESSOR
-            );
-            profDemo.setFiliere("Ingénierie Informatique et Réseaux");
-            profDemo.setCampus("CASA ORANGERS");
-            userRepository.save(profDemo);
-        }
-
+        // 3. Seed or update Admin: admin@emsi-edu.ma
         User adminEmsi = userRepository.findByEmail("admin@emsi-edu.ma").orElse(null);
         if (adminEmsi == null) {
-            adminEmsi = new User(
-                    "admin@emsi-edu.ma",
-                    passwordEncoder.encode("Admin123!"),
-                    "Direction",
-                    "Pédagogique EMSI",
-                    Role.ADMIN
-            );
-            adminEmsi.setCampus("CASA ORANGERS");
-            adminEmsi.setBio("Administration centrale et coordination des projets de fin d'études EMSI.");
-            userRepository.save(adminEmsi);
-            System.out.println("✅ [DataInitializer] Seeded EMSI admin: admin@emsi-edu.ma");
+            adminEmsi = new User();
+            adminEmsi.setEmail("admin@emsi-edu.ma");
+            adminEmsi.setFirstName("Direction");
+            adminEmsi.setLastName("Pédagogique EMSI");
+            adminEmsi.setRole(Role.ADMIN);
         }
+        adminEmsi.setPasswordHash(passwordEncoder.encode("Admin123!"));
+        adminEmsi.setCampus("CASA ORANGERS");
+        adminEmsi.setBio("Administration centrale et coordination des projets de fin d'études EMSI.");
+        adminEmsi = userRepository.save(adminEmsi);
+        System.out.println("✅ [DataInitializer] Seeded/Updated admin: admin@emsi-edu.ma");
 
-        User adminDemo = userRepository.findByEmail("admin@smartcollab.edu").orElse(null);
-        if (adminDemo == null) {
-            adminDemo = new User(
-                    "admin@smartcollab.edu",
-                    passwordEncoder.encode("Admin123!"),
-                    "Admin",
-                    "EMSI Collab",
-                    Role.ADMIN
-            );
-            userRepository.save(adminDemo);
+        // 4. Update legacy admin@smartcollab.edu password to Admin123!
+        User adminLegacy = userRepository.findByEmail("admin@smartcollab.edu").orElse(null);
+        if (adminLegacy != null) {
+            adminLegacy.setPasswordHash(passwordEncoder.encode("Admin123!"));
+            userRepository.save(adminLegacy);
         }
 
         // Seed EMSI project subjects if empty
