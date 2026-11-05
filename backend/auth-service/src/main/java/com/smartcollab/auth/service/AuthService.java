@@ -41,6 +41,12 @@ public class AuthService {
                 request.role()
         );
         user.setStudentIdentifier(request.studentIdentifier());
+        user.setFiliere(request.filiere());
+        user.setNiveau(request.niveau());
+        user.setClasseGroup(request.classeGroup());
+        user.setCampus(request.campus());
+        user.setMatricule(request.matricule());
+        user.setAcademicYear(request.academicYear());
         user.setBio(request.bio());
 
         User savedUser = userRepository.save(user);
@@ -79,6 +85,12 @@ public class AuthService {
                 user.getLastName(),
                 user.getRole(),
                 user.getStudentIdentifier(),
+                user.getFiliere(),
+                user.getNiveau(),
+                user.getClasseGroup(),
+                user.getCampus(),
+                user.getMatricule(),
+                user.getAcademicYear(),
                 user.getBio(),
                 skillDtos
         );

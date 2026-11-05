@@ -33,6 +33,24 @@ public class User {
     @Column(name = "student_identifier", unique = true, length = 50)
     private String studentIdentifier;
 
+    @Column(length = 100)
+    private String filiere;
+
+    @Column(length = 50)
+    private String niveau;
+
+    @Column(name = "classe_group", length = 50)
+    private String classeGroup;
+
+    @Column(length = 100)
+    private String campus;
+
+    @Column(length = 50)
+    private String matricule;
+
+    @Column(name = "academic_year", length = 30)
+    private String academicYear;
+
     @Column(columnDefinition = "TEXT")
     private String bio;
 
@@ -121,6 +139,54 @@ public class User {
 
     public void setStudentIdentifier(String studentIdentifier) {
         this.studentIdentifier = studentIdentifier;
+    }
+
+    public String getFiliere() {
+        return filiere;
+    }
+
+    public void setFiliere(String filiere) {
+        this.filiere = filiere;
+    }
+
+    public String getNiveau() {
+        return niveau;
+    }
+
+    public void setNiveau(String niveau) {
+        this.niveau = niveau;
+    }
+
+    public String getClasseGroup() {
+        return classeGroup;
+    }
+
+    public void setClasseGroup(String classeGroup) {
+        this.classeGroup = classeGroup;
+    }
+
+    public String getCampus() {
+        return campus;
+    }
+
+    public void setCampus(String campus) {
+        this.campus = campus;
+    }
+
+    public String getMatricule() {
+        return matricule;
+    }
+
+    public void setMatricule(String matricule) {
+        this.matricule = matricule;
+    }
+
+    public String getAcademicYear() {
+        return academicYear;
+    }
+
+    public void setAcademicYear(String academicYear) {
+        this.academicYear = academicYear;
     }
 
     public String getBio() {
