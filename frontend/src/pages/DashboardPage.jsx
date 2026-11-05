@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { HeaderBar } from '../components/HeaderBar';
 import { Sidebar } from '../components/Sidebar';
 import { AccueilView } from './AccueilView';
+import { ProfessorDashboardView } from './ProfessorDashboardView';
+import { AdminDashboardView } from './AdminDashboardView';
 import { SubjectsView } from './SubjectsView';
 import { GroupsView } from './GroupsView';
 import { ApplicationsView } from './ApplicationsView';
@@ -13,6 +15,7 @@ import { ProfileView } from './ProfileView';
 import { DisciplinaryView, SurveyView } from './StaticViews';
 
 export const DashboardPage = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('accueil');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -23,6 +26,12 @@ export const DashboardPage = () => {
   const renderActiveView = () => {
     switch (activeTab) {
       case 'accueil':
+        if (user?.role === 'ADMIN') {
+          return <AdminDashboardView onNavigate={setActiveTab} />;
+        }
+        if (user?.role === 'PROFESSOR') {
+          return <ProfessorDashboardView onNavigate={setActiveTab} />;
+        }
         return <AccueilView onNavigate={setActiveTab} />;
       case 'subjects':
         return (
@@ -55,11 +64,12 @@ export const DashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-[#f4f6f8] flex flex-col font-sans">
-      {/* Top Navbar with EMSI branding */}
-      <HeaderBar onToggleSidebar={toggleSidebar} />
+      <HeaderBar
+        onToggleSidebar={toggleSidebar}
+        onNavigateProfile={() => setActiveTab('profile')}
+      />
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Navigation Sidebar */}
         <Sidebar
           activeTab={activeTab}
           onSelectTab={(tabId) => {
@@ -69,7 +79,6 @@ export const DashboardPage = () => {
           isOpen={sidebarOpen}
         />
 
-        {/* Backdrop overlay for mobile drawer */}
         {sidebarOpen && (
           <div
             onClick={() => setSidebarOpen(false)}
@@ -77,7 +86,6 @@ export const DashboardPage = () => {
           />
         )}
 
-        {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 w-full max-w-7xl mx-auto">
           {renderActiveView()}
         </main>

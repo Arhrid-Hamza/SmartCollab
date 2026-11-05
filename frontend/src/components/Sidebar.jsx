@@ -11,17 +11,20 @@ import {
   LogOut,
   FolderGit2,
   Users,
-  CheckSquare
+  CheckSquare,
+  User
 } from 'lucide-react';
 
 export const Sidebar = ({ activeTab, onSelectTab, isOpen }) => {
   const { user, logout } = useAuth();
 
   const isProf = user?.role === 'PROFESSOR';
+  const isAdmin = user?.role === 'ADMIN';
   const isHamza = user?.email === 'hamza.arhrid@emsi-edu.ma' || user?.firstName === 'Hamza';
 
   const menuItems = [
     { id: 'accueil', label: 'Accueil', icon: Home },
+    { id: 'profile', label: 'Mon profil', icon: User },
     { id: 'schedule', label: 'Mon emploi du temps', icon: Calendar },
     { id: 'absences', label: 'Mes absences', icon: CalendarCheck, badgeRed: '14' },
     { id: 'announcements', label: 'Mes annonces', icon: Megaphone, badgeBlue: '1' },
@@ -121,7 +124,12 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen }) => {
       </div>
 
       <div className="p-4 border-t border-slate-200 bg-slate-50/60 space-y-3">
-        <div className="flex items-center gap-3 px-1">
+        <button
+          type="button"
+          onClick={() => onSelectTab('profile')}
+          title="Consulter et modifier mon profil"
+          className="w-full flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-200/60 transition-colors text-left focus:outline-none"
+        >
           {isHamza ? (
             <img
               src="/hamza-avatar.png"
@@ -133,7 +141,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen }) => {
               {user?.firstName?.charAt(0) || 'H'}{user?.lastName?.charAt(0) || 'A'}
             </div>
           )}
-          <div className="truncate">
+          <div className="truncate flex-1">
             <p className="text-xs font-bold text-slate-900 truncate">
               {user?.lastName?.toUpperCase() || 'ARHRID'} {user?.firstName || 'Hamza'}
             </p>
@@ -141,7 +149,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen }) => {
               {user?.studentIdentifier || user?.matricule || 'C-2025-000564'}
             </p>
           </div>
-        </div>
+        </button>
 
         <button
           onClick={logout}

@@ -11,7 +11,8 @@ import {
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  BookOpen
+  BookOpen,
+  CheckCircle2
 } from 'lucide-react';
 
 export const LoginPage = () => {
@@ -22,6 +23,7 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -63,27 +65,28 @@ export const LoginPage = () => {
     },
   ];
 
-  const handleFillDemo = async (acc) => {
+  const handleSelectDemo = (acc) => {
     setIsRegister(false);
     setEmail(acc.email);
     setPassword(acc.password);
     setError('');
-    setLoading(true);
-    try {
-      await login(acc.email, acc.password);
-      navigate('/');
-    } catch (err) {
-      console.error(err);
-      const msg = err.response?.data?.message || err.response?.data || 'Service backend indisponible ou identifiants incorrects';
-      setError(typeof msg === 'string' ? msg : 'Erreur');
-    } finally {
-      setLoading(false);
-    }
+    setInfoMessage(`Identifiants pré-remplis pour ${acc.label}. Cliquez sur « Se connecter » pour accéder au portail.`);
+  };
+
+  const validateEmsiEmail = (val) => {
+    return val && val.trim().toLowerCase().endsWith('@emsi-edu.ma');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setInfoMessage('');
+
+    if (!validateEmsiEmail(email)) {
+      setError("L'adresse email doit obligatoirement être une adresse institutionnelle @emsi-edu.ma");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -142,19 +145,21 @@ export const LoginPage = () => {
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                Connexion Rapide (Comptes Démo)
+                Choisir un compte démo
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {demoAccounts.map((acc) => {
                 const Icon = acc.icon;
+                const isSelected = email === acc.email;
                 return (
                   <button
                     key={acc.role}
                     type="button"
-                    onClick={() => handleFillDemo(acc)}
-                    disabled={loading}
-                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-xs font-bold transition-all text-center ${acc.color}`}
+                    onClick={() => handleSelectDemo(acc)}
+                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-xs font-bold transition-all text-center ${
+                      isSelected ? 'ring-2 ring-emsi-700 shadow-sm' : ''
+                    } ${acc.color}`}
                   >
                     <Icon className="w-4 h-4 mb-1" />
                     <span className="truncate w-full text-[11px] font-bold leading-tight">{acc.label}</span>
@@ -171,10 +176,17 @@ export const LoginPage = () => {
             </div>
             <div className="relative flex justify-center text-[10px] uppercase">
               <span className="bg-white px-3 text-slate-400 font-semibold tracking-wider">
-                Ou avec vos identifiants institutionnels
+                Authentification institutionnelle
               </span>
             </div>
           </div>
+
+          {infoMessage && (
+            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-2.5 text-emerald-800 text-xs">
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600 mt-0.5" />
+              <span>{infoMessage}</span>
+            </div>
+          )}
 
           {error && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-rose-700 text-xs">
@@ -265,7 +277,7 @@ export const LoginPage = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Email Éducatif EMSI
+                Email Éducatif EMSI <span className="text-emsi-700 font-normal">(@emsi-edu.ma obligatoire)</span>
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -274,10 +286,19 @@ export const LoginPage = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="hamza.arhrid@emsi-edu.ma"
-                  className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emsi-600"
+                  placeholder="nom.prenom@emsi-edu.ma"
+                  className={`w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:ring-2 ${
+                    email && !validateEmsiEmail(email)
+                      ? 'border-rose-300 focus:ring-rose-500 bg-rose-50/20'
+                      : 'border-slate-200 focus:ring-emsi-600'
+                  }`}
                 />
               </div>
+              {email && !validateEmsiEmail(email) && (
+                <p className="text-[10px] text-rose-600 mt-1">
+                  L'adresse doit se terminer obligatoirement par @emsi-edu.ma
+                </p>
+              )}
             </div>
 
             <div>
@@ -320,6 +341,7 @@ export const LoginPage = () => {
               onClick={() => {
                 setIsRegister(!isRegister);
                 setError('');
+                setInfoMessage('');
               }}
               className="text-xs font-semibold text-emsi-700 hover:text-emsi-800"
             >
