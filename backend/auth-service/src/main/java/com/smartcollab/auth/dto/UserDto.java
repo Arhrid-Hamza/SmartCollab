@@ -11,6 +11,12 @@ public record UserDto(
     String lastName,
     Role role,
     String studentIdentifier,
+    String filiere,
+    String niveau,
+    String classeGroup,
+    String campus,
+    String matricule,
+    String academicYear,
     String bio,
     List<UserSkillDto> skills
 ) {}

@@ -25,5 +25,11 @@ public record RegisterRequest(
     Role role,
 
     String studentIdentifier,
+    String filiere,
+    String niveau,
+    String classeGroup,
+    String campus,
+    String matricule,
+    String academicYear,
     String bio
 ) {}
