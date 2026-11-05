@@ -3,16 +3,13 @@ import { useAuth } from '../context/AuthContext';
 import {
   Calendar,
   Clock,
-  MapPin,
   DoorOpen,
   Users,
   GraduationCap,
   Sparkles,
   ArrowRight,
   CheckCircle2,
-  AlertCircle,
   Megaphone,
-  BookOpen,
   Building,
   BookmarkCheck,
   UserCheck
@@ -20,10 +17,9 @@ import {
 
 export const AccueilView = ({ onNavigate }) => {
   const { user } = useAuth();
-
   const isProf = user?.role === 'PROFESSOR';
+  const isHamza = user?.email === 'hamza.arhrid@emsi-edu.ma' || user?.firstName === 'Hamza';
 
-  // Format today's date in French
   const todayFormatted = new Intl.DateTimeFormat('fr-FR', {
     weekday: 'long',
     day: 'numeric',
@@ -33,7 +29,6 @@ export const AccueilView = ({ onNavigate }) => {
 
   return (
     <div className="space-y-6">
-      {/* 1. Header Banner Card */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div className="space-y-3 max-w-2xl">
           <div>
@@ -45,7 +40,6 @@ export const AccueilView = ({ onNavigate }) => {
             </p>
           </div>
 
-          {/* Academic Info Badges */}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-700">
               <Calendar className="w-3.5 h-3.5 text-slate-500" />
@@ -76,7 +70,6 @@ export const AccueilView = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Motivational Quote Banner */}
         <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 w-full lg:w-80 flex flex-col justify-between shadow-inner">
           <p className="text-xs sm:text-sm font-semibold italic text-slate-800 leading-snug">
             « Chaque apprentissage est une étape vers ton avenir. »
@@ -85,9 +78,7 @@ export const AccueilView = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* 2. Middle Row Grid (3 cards) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Card 1: Prochain cours / Prochain jalon */}
         <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -138,7 +129,6 @@ export const AccueilView = ({ onNavigate }) => {
           </button>
         </div>
 
-        {/* Card 2: Aujourd'hui */}
         <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -151,7 +141,6 @@ export const AccueilView = ({ onNavigate }) => {
           </div>
 
           <div className="space-y-3">
-            {/* Class 1 */}
             <div className="p-2.5 rounded-xl bg-slate-50/70 border border-slate-100 flex items-start justify-between gap-2">
               <div className="space-y-0.5">
                 <span className="text-[11px] text-slate-400 font-semibold block">10:30 - 12:15</span>
@@ -163,7 +152,6 @@ export const AccueilView = ({ onNavigate }) => {
               </span>
             </div>
 
-            {/* Class 2 */}
             <div className="p-2.5 rounded-xl bg-slate-50/70 border border-slate-100 flex items-start justify-between gap-2">
               <div className="space-y-0.5">
                 <span className="text-[11px] text-slate-400 font-semibold block">14:00 - 16:00</span>
@@ -175,7 +163,6 @@ export const AccueilView = ({ onNavigate }) => {
               </span>
             </div>
 
-            {/* Class 3 */}
             <div className="p-2.5 rounded-xl bg-slate-50/70 border border-slate-100 flex items-start justify-between gap-2">
               <div className="space-y-0.5">
                 <span className="text-[11px] text-slate-400 font-semibold block">16:15 - 17:45</span>
@@ -189,7 +176,6 @@ export const AccueilView = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Card 3: Dernières annonces */}
         <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -242,9 +228,7 @@ export const AccueilView = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* 3. Bottom Row Grid (Ma situation & Mon profil) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Card 4: Ma situation (span 7 cols) */}
         <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -254,7 +238,6 @@ export const AccueilView = ({ onNavigate }) => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Box 1: Absences */}
             <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100 flex flex-col justify-between space-y-3">
               <div>
                 <span className="text-3xl font-extrabold text-rose-600 tracking-tight block">
@@ -273,7 +256,6 @@ export const AccueilView = ({ onNavigate }) => {
               </button>
             </div>
 
-            {/* Box 2: Annonces */}
             <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 flex flex-col justify-between space-y-3">
               <div>
                 <span className="text-3xl font-extrabold text-blue-600 tracking-tight block">
@@ -292,7 +274,6 @@ export const AccueilView = ({ onNavigate }) => {
               </button>
             </div>
 
-            {/* Box 3: Rappels */}
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex flex-col justify-between space-y-3">
               <div>
                 <span className="text-3xl font-extrabold text-emerald-600 tracking-tight block">
@@ -313,7 +294,6 @@ export const AccueilView = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Card 5: Mon profil (span 5 cols) */}
         <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">

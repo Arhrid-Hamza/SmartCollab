@@ -64,7 +64,7 @@ export const DashboardPage = () => {
           activeTab={activeTab}
           onSelectTab={(tabId) => {
             setActiveTab(tabId);
-            setSidebarOpen(false); // close mobile drawer
+            setSidebarOpen(false);
           }}
           isOpen={sidebarOpen}
         />

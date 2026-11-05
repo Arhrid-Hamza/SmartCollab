@@ -34,13 +34,11 @@ export const SubjectsView = ({ onNavigateToApplications, onNavigateToGroups }) =
   const [userApplications, setUserApplications] = useState([]);
   const [groups, setGroups] = useState([]);
 
-  // Modals state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
 
-  // Apply form state
   const [selectedGroupId, setSelectedGroupId] = useState('');
   const [priorityOrder, setPriorityOrder] = useState(1);
   const [motivation, setMotivation] = useState('');
@@ -48,7 +46,6 @@ export const SubjectsView = ({ onNavigateToApplications, onNavigateToGroups }) =
   const [applySuccess, setApplySuccess] = useState(false);
   const [applyError, setApplyError] = useState('');
 
-  // Create subject form state (for Professor)
   const [newTitle, setNewTitle] = useState('');
   const [newType, setNewType] = useState('PFE');
   const [newFiliere, setNewFiliere] = useState(user?.filiere || 'Ingénierie Informatique et Réseaux');
@@ -162,7 +159,6 @@ export const SubjectsView = ({ onNavigateToApplications, onNavigateToGroups }) =
         deadline: newDeadline || null
       });
       setShowCreateModal(false);
-      // Reset form
       setNewTitle('');
       setNewDescription('');
       setNewObjectives('');
