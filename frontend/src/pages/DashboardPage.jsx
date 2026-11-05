@@ -12,6 +12,10 @@ import { ScheduleView } from './ScheduleView';
 import { AbsencesView } from './AbsencesView';
 import { AnnouncementsView } from './AnnouncementsView';
 import { ProfileView } from './ProfileView';
+import { ProfessorMentoringView } from './ProfessorMentoringView';
+import { ProfessorGradesView } from './ProfessorGradesView';
+import { AdminUsersView } from './AdminUsersView';
+import { AdminReportsView } from './AdminReportsView';
 import { DisciplinaryView, SurveyView } from './StaticViews';
 
 export const DashboardPage = () => {
@@ -33,6 +37,7 @@ export const DashboardPage = () => {
           return <ProfessorDashboardView onNavigate={setActiveTab} />;
         }
         return <AccueilView onNavigate={setActiveTab} />;
+
       case 'subjects':
         return (
           <SubjectsView
@@ -40,24 +45,47 @@ export const DashboardPage = () => {
             onNavigateToGroups={() => setActiveTab('groups')}
           />
         );
+
       case 'groups':
         return <GroupsView />;
+
       case 'applications':
         return <ApplicationsView />;
+
       case 'schedule':
         return <ScheduleView />;
+
       case 'absences':
         return <AbsencesView />;
+
       case 'announcements':
         return <AnnouncementsView />;
+
       case 'profile':
       case 'documents':
         return <ProfileView />;
+
+      case 'mentoring':
+        return <ProfessorMentoringView />;
+
+      case 'grades':
+        return <ProfessorGradesView />;
+
+      case 'users_management':
+        return <AdminUsersView />;
+
+      case 'reports':
+        return <AdminReportsView />;
+
       case 'disciplinary':
         return <DisciplinaryView />;
+
       case 'survey':
         return <SurveyView />;
+
       default:
+        if (user?.role === 'ADMIN') return <AdminDashboardView onNavigate={setActiveTab} />;
+        if (user?.role === 'PROFESSOR') return <ProfessorDashboardView onNavigate={setActiveTab} />;
         return <AccueilView onNavigate={setActiveTab} />;
     }
   };

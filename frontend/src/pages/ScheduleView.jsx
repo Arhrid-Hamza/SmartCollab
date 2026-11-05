@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,8 +13,12 @@ import {
 } from 'lucide-react';
 
 export const ScheduleView = () => {
+  const { user } = useAuth();
   const [selectedDayIndex, setSelectedDayIndex] = useState(3);
   const [viewMode, setViewMode] = useState('Jour');
+
+  const isProf = user?.role === 'PROFESSOR';
+  const isAdmin = user?.role === 'ADMIN';
 
   const weekDays = [
     {
@@ -90,10 +95,14 @@ export const ScheduleView = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Mon emploi du temps
+            {isProf ? "Emploi du temps Enseignant" : isAdmin ? "Planning Global EMSI & Soutenances" : "Mon emploi du temps"}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Consultez l'ensemble de vos cours, ateliers de projets, laboratoires et salles pour la promotion 5DSIO.
+            {isProf
+              ? "Consultez vos cours magistraux, laboratoires de TP et séances d'encadrement PFE à l'EMSI."
+              : isAdmin
+              ? "Supervision des créneaux, amphithéâtres, laboratoires et commissions de soutenance."
+              : "Consultez l'ensemble de vos cours, ateliers de projets, laboratoires et salles pour la promotion 5DSIO."}
           </p>
         </div>
       </div>
