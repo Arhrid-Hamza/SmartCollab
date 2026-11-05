@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "npm run build:css && vite",
+    "build:css": "tailwindcss -i ./src/index.css -o ./src/tailwind-compiled.css --minify",
+    "build": "npm run build:css && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
