@@ -5,20 +5,20 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('smartcollab_user');
+    const saved = localStorage.getItem('emsicollab_user');
     return saved ? JSON.parse(saved) : null;
   });
-  const [token, setToken] = useState(() => localStorage.getItem('smartcollab_token'));
+  const [token, setToken] = useState(() => localStorage.getItem('emsicollab_token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const verifyAuth = async () => {
-      const storedToken = localStorage.getItem('smartcollab_token');
+      const storedToken = localStorage.getItem('emsicollab_token');
       if (storedToken) {
         try {
           const response = await api.get('/users/me');
           setUser(response.data);
-          localStorage.setItem('smartcollab_user', JSON.stringify(response.data));
+          localStorage.setItem('emsicollab_user', JSON.stringify(response.data));
         } catch (err) {
           console.warn('Session verification failed:', err);
           logout();
@@ -34,8 +34,8 @@ export const AuthProvider = ({ children }) => {
     const response = await api.post('/auth/login', { email, password });
     const { token: jwtToken, user: userData } = response.data;
 
-    localStorage.setItem('smartcollab_token', jwtToken);
-    localStorage.setItem('smartcollab_user', JSON.stringify(userData));
+    localStorage.setItem('emsicollab_token', jwtToken);
+    localStorage.setItem('emsicollab_user', JSON.stringify(userData));
 
     setToken(jwtToken);
     setUser(userData);
@@ -46,8 +46,8 @@ export const AuthProvider = ({ children }) => {
     const response = await api.post('/auth/register', formData);
     const { token: jwtToken, user: userData } = response.data;
 
-    localStorage.setItem('smartcollab_token', jwtToken);
-    localStorage.setItem('smartcollab_user', JSON.stringify(userData));
+    localStorage.setItem('emsicollab_token', jwtToken);
+    localStorage.setItem('emsicollab_user', JSON.stringify(userData));
 
     setToken(jwtToken);
     setUser(userData);
@@ -55,8 +55,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('smartcollab_token');
-    localStorage.removeItem('smartcollab_user');
+    localStorage.removeItem('emsicollab_token');
+    localStorage.removeItem('emsicollab_user');
     setToken(null);
     setUser(null);
   };

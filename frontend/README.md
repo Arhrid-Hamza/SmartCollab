@@ -1,11 +1,11 @@
-# 💻 SmartCollab — Pôle Front-End (React 18 SPA)
+# 💻 EMSICollab — Pôle Front-End (React 18 SPA)
 
 [![React](https://img.shields.io/badge/React-18.3-61dafb.svg)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4-646cff.svg)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
 [![Lucide Icons](https://img.shields.io/badge/Lucide-Icons-orange.svg)](https://lucide.dev/)
 
-Bienvenue sur la branche **`frontend`** de SmartCollab ! Cette branche est exclusivement dédiée au développement de l'application cliente Web monopage (SPA) intégrant les interfaces interactives pour les **Étudiants**, **Professeurs** et **Administrateurs**.
+Bienvenue sur la branche **`frontend`** de EMSICollab ! Cette branche est exclusivement dédiée au développement de l'application cliente Web monopage (SPA) intégrant les interfaces interactives pour les **Étudiants**, **Professeurs** et **Administrateurs**.
 
 ---
 
@@ -114,7 +114,7 @@ const api = axios.create({
 
 // Injection automatique du token JWT dans l'en-tête Authorization
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('smartcollab_token');
+  const token = localStorage.getItem('emsicollab_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

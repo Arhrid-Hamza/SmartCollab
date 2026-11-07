@@ -13,7 +13,7 @@ const api = axios.create({
 // Auto-inject JWT token in Authorization header
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('smartcollab_token');
+    const token = localStorage.getItem('emsicollab_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,8 +28,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       // Clear token if expired or invalid
-      localStorage.removeItem('smartcollab_token');
-      localStorage.removeItem('smartcollab_user');
+      localStorage.removeItem('emsicollab_token');
+      localStorage.removeItem('emsicollab_user');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
