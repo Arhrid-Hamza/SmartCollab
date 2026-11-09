@@ -9,6 +9,8 @@ import { Lock, Mail, AlertCircle, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 // Email : uniquement lettres, chiffres et . _ - @  (tout autre caractère est supprimé à la saisie/au collage)
 const EMAIL_FORBIDDEN = /[^A-Za-z0-9@._-]/g;
+// Domaine autorisé pour la connexion
+const ALLOWED_EMAIL_DOMAIN = '@emsi-edu.ma';
 const EMAIL_REGEX = /^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 // Mot de passe : tous les caractères permis, sauf les caractères de contrôle invisibles
 const CONTROL_CHARS = /[\u0000-\u001F\u007F]/g;
@@ -55,8 +57,8 @@ export const LoginPage = () => {
     e.preventDefault();
     setError('');
     const cleanEmail = email.trim();
-    if (!EMAIL_REGEX.test(cleanEmail)) {
-      setError("Adresse email invalide (lettres, chiffres, . _ - et @ uniquement).");
+    if (!EMAIL_REGEX.test(cleanEmail) || !cleanEmail.toLowerCase().endsWith(ALLOWED_EMAIL_DOMAIN)) {
+      setError('Adresse email invalide.');
       return;
     }
     setLoading(true);
@@ -126,7 +128,7 @@ export const LoginPage = () => {
           </div>
 
           {/* Carte de connexion (glass léger) */}
-          <div className="mt-6 bg-white/55 backdrop-blur-xl backdrop-saturate-150 py-7 px-6 sm:px-9 rounded-2xl shadow-2xl shadow-slate-900/20 border border-white/60 ring-1 ring-white/30">
+          <div className="login-card-rise mt-6 bg-white/55 backdrop-blur-xl backdrop-saturate-150 py-7 px-6 sm:px-9 rounded-2xl shadow-2xl shadow-slate-900/20 border border-white/60 ring-1 ring-white/30">
             {error && (
               <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-rose-700 text-sm">
                 <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-500 mt-0.5" />
@@ -134,7 +136,7 @@ export const LoginPage = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-800 mb-1">Adresse Email</label>
                 <div className="relative">
@@ -143,10 +145,14 @@ export const LoginPage = () => {
                     type="email"
                     required
                     maxLength={100}
+                    readOnly={loading}
                     autoComplete="email"
                     spellCheck={false}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value.replace(EMAIL_FORBIDDEN, ''))}
+                    onChange={(e) => {
+                      setEmail(e.target.value.replace(EMAIL_FORBIDDEN, ''));
+                      setError('');
+                    }}
                     className={`${inputClass} pl-9 pr-3`}
                     placeholder="nom@emsi-edu.ma"
                   />
@@ -161,9 +167,13 @@ export const LoginPage = () => {
                     type={showPassword ? 'text' : 'password'}
                     required
                     maxLength={128}
+                    readOnly={loading}
                     autoComplete="current-password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value.replace(CONTROL_CHARS, ''))}
+                    onChange={(e) => {
+                      setPassword(e.target.value.replace(CONTROL_CHARS, ''));
+                      setError('');
+                    }}
                     className={`${inputClass} pl-9 pr-10`}
                     placeholder="••••••••"
                   />
@@ -180,15 +190,25 @@ export const LoginPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-[#15885a] hover:bg-[#0f7048] focus:outline-none focus:ring-2 focus:ring-[#15885a] focus:ring-offset-2 shadow-md transition-all disabled:opacity-50"
+                aria-busy={loading}
+                className="relative overflow-hidden w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-[#15885a] hover:bg-[#0f7048] focus:outline-none focus:ring-2 focus:ring-[#15885a] focus:ring-offset-2 shadow-md transition-all disabled:cursor-wait disabled:hover:bg-[#15885a]"
               >
+                {loading && <span className="btn-loading-sweep absolute inset-0" aria-hidden="true" />}
                 {loading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span className="relative flex items-center gap-2.5">
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    <span>Connexion en cours</span>
+                    <span className="flex items-end gap-0.5 h-3" aria-hidden="true">
+                      <span className="w-1 h-1 rounded-full bg-white animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1 h-1 rounded-full bg-white animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1 h-1 rounded-full bg-white animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </span>
+                  </span>
                 ) : (
-                  <>
+                  <span className="relative flex items-center gap-2">
                     <span>Se connecter</span>
                     <ArrowRight className="w-4 h-4" />
-                  </>
+                  </span>
                 )}
               </button>
             </form>

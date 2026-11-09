@@ -32,3 +32,28 @@ body {
   .social-icon { animation: none; }
   .social-icon:hover { transform: none; }
 }
+
+/* ---------- Carte de connexion : montée depuis le bas à l'affichage ---------- */
+@keyframes card-rise {
+  0%   { opacity: 0; transform: translateY(90px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.login-card-rise {
+  animation: card-rise 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.3s backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-card-rise { animation: none; }
+}
+
+/* ---------- Bouton de connexion : balayage lumineux pendant le chargement ---------- */
+@keyframes btn-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.btn-loading-sweep {
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.28) 50%, transparent 100%);
+  animation: btn-sweep 1.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-loading-sweep { animation: none; }
+}

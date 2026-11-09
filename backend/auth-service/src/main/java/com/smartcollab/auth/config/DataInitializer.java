@@ -46,7 +46,7 @@ public class DataInitializer implements CommandLineRunner {
         if (userRepository.count() == 0) {
             // 1. Student
             User student = new User(
-                    "student@smartcollab.edu",
+                    "student@emsi-edu.ma",
                     passwordEncoder.encode("Student123!"),
                     "Hamza",
                     "Arhrid",
@@ -57,7 +57,7 @@ public class DataInitializer implements CommandLineRunner {
 
             // 2. Professor
             User professor = new User(
-                    "prof@smartcollab.edu",
+                    "prof@emsi-edu.ma",
                     passwordEncoder.encode("Prof123!"),
                     "Karim",
                     "Benali",
@@ -67,7 +67,7 @@ public class DataInitializer implements CommandLineRunner {
 
             // 3. Admin
             User admin = new User(
-                    "admin@smartcollab.edu",
+                    "admin@emsi-edu.ma",
                     passwordEncoder.encode("Admin123!"),
                     "Admin",
                     "SmartCollab",
