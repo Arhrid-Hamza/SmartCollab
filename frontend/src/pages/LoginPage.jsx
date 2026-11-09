@@ -7,6 +7,12 @@ import loginBg from '../assets/login-bg.jpg';
 import appLogo from '../assets/emsicollab-logo.png';
 import { Lock, Mail, AlertCircle, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
+// Email : uniquement lettres, chiffres et . _ - @  (tout autre caractère est supprimé à la saisie/au collage)
+const EMAIL_FORBIDDEN = /[^A-Za-z0-9@._-]/g;
+const EMAIL_REGEX = /^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+// Mot de passe : tous les caractères permis, sauf les caractères de contrôle invisibles
+const CONTROL_CHARS = /[\u0000-\u001F\u007F]/g;
+
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -48,9 +54,14 @@ export const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    const cleanEmail = email.trim();
+    if (!EMAIL_REGEX.test(cleanEmail)) {
+      setError("Adresse email invalide (lettres, chiffres, . _ - et @ uniquement).");
+      return;
+    }
     setLoading(true);
     try {
-      await login(email, password);
+      await login(cleanEmail, password);
       navigate('/');
     } catch (err) {
       console.error(err);
@@ -131,8 +142,11 @@ export const LoginPage = () => {
                   <input
                     type="email"
                     required
+                    maxLength={100}
+                    autoComplete="email"
+                    spellCheck={false}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value.replace(EMAIL_FORBIDDEN, ''))}
                     className={`${inputClass} pl-9 pr-3`}
                     placeholder="nom@emsi-edu.ma"
                   />
@@ -146,8 +160,10 @@ export const LoginPage = () => {
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
+                    maxLength={128}
+                    autoComplete="current-password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value.replace(CONTROL_CHARS, ''))}
                     className={`${inputClass} pl-9 pr-10`}
                     placeholder="••••••••"
                   />
