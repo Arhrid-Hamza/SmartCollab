@@ -96,6 +96,15 @@ export const DashboardPage = () => {
                 </span>
               </div>
 
+              {user?.campus && (
+                <div>
+                  <span className="text-xs text-slate-500 font-medium block">Campus EMSI</span>
+                  <span className="inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    {user?.campus === 'ALL' ? '🌐 Tous les campus (Supervision Globale)' : `EMSI ${user?.campus}`}
+                  </span>
+                </div>
+              )}
+
               {user?.studentIdentifier && (
                 <div>
                   <span className="text-xs text-slate-500 font-medium block">Numéro Étudiant / CNE</span>
@@ -135,7 +144,7 @@ export const DashboardPage = () => {
                   <li>Tokens JWT signés avec Secret HMAC</li>
                   <li>Hachage des mots de passe en BCrypt</li>
                   <li>Filtre réactif OncePerRequestFilter</li>
-                  <li>Base PostgreSQL <code className="text-indigo-600">auth_db</code> (:5431)</li>
+                  <li>Base MySQL 8 <code className="text-indigo-600">emsicollab</code> (:3307) &amp; phpMyAdmin (:8085)</li>
                 </ul>
               </div>
 

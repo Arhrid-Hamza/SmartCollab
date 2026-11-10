@@ -1,81 +1,10 @@
 services:
-  smartcollab-postgres-auth:
-    image: postgres:16-alpine
-    container_name: smartcollab-postgres-auth
-    environment:
-      POSTGRES_DB: auth_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
-    ports:
-      - "5431:5432"
-    volumes:
-      - ./init-sql/01-auth-init.sql:/docker-entrypoint-initdb.d/01-auth-init.sql:ro
-      - postgres-auth-data:/var/lib/postgresql/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  smartcollab-postgres-project:
-    image: postgres:16-alpine
-    container_name: smartcollab-postgres-project
-    environment:
-      POSTGRES_DB: project_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres-project-data:/var/lib/postgresql/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d project_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  smartcollab-postgres-team:
-    image: postgres:16-alpine
-    container_name: smartcollab-postgres-team
-    environment:
-      POSTGRES_DB: team_matching_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
-    ports:
-      - "5434:5432"
-    volumes:
-      - postgres-team-data:/var/lib/postgresql/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d team_matching_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  emsicollab-mongodb:
-    image: mongo:7.0
-    container_name: emsicollab-mongodb
-    environment:
-      MONGO_INITDB_DATABASE: emsicollab_auth
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb-data:/data/db
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   emsicollab-mysql:
     image: mysql:8.0
     container_name: emsicollab-mysql
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: auth_db
+      MYSQL_DATABASE: emsicollab
     ports:
       - "3307:3306"
     volumes:
@@ -105,8 +34,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres-auth-data:
-  postgres-project-data:
-  postgres-team-data:
-  mongodb-data:
   mysql-auth-data:

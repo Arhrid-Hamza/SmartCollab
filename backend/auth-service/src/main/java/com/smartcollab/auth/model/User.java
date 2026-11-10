@@ -34,6 +34,10 @@ public class User {
     @Column(nullable = false, length = 30)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "campus", length = 50)
+    private Campus campus;
+
     @Column(name = "student_identifier", unique = true, length = 50)
     private String studentIdentifier;
 
@@ -58,6 +62,15 @@ public class User {
         this.firstName = firstName;
         this.lastName = lastName;
         this.role = role;
+    }
+
+    public User(String email, String passwordHash, String firstName, String lastName, Role role, Campus campus) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.role = role;
+        this.campus = campus;
     }
 
     @PrePersist
@@ -117,6 +130,14 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Campus getCampus() {
+        return campus;
+    }
+
+    public void setCampus(Campus campus) {
+        this.campus = campus;
     }
 
     public String getStudentIdentifier() {

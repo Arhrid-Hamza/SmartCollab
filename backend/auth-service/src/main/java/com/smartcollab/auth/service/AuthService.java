@@ -18,6 +18,8 @@ import java.util.List;
 @Service
 public class AuthService {
 
+    private static final String REQUIRED_EMAIL_DOMAIN = "@emsi-edu.ma";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -29,16 +31,22 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
+        String cleanEmail = request.email() != null ? request.email().trim().toLowerCase() : "";
+        if (!cleanEmail.endsWith(REQUIRED_EMAIL_DOMAIN)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'adresse email doit obligatoirement se terminer par " + REQUIRED_EMAIL_DOMAIN);
+        }
+
+        if (userRepository.existsByEmail(cleanEmail)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is already registered");
         }
 
         User user = new User(
-                request.email(),
+                cleanEmail,
                 passwordEncoder.encode(request.password()),
                 request.firstName(),
                 request.lastName(),
-                request.role()
+                request.role(),
+                request.campus()
         );
         user.setStudentIdentifier(request.studentIdentifier());
         user.setBio(request.bio());
@@ -49,7 +57,12 @@ public class AuthService {
     }
 
     public AuthResponse login(AuthRequest request) {
-        User user = userRepository.findByEmail(request.email())
+        String cleanEmail = request.email() != null ? request.email().trim().toLowerCase() : "";
+        if (!cleanEmail.endsWith(REQUIRED_EMAIL_DOMAIN)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'adresse email doit obligatoirement se terminer par " + REQUIRED_EMAIL_DOMAIN);
+        }
+
+        User user = userRepository.findByEmail(cleanEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
@@ -78,6 +91,7 @@ public class AuthService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getRole(),
+                user.getCampus(),
                 user.getStudentIdentifier(),
                 user.getBio(),
                 skillDtos

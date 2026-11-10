@@ -6,13 +6,16 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record AuthRequest(
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
-    @Size(max = 100, message = "Email is too long")
-    @Pattern(regexp = "^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+$", message = "Email contains invalid characters")
+    @NotBlank(message = "L'adresse email est requise")
+    @Email(message = "Format d'adresse email invalide")
+    @Size(max = 100, message = "Email trop long")
+    @Pattern(
+        regexp = "^[A-Za-z0-9._%+-]+@emsi-edu\\.ma$",
+        message = "L'adresse email doit obligatoirement se terminer par @emsi-edu.ma"
+    )
     String email,
 
-    @NotBlank(message = "Password is required")
-    @Size(max = 128, message = "Password is too long")
+    @NotBlank(message = "Le mot de passe est requis")
+    @Size(max = 128, message = "Mot de passe trop long")
     String password
 ) {}

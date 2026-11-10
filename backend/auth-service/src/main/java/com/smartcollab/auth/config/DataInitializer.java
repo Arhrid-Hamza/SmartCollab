@@ -1,5 +1,6 @@
 package com.smartcollab.auth.config;
 
+import com.smartcollab.auth.model.Campus;
 import com.smartcollab.auth.model.Role;
 import com.smartcollab.auth.model.Skill;
 import com.smartcollab.auth.model.User;
@@ -26,75 +27,52 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Seed default skills
+        // Seed default skills if empty
         if (skillRepository.count() == 0) {
             List<Skill> defaultSkills = List.of(
                     new Skill("Java / Spring Boot", "BACKEND", "Développement backend robuste avec Spring Boot et Spring Cloud"),
                     new Skill("React.js", "FRONTEND", "Applications Web monopages interactives avec React et Hooks"),
                     new Skill("Docker & Kubernetes", "DEVOPS", "Conteneurisation et orchestration de microservices"),
-                    new Skill("PostgreSQL", "BACKEND", "Bases de données relationnelles avancées et requêtage optimisé"),
+                    new Skill("MySQL", "BACKEND", "Bases de données relationnelles MySQL et requêtage optimisé"),
                     new Skill("Python / Machine Learning", "DATA_AI", "Modélisation de données, algorithmes prédictifs et IA"),
                     new Skill("Tailwind CSS", "FRONTEND", "Framework CSS utility-first moderne et réactif"),
                     new Skill("Apache Kafka", "DEVOPS", "Architecture événementielle et messagerie distribuée temps réel"),
                     new Skill("Flutter / Dart", "MOBILE", "Développement d'applications mobiles cross-platform iOS & Android")
             );
             skillRepository.saveAll(defaultSkills);
-            System.out.println("✅ [DataInitializer] Seeded 8 default skills");
+            System.out.println("✅ [DataInitializer] Seeded default skills");
         }
 
-        // Seed demo users if not present individually
-        seedUserIfNotExists(
-                "student@emsi-edu.ma",
-                "Student123!",
-                "Hamza",
-                "Arhrid",
-                Role.STUDENT,
-                "STU-EMSI-001",
-                "Élève ingénieur passionné par les architectures Cloud-Native, Spring Boot et React."
-        );
+        // Clean up any old users except admin@emsi-edu.ma
+        List<User> existingUsers = userRepository.findAll();
+        for (User user : existingUsers) {
+            if (!"admin@emsi-edu.ma".equalsIgnoreCase(user.getEmail())) {
+                userRepository.delete(user);
+                System.out.println("🗑️ [DataInitializer] Removed old user: " + user.getEmail());
+            }
+        }
 
-        seedUserIfNotExists(
-                "prof@emsi-edu.ma",
-                "Prof123!",
-                "Karim",
-                "Benali",
-                Role.PROFESSOR,
-                null,
-                "Professeur en Génie Logiciel, responsable des Projets de Fin d'Études (PFE)."
-        );
-
-        seedUserIfNotExists(
-                "admin@emsi-edu.ma",
-                "Admin123!",
-                "Direction",
-                "Pédagogique EMSI",
-                Role.ADMIN,
-                null,
-                "Administration centrale et coordination des projets de fin d'études EMSI."
-        );
-    }
-
-    private void seedUserIfNotExists(
-            String email,
-            String rawPassword,
-            String firstName,
-            String lastName,
-            Role role,
-            String studentIdentifier,
-            String bio
-    ) {
-        if (!userRepository.existsByEmail(email)) {
-            User user = new User(
-                    email,
-                    passwordEncoder.encode(rawPassword),
-                    firstName,
-                    lastName,
-                    role
+        // Seed / ensure the unique Administrator user: admin@emsi-edu.ma with password "admin"
+        User adminUser = userRepository.findByEmail("admin@emsi-edu.ma").orElse(null);
+        if (adminUser == null) {
+            adminUser = new User(
+                    "admin@emsi-edu.ma",
+                    passwordEncoder.encode("admin"),
+                    "Direction",
+                    "Admin EMSI",
+                    Role.ADMIN,
+                    Campus.ALL
             );
-            user.setStudentIdentifier(studentIdentifier);
-            user.setBio(bio);
-            userRepository.save(user);
-            System.out.println("✅ [DataInitializer] Seeded account: " + email);
+            adminUser.setBio("Administrateur général EMSI avec supervision globale sur tous les campus et utilisateurs.");
+            userRepository.save(adminUser);
+            System.out.println("✅ [DataInitializer] Created single admin user: admin@emsi-edu.ma (pwd: admin, role: ADMIN, campus: ALL)");
+        } else {
+            adminUser.setPasswordHash(passwordEncoder.encode("admin"));
+            adminUser.setRole(Role.ADMIN);
+            adminUser.setCampus(Campus.ALL);
+            adminUser.setBio("Administrateur général EMSI avec supervision globale sur tous les campus et utilisateurs.");
+            userRepository.save(adminUser);
+            System.out.println("✅ [DataInitializer] Updated admin user password to 'admin' with all permissions (campus: ALL)");
         }
     }
 }

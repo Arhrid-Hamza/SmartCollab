@@ -1,6 +1,6 @@
--- MySQL initialization script for auth_db
-CREATE DATABASE IF NOT EXISTS auth_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE auth_db;
+-- MySQL initialization script for emsicollab
+CREATE DATABASE IF NOT EXISTS emsicollab CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE emsicollab;
 
 CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(36) PRIMARY KEY,
@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     role VARCHAR(30) NOT NULL,
+    campus VARCHAR(50),
     student_identifier VARCHAR(50) UNIQUE,
     bio TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
