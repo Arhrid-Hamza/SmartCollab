@@ -11,11 +11,13 @@ import com.smartcollab.auth.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class AuthService {
 
     private static final String REQUIRED_EMAIL_DOMAIN = "@emsi-edu.ma";
