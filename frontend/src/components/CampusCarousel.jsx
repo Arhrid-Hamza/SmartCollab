@@ -16,6 +16,12 @@ import {
   Award
 } from 'lucide-react';
 
+import orangersImg from '../assets/campuses/campus-orangers.jpg';
+import cfcImg from '../assets/campuses/campus-cfc.jpg';
+import roudaniImg from '../assets/campuses/campus-roudani.jpg';
+import maarifImg from '../assets/campuses/campus-maarif.jpg';
+import moulayYoussefImg from '../assets/campuses/campus-moulay-youssef.jpg';
+
 export const CASABLANCA_CAMPUSES = [
   {
     id: 'ORANGERS',
@@ -28,7 +34,7 @@ export const CASABLANCA_CAMPUSES = [
     established: '1986',
     description:
       "Campus fondateur de l'EMSI à Casablanca. Doté d'infrastructures technologiques de pointe et de laboratoires spécialisés en réseaux, télécoms et développement logiciel.",
-    image: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80',
+    image: orangersImg,
     color: '#15885a',
   },
   {
@@ -42,7 +48,7 @@ export const CASABLANCA_CAMPUSES = [
     established: '2020',
     description:
       "Implanté au cœur du hub financier international de Casablanca, ce campus ultra-moderne forme aux technologies émergentes : IA, cybersécurité et ingénierie financière.",
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
+    image: cfcImg,
     color: '#0d9488',
   },
   {
@@ -56,7 +62,7 @@ export const CASABLANCA_CAMPUSES = [
     established: '2004',
     description:
       "Campus de référence dédié aux grands ouvrages, au Génie Civil BTP et aux procédés industriels. Équipé de laboratoires d'essais mécaniques et de modélisation BIM.",
-    image: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80',
+    image: roudaniImg,
     color: '#16a34a',
   },
   {
@@ -70,7 +76,7 @@ export const CASABLANCA_CAMPUSES = [
     established: '1998',
     description:
       "Focalisé sur l'Automatisme, l'Informatique Industrielle et les Systèmes Embarqués. Accueille des fablabs étudiants et incubateurs de projets robotiques innovants.",
-    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80',
+    image: maarifImg,
     color: '#047857',
   },
   {
@@ -84,7 +90,7 @@ export const CASABLANCA_CAMPUSES = [
     established: '2012',
     description:
       "Campus spacieux doté d'amphithéâtres connectés, d'espaces de coworking et de centres de recherche favorisant l'interdisciplinarité et l'entrepreneuriat.",
-    image: 'https://images.unsplash.com/photo-1525921429624-479b6a26d84d?auto=format&fit=crop&w=1200&q=80',
+    image: moulayYoussefImg,
     color: '#0f766e',
   },
 ];
