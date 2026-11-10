@@ -42,41 +42,59 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ [DataInitializer] Seeded 8 default skills");
         }
 
-        // Seed demo users if not present
-        if (userRepository.count() == 0) {
-            // 1. Student
-            User student = new User(
-                    "student@emsi-edu.ma",
-                    passwordEncoder.encode("Student123!"),
-                    "Hamza",
-                    "Arhrid",
-                    Role.STUDENT
-            );
-            student.setStudentIdentifier("STU-2026-001");
-            student.setBio("Élève ingénieur passionné par les architectures Cloud-Native, Spring Boot et React.");
+        // Seed demo users if not present individually
+        seedUserIfNotExists(
+                "student@emsi-edu.ma",
+                "Student123!",
+                "Hamza",
+                "Arhrid",
+                Role.STUDENT,
+                "STU-EMSI-001",
+                "Élève ingénieur passionné par les architectures Cloud-Native, Spring Boot et React."
+        );
 
-            // 2. Professor
-            User professor = new User(
-                    "prof@emsi-edu.ma",
-                    passwordEncoder.encode("Prof123!"),
-                    "Karim",
-                    "Benali",
-                    Role.PROFESSOR
-            );
-            professor.setBio("Professeur en Génie Logiciel, responsable des Projets de Fin d'Études (PFE).");
+        seedUserIfNotExists(
+                "prof@emsi-edu.ma",
+                "Prof123!",
+                "Karim",
+                "Benali",
+                Role.PROFESSOR,
+                null,
+                "Professeur en Génie Logiciel, responsable des Projets de Fin d'Études (PFE)."
+        );
 
-            // 3. Admin
-            User admin = new User(
-                    "admin@emsi-edu.ma",
-                    passwordEncoder.encode("Admin123!"),
-                    "Admin",
-                    "SmartCollab",
-                    Role.ADMIN
-            );
-            admin.setBio("Superviseur de la plateforme et gestionnaire du référentiel académique.");
+        seedUserIfNotExists(
+                "admin@emsi-edu.ma",
+                "Admin123!",
+                "Direction",
+                "Pédagogique EMSI",
+                Role.ADMIN,
+                null,
+                "Administration centrale et coordination des projets de fin d'études EMSI."
+        );
+    }
 
-            userRepository.saveAll(List.of(student, professor, admin));
-            System.out.println("✅ [DataInitializer] Seeded 3 demo accounts (student, prof, admin)");
+    private void seedUserIfNotExists(
+            String email,
+            String rawPassword,
+            String firstName,
+            String lastName,
+            Role role,
+            String studentIdentifier,
+            String bio
+    ) {
+        if (!userRepository.existsByEmail(email)) {
+            User user = new User(
+                    email,
+                    passwordEncoder.encode(rawPassword),
+                    firstName,
+                    lastName,
+                    role
+            );
+            user.setStudentIdentifier(studentIdentifier);
+            user.setBio(bio);
+            userRepository.save(user);
+            System.out.println("✅ [DataInitializer] Seeded account: " + email);
         }
     }
 }
