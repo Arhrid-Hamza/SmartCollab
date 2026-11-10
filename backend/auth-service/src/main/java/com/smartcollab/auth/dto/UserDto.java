@@ -12,6 +12,7 @@ public record UserDto(
     String firstName,
     String lastName,
     Role role,
+    String sexe,
     Campus campus,
     String matricule,
     String filiere,

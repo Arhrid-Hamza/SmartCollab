@@ -199,6 +199,7 @@ export const StudentsListPage = () => {
                 <thead>
                   <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     <th className="py-3.5 px-4">Étudiant</th>
+                    <th className="py-3.5 px-4">Sexe</th>
                     <th className="py-3.5 px-4">Matricule</th>
                     <th className="py-3.5 px-4">Campus</th>
                     <th className="py-3.5 px-4">Filière</th>
@@ -220,6 +221,12 @@ export const StudentsListPage = () => {
                             <p className="text-xs text-slate-500 leading-tight mt-0.5">{s.email}</p>
                           </div>
                         </div>
+                      </td>
+
+                      <td className="py-3 px-4 text-xs font-semibold text-slate-600">
+                        <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px]">
+                          {s.sexe === 'FEMME' ? 'Femme' : s.sexe === 'HOMME' ? 'Homme' : (s.sexe || '—')}
+                        </span>
                       </td>
 
                       <td className="py-3 px-4 font-mono text-xs text-slate-700">

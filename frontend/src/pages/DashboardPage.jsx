@@ -324,6 +324,15 @@ export const DashboardPage = () => {
             </div>
 
             <div className="space-y-3 pt-2 text-xs text-slate-600 border-t border-slate-100">
+              {user?.sexe && (
+                <div className="flex items-center justify-between py-1 border-b border-slate-50">
+                  <span className="text-slate-400">Civilité / Sexe :</span>
+                  <span className="font-semibold text-slate-800">
+                    {user.sexe === 'FEMME' ? 'Femme' : user.sexe === 'HOMME' ? 'Homme' : user.sexe}
+                  </span>
+                </div>
+              )}
+
               {user?.matricule && (
                 <div className="flex items-center justify-between py-1 border-b border-slate-50">
                   <span className="text-slate-400">Matricule :</span>

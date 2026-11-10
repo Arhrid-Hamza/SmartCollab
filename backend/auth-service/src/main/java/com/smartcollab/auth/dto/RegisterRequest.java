@@ -30,6 +30,8 @@ public record RegisterRequest(
     @NotNull(message = "Le rôle est requis")
     Role role,
 
+    String sexe,
+
     Campus campus,
 
     String matricule,

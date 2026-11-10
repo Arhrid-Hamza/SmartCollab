@@ -192,6 +192,7 @@ export const ProfessorsListPage = () => {
                 <thead>
                   <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     <th className="py-3.5 px-4">Professeur</th>
+                    <th className="py-3.5 px-4">Sexe</th>
                     <th className="py-3.5 px-4">Matricule</th>
                     <th className="py-3.5 px-4">Campus</th>
                     <th className="py-3.5 px-4">Filière</th>
@@ -216,6 +217,12 @@ export const ProfessorsListPage = () => {
                           </div>
                         </td>
 
+                        <td className="py-3 px-4 text-xs font-semibold text-slate-600">
+                          <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px]">
+                            {p.sexe === 'FEMME' ? 'Femme' : p.sexe === 'HOMME' ? 'Homme' : (p.sexe || '—')}
+                          </span>
+                        </td>
+
                         <td className="py-3 px-4 font-mono text-xs text-slate-700">
                           {p.matricule || p.studentIdentifier || '—'}
                         </td>
@@ -227,7 +234,7 @@ export const ProfessorsListPage = () => {
                         </td>
 
                         <td className="py-3 px-4">
-                          <span className="font-semibold text-xs text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                          <span className="font-semibold text-xs text-emerald-800 bg-emerald-50/70 px-2 py-0.5 rounded-md border border-emerald-200">
                             {p.filiere || '—'}
                           </span>
                         </td>

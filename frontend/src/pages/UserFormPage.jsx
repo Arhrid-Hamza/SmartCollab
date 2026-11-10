@@ -64,6 +64,7 @@ export const UserFormPage = () => {
     email: '',
     password: '',
     role: initialRole,
+    sexe: 'HOMME',
     matricule: '',
     campus: 'ORANGERS',
     filiere: 'IIR',
@@ -91,6 +92,7 @@ export const UserFormPage = () => {
             email: user.email || '',
             password: '',
             role: user.role || 'STUDENT',
+            sexe: user.sexe || 'HOMME',
             matricule: user.matricule || user.studentIdentifier || '',
             campus: user.campus || 'ORANGERS',
             filiere: user.filiere || 'IIR',
@@ -332,8 +334,8 @@ export const UserFormPage = () => {
                 </div>
               </div>
 
-              {/* Identité & Matricule */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Identité, Sexe & Matricule */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Prénom *</label>
                   <input
@@ -358,6 +360,19 @@ export const UserFormPage = () => {
                     placeholder="Ex: Bennani"
                     className={inputClass}
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Sexe / Civilité *</label>
+                  <select
+                    name="sexe"
+                    value={formData.sexe}
+                    onChange={handleChange}
+                    className={inputClass}
+                  >
+                    <option value="HOMME">Homme</option>
+                    <option value="FEMME">Femme</option>
+                  </select>
                 </div>
 
                 <div>

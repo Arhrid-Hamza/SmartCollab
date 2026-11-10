@@ -34,9 +34,15 @@ public class User {
     @Column(nullable = false, length = 30)
     private Role role;
 
+    @Column(name = "sexe", length = 20)
+    private String sexe;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "campus", length = 50)
     private Campus campus;
+
+    @Column(name = "matricule", length = 50)
+    private String matricule;
 
     @Column(name = "filiere", length = 100)
     private String filiere;
@@ -203,12 +209,23 @@ public class User {
         this.studentIdentifier = studentIdentifier;
     }
 
+    public String getSexe() {
+        return sexe;
+    }
+
+    public void setSexe(String sexe) {
+        this.sexe = sexe;
+    }
+
     public String getMatricule() {
-        return studentIdentifier;
+        return matricule != null ? matricule : studentIdentifier;
     }
 
     public void setMatricule(String matricule) {
-        this.studentIdentifier = matricule;
+        this.matricule = matricule;
+        if (this.studentIdentifier == null) {
+            this.studentIdentifier = matricule;
+        }
     }
 
     public String getBio() {

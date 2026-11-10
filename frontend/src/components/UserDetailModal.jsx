@@ -59,6 +59,16 @@ export const UserDetailModal = ({ user, onClose }) => {
 
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
               <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mb-1">
+                <Users className="w-3.5 h-3.5 text-slate-400" />
+                Civilité / Sexe
+              </span>
+              <p className="text-sm font-semibold text-slate-900">
+                {user.sexe === 'FEMME' ? 'Femme' : user.sexe === 'HOMME' ? 'Homme' : (user.sexe || 'Non renseigné')}
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+              <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mb-1">
                 <Building2 className="w-3.5 h-3.5 text-slate-400" />
                 Campus EMSI
               </span>

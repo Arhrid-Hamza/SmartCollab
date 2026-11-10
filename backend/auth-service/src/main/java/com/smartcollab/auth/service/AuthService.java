@@ -50,6 +50,7 @@ public class AuthService {
                 request.role(),
                 request.campus()
         );
+        user.setSexe(request.sexe());
         user.setMatricule(matricule);
         user.setFiliere(request.filiere());
         user.setNiveau(request.niveau());
@@ -100,6 +101,7 @@ public class AuthService {
                 request.role(),
                 request.campus()
         );
+        user.setSexe(request.sexe());
         user.setMatricule(request.matricule());
         user.setFiliere(request.filiere());
         user.setNiveau(request.niveau());
@@ -129,6 +131,7 @@ public class AuthService {
         user.setFirstName(request.firstName().trim());
         user.setLastName(request.lastName().trim());
         user.setRole(request.role());
+        user.setSexe(request.sexe());
         user.setCampus(request.campus());
         user.setMatricule(request.matricule());
         user.setFiliere(request.filiere());
@@ -182,6 +185,7 @@ public class AuthService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getRole(),
+                user.getSexe(),
                 user.getCampus(),
                 user.getMatricule(),
                 user.getFiliere(),
