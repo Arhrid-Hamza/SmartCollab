@@ -56,15 +56,21 @@ public class DataInitializer implements CommandLineRunner {
                     "Direction",
                     "Admin EMSI",
                     Role.ADMIN,
+                    "HOMME",
                     Campus.ALL
             );
+            adminUser.setMatricule("ADM-EMSI-001");
             adminUser.setBio("Administrateur général EMSI avec supervision globale sur tous les campus et utilisateurs.");
             userRepository.save(adminUser);
             System.out.println("[DataInitializer] Created single admin user: admin@emsi-edu.ma (pwd: admin, role: ADMIN, campus: ALL)");
         } else {
             adminUser.setPasswordHash(passwordEncoder.encode("admin"));
             adminUser.setRole(Role.ADMIN);
+            adminUser.setSexe("HOMME");
             adminUser.setCampus(Campus.ALL);
+            if (adminUser.getMatricule() == null) {
+                adminUser.setMatricule("ADM-EMSI-001");
+            }
             adminUser.setBio("Administrateur général EMSI avec supervision globale sur tous les campus et utilisateurs.");
             userRepository.save(adminUser);
             System.out.println("[DataInitializer] Updated admin user password to 'admin' with all permissions (campus: ALL)");

@@ -59,9 +59,6 @@ public class User {
     @Column(name = "avatar_url", columnDefinition = "MEDIUMTEXT")
     private String avatarUrl;
 
-    @Column(name = "student_identifier", unique = true, length = 50)
-    private String studentIdentifier;
-
     @Column(columnDefinition = "TEXT")
     private String bio;
 
@@ -94,6 +91,16 @@ public class User {
         this.campus = campus;
     }
 
+    public User(String email, String passwordHash, String firstName, String lastName, Role role, String sexe, Campus campus) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.role = role;
+        this.sexe = sexe;
+        this.campus = campus;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = OffsetDateTime.now();
@@ -104,6 +111,8 @@ public class User {
     protected void onUpdate() {
         this.updatedAt = OffsetDateTime.now();
     }
+
+    // Getters and Setters
 
     public UUID getId() {
         return id;
@@ -153,12 +162,37 @@ public class User {
         this.role = role;
     }
 
+    public String getSexe() {
+        return sexe;
+    }
+
+    public void setSexe(String sexe) {
+        this.sexe = sexe;
+    }
+
     public Campus getCampus() {
         return campus;
     }
 
     public void setCampus(Campus campus) {
         this.campus = campus;
+    }
+
+    public String getMatricule() {
+        return matricule;
+    }
+
+    public void setMatricule(String matricule) {
+        this.matricule = matricule;
+    }
+
+    // Alias for studentIdentifier for backward compatibility
+    public String getStudentIdentifier() {
+        return matricule;
+    }
+
+    public void setStudentIdentifier(String studentIdentifier) {
+        this.matricule = studentIdentifier;
     }
 
     public String getFiliere() {
@@ -199,33 +233,6 @@ public class User {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
-    }
-
-    public String getStudentIdentifier() {
-        return studentIdentifier;
-    }
-
-    public void setStudentIdentifier(String studentIdentifier) {
-        this.studentIdentifier = studentIdentifier;
-    }
-
-    public String getSexe() {
-        return sexe;
-    }
-
-    public void setSexe(String sexe) {
-        this.sexe = sexe;
-    }
-
-    public String getMatricule() {
-        return matricule != null ? matricule : studentIdentifier;
-    }
-
-    public void setMatricule(String matricule) {
-        this.matricule = matricule;
-        if (this.studentIdentifier == null) {
-            this.studentIdentifier = matricule;
-        }
     }
 
     public String getBio() {
