@@ -5,7 +5,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
 [![Lucide Icons](https://img.shields.io/badge/Lucide-Icons-orange.svg)](https://lucide.dev/)
 
-Bienvenue sur la branche **`frontend`** de EMSICollab ! Cette branche est exclusivement dédiée au développement de l'application cliente Web monopage (SPA) intégrant les interfaces interactives pour les **Étudiants**, **Professeurs** et **Administrateurs**.
+Bienvenue dans le dossier **`frontend/`** d'EMSICollab ! Ce dossier est dédié au développement de l'application cliente Web monopage (SPA) intégrant les interfaces interactives pour les **Étudiants**, **Professeurs** et **Administrateurs**.
 
 ---
 
@@ -170,9 +170,9 @@ Les fichiers statiques optimisés sont générés dans le dossier `frontend/dist
 
 ---
 
-## 🌿 5. Règles de Contribution sur la Branche `frontend`
+## 🌿 5. Règles de Contribution Monorepo
 
-1. **Partir de `frontend`** : Vérifiez que vous êtes à jour avec `git pull origin frontend`.
+1. **Partir de `main`** : Vérifiez que vous êtes à jour avec `git pull origin main`.
 2. **Créer votre Feature Branch** :
    ```bash
    git checkout -b feat/front-nom-de-fonctionnalite
@@ -181,4 +181,4 @@ Les fichiers statiques optimisés sont générés dans le dossier `frontend/dist
    ```bash
    git commit -m "feat(ui): add radar chart component for student skills"
    ```
-4. **Ouvrir une Pull Request** vers la branche **`frontend`** pour revue de code.
+4. **Ouvrir une Pull Request** vers la branche **`main`** pour revue de code.

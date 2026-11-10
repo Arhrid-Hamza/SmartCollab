@@ -1,6 +1,6 @@
-# 🌟 À Propos de SmartCollab (About)
+# 🌟 À Propos d'EMSICollab (About)
 
-> **Plateforme Cloud-Native Intelligente de Gestion de Projets Académiques, Sujets PFE et de Matching / Recommandation de Compétences Étudiantes**
+> **Plateforme Cloud-Native Intelligente de Gestion de Projets Académiques, Sujets PFE et de Matching / Recommandation de Compétences Étudiantes pour l'EMSI**
 
 ---
 
@@ -12,7 +12,7 @@ Dans les écoles d'ingénieurs et universités techniques, la réussite d'un pro
 
 Traditionnellement, le choix des sujets PFE et la formation des équipes se font de manière manuelle, arbitraire ou par affinité personnelle, aboutissant souvent à des inadéquations techniques (ex: un étudiant affecté à un sujet exigeant des technologies qu'il ne maîtrise pas, ou des équipes déséquilibrées sans compétences UI ou DevOps).
 
-**SmartCollab** répond à ce défi en introduisant un double moteur algorithmique d'adéquation de compétences (*Skills Compatibility & Recommendation Engine*) :
+**EMSICollab** répond à ce défi en introduisant un double moteur algorithmique d'adéquation de compétences (*Skills Compatibility & Recommendation Engine*) :
 - **Recommandation individualisée de sujets PFE** pour orienter chaque étudiant vers les sujets les plus pertinents par rapport à son profil technique.
 - **Constitution et évaluation stratégique d'équipes** pour garantir la viabilité technique des projets académiques de groupe.
 
@@ -40,14 +40,14 @@ Traditionnellement, le choix des sujets PFE et la formation des équipes se font
 
 ## 🏛️ 3. Architecture Technique & Choix Technologiques
 
-SmartCollab est conçu selon les meilleures pratiques industrielles des systèmes distribués cloud-native :
+EMSICollab est conçu selon les meilleures pratiques industrielles des systèmes distribués cloud-native :
 
 - **Pattern Database-per-Service** : Isolation stricte de la persistance entre services métier (3 bases de données PostgreSQL indépendantes : `auth_db`, `project_db`, `team_matching_db`).
 - **Domain-Driven Design (DDD)** : Découpage modulaire orienté métier avec des contextes délimités (*Bounded Contexts*).
 - **API Gateway Réactive** : Point d'accès unique avec filtre réactif `JwtAuthenticationFilter`, validation des tokens JWT et propagation des en-têtes d'identité (`X-User-Id`, `X-User-Role`, `X-User-Email`).
 - **Service Registry Dynamique** : Résolution transparente des instances de microservices via Spring Cloud Eureka Discovery.
 - **Architecture Événementielle (EDA)** : Découplage asynchrone des flux critiques via Apache Kafka en mode KRaft (sans ZooKeeper).
-- **Frontend SPA Réactif** : Interface monopage moderne développée avec React 18, Vite, Tailwind CSS et Lucide Icons.
+- **Frontend SPA Réactif** : Interface monopage moderne développée avec React 18, Vite, Tailwind CSS, GSAP et Lucide Icons aux couleurs institutionnelles de l'EMSI.
 
 ---
 
@@ -56,31 +56,31 @@ SmartCollab est conçu selon les meilleures pratiques industrielles des système
 | Dimension | Technologies & Standards |
 | :--- | :--- |
 | **Backend Core** | Java 21 LTS, Spring Boot 3.3.4, Spring Cloud 2023.0.3, Spring Data JPA |
-| **Sécurité & Auth** | Spring Security, BCrypt, JWT (JSON Web Tokens) stateless |
+| **Sécurité & Auth** | Spring Security 6, BCrypt, JWT (JSON Web Tokens) stateless |
 | **Communication Inter-services**| Synchrone : OpenFeign REST Client \| Asynchrone : Apache Kafka (KRaft mode :9092) |
 | **Persistance des Données** | PostgreSQL 16 (3 instances conteneurisées distinctes) |
-| **Frontend & UI** | React 18, Vite, Tailwind CSS 3.4, React Router 6, Lucide Icons |
+| **Frontend & UI** | React 18, Vite, Tailwind CSS 3.4, React Router 6, GSAP, Lucide Icons |
 | **Orchestration & DevOps** | Docker, Docker Compose, Maven multi-modules |
 
 ---
 
 ## 🌿 5. Organisation du Repository GitHub
 
-Le projet adopte une organisation claire articulée autour de **4 branches principales** :
+Le projet est consolidé sous forme de **Monorepo centralisé sur la branche unique `main`** :
 
 ```text
-SmartCollab (Monorepo)
-├── 🛡️ main     -> Version de référence stable, documentation et releases
-├── 💻 frontend -> Interface utilisateur React 18, Tailwind CSS et Dashboards
-├── ⚙️ backend  -> Microservices Spring Boot (auth, project, team-matching, gateway, discovery, config)
-└── 🐳 devops   -> Infrastructure Docker Compose, PostgreSQL multi-DBs et Apache Kafka
+EMSICollab (Monorepo sur la branche main)
+├── 💻 frontend/ -> Interface utilisateur React 18, Tailwind CSS, thème EMSI & Dashboards
+├── ⚙️ backend/  -> Microservices Spring Boot (auth-service, pom multi-modules)
+└── 🐳 docker/   -> Infrastructure Docker Compose, PostgreSQL multi-DBs et initialisation SQL
 ```
 
 ---
 
 ## 👥 6. Équipe & Contexte Académique
 
-- **Projet** : Plateforme SmartCollab — Gestion Intelligente de Projets & Équipes
+- **Projet** : Plateforme EMSICollab — Gestion Intelligente de Projets & Équipes
+- **Institution** : École Marocaine des Sciences de l'Ingénieur (EMSI)
 - **Cadre** : Cursus d'Ingénierie & Informatique
 - **Année Académique** : 2026-2027
 - **Auteur & Lead** : [Hamza Arhrid](https://github.com/Arhrid-Hamza)
@@ -90,4 +90,4 @@ SmartCollab (Monorepo)
 
 ## 📄 7. Licence
 
-Ce projet est distribué sous licence pédagogique et académique. Tous droits réservés © 2026 SmartCollab Team.
+Ce projet est distribué sous licence pédagogique et académique. Tous droits réservés © 2026 EMSICollab Team.

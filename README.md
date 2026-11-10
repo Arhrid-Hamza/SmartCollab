@@ -1,4 +1,4 @@
-# 🎓 SmartCollab — Plateforme Microservices Intelligente de Gestion de Projets Académiques, Sujets PFE & Matching de Compétences
+# 🎓 EMSICollab — Plateforme Microservices Intelligente de Gestion de Projets Académiques, Sujets PFE & Matching de Compétences
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2023.0.3-blue.svg)](https://spring.io/projects/spring-cloud)
@@ -7,7 +7,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
 [![Apache Kafka](https://img.shields.io/badge/Kafka-KRaft-black.svg)](https://kafka.apache.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
-[![About SmartCollab](https://img.shields.io/badge/Docs-About%20SmartCollab-8a2be2.svg)](ABOUT.md)
+[![About EMSICollab](https://img.shields.io/badge/Docs-About%20EMSICollab-8a2be2.svg)](ABOUT.md)
 
 ---
 
@@ -24,22 +24,22 @@
    - [6.3 Dashboard Administrateur (Admin)](#63-dashboard-administrateur-admin)
 7. [Diagrammes de Séquence & Cycles de Vie](#-7-diagrammes-de-séquence--cycles-de-vie)
 8. [Contrats d'APIs & Endpoints REST](#-8-contrats-dapis--endpoints-rest)
-9. [Stratégie de Branches Git & Organisation du Projet](#-9-stratégie-de-branches-git--organisation-du-projet)
-10. [Guide du Développeur & Répartition des Tâches Collaborateurs](#-10-guide-du-développeur--répartition-des-tâches-collaborateurs)
-11. [Installation, Déploiement & Comptes de Démonstration](#-11-installation-déploiement--comptes-de-démonstration)
+9. [Architecture Monorepo & Stratégie Git](#-9-architecture-monorepo--stratégie-git)
+10. [Guide du Développeur & État d'Avancement des Pôles](#-10-guide-du-développeur--état-davancement-des-pôles)
+11. [Installation, Démarrage Rapide & Comptes de Démonstration](#-11-installation-démarrage-rapide--comptes-de-démonstration)
 
 ---
 
 ## 🌟 1. Vue d'Ensemble & Vision du Projet
 
-**SmartCollab** est une plateforme académique cloud-native conçue pour orchestrer la gestion des **Sujets PFE (Projets de Fin d'Études)** et **Projets Académiques Complexes**, en s'appuyant sur un moteur algorithmique d'adéquation et de recommandation de compétences.
+**EMSICollab** est une plateforme académique cloud-native spécialement conçue pour l'**École Marocaine des Sciences de l'Ingénieur (EMSI)**, orchestrant la gestion des **Sujets PFE (Projets de Fin d'Études)** et **Projets Académiques Complexes**, en s'appuyant sur un moteur algorithmique d'adéquation et de recommandation de compétences.
 
 ### Problématique Résolue :
 Dans les cursus d'ingénierie et d'informatique :
 1. **Attribution et choix des sujets PFE** : Les étudiants ont souvent du mal à identifier les sujets PFE qui correspondent précisément à leurs compétences réelles et à leurs aspirations professionnelles. De leur côté, les professeurs reçoivent des candidatures inadéquates nécessitant un tri manuel fastidieux.
 2. **Constitution inefficace ou déséquilibrée des équipes** : Pour les projets menés en binôme ou en groupe, les étudiants s'associent généralement par affinité, conduisant à des équipes déséquilibrées (ex: 4 profils backend sans compétences frontend ou DevOps), sources de retards et d'échecs.
 
-### Solution SmartCollab :
+### Solution EMSICollab :
 - **Profilage fin des compétences** : Chaque étudiant déclare ses compétences techniques avec un niveau d'expertise (1 à 5) et ses années d'expérience, visualisées sous forme de Radar d'expertise.
 - **Publication granulaire des sujets PFE & Projets** : Les enseignants publient des sujets de projets (individuels `min=1` ou en équipe `min=2..4`) avec une description détaillée et des exigences technologiques précises (niveaux requis, pondérations $w_i$, compétences obligatoires/veto).
 - **Moteur de recommandation PFE personnalisé pour chaque étudiant** : L'étudiant dispose d'un flux personnalisé de sujets PFE classés par score de compatibilité décroissant (ex: *95% Match*), avec mise en évidence des prérequis satisfaits et des compétences manquantes.
@@ -395,7 +395,7 @@ flowchart LR
 
 ## ⚙️ 5. Moteur Algorithmique de Matching & Recommandation
 
-Le cœur d'innovation de SmartCollab repose sur le composant **`SkillMatchingEngine`**, capable d'opérer aussi bien à l'échelle **collective (Équipe $\leftrightarrow$ Projet)** qu'à l'échelle **individuelle (Étudiant $\leftrightarrow$ Sujets PFE)**.
+Le cœur d'innovation d'EMSICollab repose sur le composant **`SkillMatchingEngine`**, capable d'opérer aussi bien à l'échelle **collective (Équipe $\leftrightarrow$ Projet)** qu'à l'échelle **individuelle (Étudiant $\leftrightarrow$ Sujets PFE)**.
 
 ### 1. Calcul du Niveau d'Équipe pour une Compétence
 Pour une compétence requise $s$, le niveau disponible au sein de l'équipe est déterminé par le niveau maximal détenu par l'un des membres de l'équipe :
@@ -568,7 +568,7 @@ L'espace administrateur assure la gouvernance de la plateforme, la gestion des r
 4. **Monitoring & Santé de l'Écosystème Microservices** :
    - État de santé des instances enregistrées sur Eureka (`UP` / `DOWN`).
    - Surveillance de l'état des 3 bases de données PostgreSQL.
-   - Suivi de la connectivité du cluster Kafka et des topics actifs (`smartcollab.projects.v1`, etc.).
+   - Suivi de la connectivité du cluster Kafka et des topics actifs (`emsicollab.projects.v1`, etc.).
 
 ---
 
@@ -596,7 +596,7 @@ sequenceDiagram
     Gateway->>Gateway: Valide JWT & extrait (X-User-Id, X-User-Role=PROFESSOR)
     Gateway->>ProjSvc: Reroute requête avec en-têtes d'identité
     ProjSvc->>ProjSvc: Sauvegarde projet & contraintes dans project_db
-    ProjSvc->>Kafka: Publie ProjectCreatedEvent (Topic: smartcollab.projects.v1)
+    ProjSvc->>Kafka: Publie ProjectCreatedEvent (Topic: emsicollab.projects.v1)
     ProjSvc-->>Front: 201 Created (ProjectDto)
     Kafka-->>MatchSvc: Consomme événement (Mise en cache du nouveau sujet)
 
@@ -720,102 +720,122 @@ Toutes les requêtes passent par l'API Gateway sur le port **`8080`**.
 
 ---
 
-## 🌿 9. Stratégie de Branches Git & Organisation du Projet
+## 🌿 9. Architecture Monorepo & Stratégie Git
 
-Pour garantir une collaboration sans heurt et éviter la dispersion du code dans des dizaines de branches éphémères, le repository GitHub est structuré autour de **3 branches principales d'équipe** en plus de la branche `main` :
+Pour garantir une collaboration fluide, éliminer le cloisonnement de code et faciliter l'intégration continue, le projet **EMSICollab** est structuré sous forme de **Monorepo centralisé sur la branche unique `main`**. Les anciennes branches d'équipes (`frontend`, `backend`, `devops`) ont été consolidées et supprimées afin de réunir tous les modules au sein d'une seule source de vérité.
+
+### Structure du Repository Monorepo
+
+```text
+emsicollab/
+├── frontend/                   # Application Web React 18 / Vite / Tailwind CSS
+│   ├── src/
+│   │   ├── api/                # Client Axios configuré, JWT & intercepteurs
+│   │   ├── assets/             # Logos officiels EMSI & EMSICollab, illustrations
+│   │   ├── components/         # Barre EMSI (EmsiBar), Navbar, FoldText GSAP, ProtectedRoute
+│   │   ├── context/            # AuthContext (gestion session, token, login/logout)
+│   │   └── pages/              # Écran de connexion (LoginPage) & Dashboard multi-rôles
+│   ├── package.json            # Dépendances npm (emsicollab-frontend)
+│   └── vite.config.js          # Serveur de développement Vite (:5173)
+├── backend/                    # Microservices Spring Boot 3 & Maven Multi-modules (Java 21)
+│   ├── pom.xml                 # POM parent multi-modules (Java 21, Spring Boot 3.3.4, JJWT)
+│   └── auth-service/           # Microservice Auth, JWT, Sécurité, Profils & Compétences (:8081)
+│       └── src/main/java/      # Contrôleurs REST, Modèles (User, Skill), Repositories, DataInitializer
+├── docker/                     # Orchestration Infrastructure & Bases de Données
+│   ├── docker-compose.yml      # 3 instances PostgreSQL isolées (auth :5431, proj :5433, team :5434)
+│   └── init-sql/               # Scripts SQL d'initialisation (01-auth-init.sql)
+├── ABOUT.md                    # Présentation détaillée et contexte institutionnel EMSI
+└── README.md                   # Documentation maîtresse unifiée
+```
 
 ```mermaid
 gitGraph
     commit id: "Initial Documentation"
-    branch devops
-    branch backend
-    branch frontend
-    checkout frontend
-    commit id: "React UI & Dashboards"
-    checkout backend
-    commit id: "Spring Boot Microservices"
-    checkout devops
-    commit id: "Docker Compose & Kafka"
+    commit id: "Consolidation Monorepo sur main"
+    branch feat/auth-v1
+    checkout feat/auth-v1
+    commit id: "auth-service & JWT Security"
+    commit id: "Frontend UI EMSI & Dashboard"
     checkout main
-    merge backend id: "Merge Backend v1.0"
-    merge frontend id: "Merge Frontend v1.0"
-    merge devops id: "Release Production"
+    merge feat/auth-v1 id: "Merge Auth V1 into main"
+    branch feat/project-matching
+    checkout feat/project-matching
+    commit id: "project-service & matching-engine"
+    checkout main
+    merge feat/project-matching id: "Sprint 2 Release"
 ```
 
-### Rôle et Périmètre des Branches Principales
+### Workflow de Développement au Quotidien (Trunk-Based / Feature Branches)
 
-| Branche Git | Équipe Responsable | Périmètre Technique & Dossiers Dédiés |
-| :--- | :--- | :--- |
-| 🛡️ **`main`** | **Toute l'équipe** | Branche de référence stable / production. Elle contient la documentation maîtresse ([README.md](file:///home/arhrid-hamza/SmartCollab/README.md)) et reçoit uniquement les fusions validées (Pull Requests) des branches `backend`, `frontend` et `devops`. |
-| 💻 **`frontend`** | **Équipe Front-End** | Développement de l'interface monopage React 18, Tailwind CSS, Lucide icons, formulaires, diagrammes Radar et dashboards Étudiant/Professeur/Admin (Dossier : `frontend/`). |
-| ⚙️ **`backend`** | **Équipe Back-End** | Développement de l'ensemble des microservices Spring Boot (`auth-service`, `project-service`, `team-matching-service`, `gateway-service`, `discovery-service`, `config-service`) et du module partagé (`common-dtos`). |
-| 🐳 **`devops`** | **Équipe Infrastructure**| Scripts de déploiement, orchestration `docker-compose.yml`, bases PostgreSQL indépendantes, cluster Apache Kafka KRaft et configurations de pipelines (Dossiers : `docker/`, `scripts/`). |
+Tout le travail d'équipe part désormais directement de la branche **`main`** :
 
-### Workflow de Développement au Quotidien (Feature Branches)
-
-Chaque collaborateur travaille selon le principe du **Feature Branching** rattaché à son pôle :
 1. **Cloner le repository** :
    ```bash
-   git clone https://github.com/Arhrid-Hamza/SmartCollab.git
-   cd SmartCollab
+   git clone https://github.com/Arhrid-Hamza/SmartCollab.git emsicollab
+   cd emsicollab
    ```
-2. **Basculer sur sa branche de pôle** (`backend` ou `frontend`) :
+2. **S'assurer d'être à jour sur `main`** :
    ```bash
-   git checkout backend
-   # ou : git checkout frontend
+   git checkout main
+   git pull origin main
    ```
-3. **Créer une branche de tâche spécifique** :
+3. **Créer une branche de fonctionnalité courte durée** :
    ```bash
    git checkout -b feat/nom-de-votre-fonctionnalite
    ```
 4. **Développer, committer et pousser** :
    ```bash
    git add .
-   git commit -m "feat(module): description claire du changement"
+   git commit -m "feat(scope): description claire de l'ajout"
    git push -u origin feat/nom-de-votre-fonctionnalite
    ```
-5. **Ouvrir une Pull Request (PR)** sur GitHub vers sa branche de pôle (`backend` ou `frontend`). Une fois validée par les pairs, la fusion s'effectue vers `main`.
+5. **Ouvrir une Pull Request (PR)** sur GitHub avec `main` comme cible de fusion. Après revue par les pairs, la PR est fusionnée directement dans `main`.
 
 ---
 
-## 👥 10. Guide du Développeur & Répartition des Tâches Collaborateurs
+## 👥 10. Guide du Développeur & État d'Avancement des Pôles
+
+Le développement est articulé par pôle d'expertise technique dans les dossiers respectifs du monorepo.
 
 ```mermaid
 flowchart TD
-    subgraph Collab_Front["Équipe Front-End (Branche : frontend)"]
-        F1["Chantier F1 : Dashboard Étudiant\n- Profil, radar de compétences & bio\n- Gestion de l'équipe & invitations\n- Studio de matching interactif"]
-        F2["Chantier F2 : Dashboard Professeur\n- Création de projets & quotas d'équipe\n- Constructeur d'exigences & veto\n- Revue et approbation des candidatures"]
-        F3["Chantier F3 : Console Administrateur\n- Gestion des comptes et des rôles\n- Taxonomie des compétences globales\n- Monitoring système & santé microservices"]
+    subgraph Pôle_Front["💻 Pôle Front-End (Dossier: frontend/)"]
+        F1["✅ Écran de Connexion EMSI\n- Charte verte #15885a & EmsiBar\n- Titre FoldText GSAP & logo EMSICollab\n- Validation du domaine @emsi-edu.ma"]
+        F2["✅ Session & Dashboard Multi-Rôles\n- AuthContext, token JWT & intercepteur Axios\n- Vue adaptative Étudiant / Professeur / Admin\n- Déconnexion et protection des routes"]
+        F3["⏳ En cours : Profil Étudiant & Studio PFE\n- Radar d'expertise de compétences\n- Éditeur de sujets professeur & veto\n- Simulateur de matching d'équipe"]
     end
 
-    subgraph Collab_Back["Équipe Back-End (Branche : backend)"]
-        B1["Chantier B1 : auth-service & common-dtos\n- Modèle de données User & Skills\n- Endpoints JWT, sécurité & filtres Gateway\n- DTOs partagés inter-services"]
-        B2["Chantier B2 : project-service\n- Gestion du cycle de vie des sujets\n- Quotas min/max d'équipe et deadlines\n- Émission d'événements Kafka"]
-        B3["Chantier B3 : team-matching-service\n- Moteur SkillMatchingEngine & Veto\n- Clients OpenFeign synchrones\n- Stockage JSONB des breakdowns"]
+    subgraph Pôle_Back["⚙️ Pôle Back-End (Dossier: backend/)"]
+        B1["✅ auth-service (:8081)\n- Modèles User, Skill, UserSkill\n- Sécurité Spring Security 6 & JJWT 0.12.6\n- DataInitializer : 3 comptes EMSI & 8 skills"]
+        B2["⏳ project-service (:8082)\n- Cycle de vie des sujets PFE & projets\n- Quotas min/max et exigences techniques\n- Événements Kafka (Topic: emsicollab.projects.v1)"]
+        B3["⏳ team-matching-service (:8083)\n- Algorithme SkillMatchingEngine & Veto\n- Recommandation PFE personnalisée\n- Communication synchrone OpenFeign"]
     end
 
-    subgraph Collab_DevOps["Équipe DevOps (Branche : devops)"]
-        D1["Chantier D1 : Conteneurisation & DBs\n- Configuration Docker Compose multi-DBs\n- Scripts SQL initiaux (auth, project, team)\n- Broker Apache Kafka en mode KRaft"]
+    subgraph Pôle_DevOps["🐳 Pôle DevOps & Infra (Dossier: docker/)"]
+        D1["✅ Multi-DBs PostgreSQL\n- auth_db (:5431) + script 01-auth-init.sql\n- project_db (:5433)\n- team_matching_db (:5434)"]
+        D2["⏳ Orchestration & Messaging\n- Broker Apache Kafka KRaft (:9092)\n- Profils Spring Cloud Config (:8888)\n- Enregistrement Eureka & Gateway"]
     end
 ```
 
-### Matrice RACI des Tâches Techniques
+### Matrice RACI des Chantiers Techniques
 
-| Pôle / Branche | Fonctionnalité Clé | Tâche Développeur Précise | Fichiers Cibles Clés |
-| :--- | :--- | :--- | :--- |
-| **`frontend`** | **Profil & Compétences** | Créer la page de profil étudiant avec sliders de niveau (1-5) et graphique Radar. | `frontend/src/pages/ProfilePage.jsx` |
-| **`frontend`** | **Gestion d'Équipe UI** | Interface de recherche de coéquipiers et gestion des statuts de l'équipe. | `frontend/src/pages/TeamsPage.jsx` |
-| **`frontend`** | **Studio Sujets Professeur** | Interface dynamique d'ajout d'exigences avec toggle `isMandatory` et sliders de poids. | `frontend/src/pages/ProfessorStudioPage.jsx` |
-| **`frontend`** | **Console Administration UI** | Tableaux de bord Admin avec gestion des rôles et catalogue des compétences. | `frontend/src/pages/AdminDashboardPage.jsx` |
-| **`backend`** | **Endpoints Admin Backend** | Ajouter les endpoints d'administration des utilisateurs et des rôles dans `auth-service`. | `UserController.java`, `SkillController.java` |
-| **`backend`** | **Workflow d'Approbation** | Implémenter les statuts de candidature et le verrouillage de projet dans `project-service`. | `ProjectService.java`, `Project.java` |
-| **`backend`** | **Algorithme & Suggestion** | Étendre `SkillMatchingEngine` pour suggérer les profils idéaux manquants à une équipe. | `SkillMatchingEngine.java`, `MatchingService.java` |
-| **`backend`** | **Événements Asynchrones** | Finaliser les producteurs/consommateurs Kafka pour la synchronisation inter-services. | `ProjectEventListener.java`, `TeamFormedEvent.java` |
-| **`devops`** | **Infrastructure & Conteneurs**| Finaliser l'orchestration des 3 bases de données PostgreSQL et du broker Kafka. | `docker/docker-compose.yml`, `init-sql/` |
+| Pôle / Dossier | Fonctionnalité Clé | Statut | Tâche & Fichiers Clés |
+| :--- | :--- | :---: | :--- |
+| **`frontend/`** | **Page de Login EMSI** | ✅ Réalisé | Interface de connexion moderne avec branding vert EMSI (`#15885a`), composant `EmsiBar` avec liens officiels, animation `FoldText` GSAP et validation `@emsi-edu.ma` (`frontend/src/pages/LoginPage.jsx`). |
+| **`frontend/`** | **Session & Routes Protégées** | ✅ Réalisé | Contexte global `AuthContext`, stockage token JWT, Axios client (`frontend/src/api/client.js`) et redirection sécurisée (`ProtectedRoute.jsx`). |
+| **`frontend/`** | **Dashboard Adaptatif** | ✅ Réalisé | Tableau de bord avec affichage conditionnel selon le rôle (`STUDENT`, `PROFESSOR`, `ADMIN`) et déconnexion sécurisée (`frontend/src/pages/DashboardPage.jsx`). |
+| **`frontend/`** | **Profil & Radar Compétences** | ⏳ Prévu | Formulaire de profil étudiant avec sliders d'expertise (1 à 5) et visualisation Radar (`ProfilePage.jsx`). |
+| **`frontend/`** | **Studio PFE & Matching UI** | ⏳ Prévu | Interface professeur de publication de sujets avec veto et tableau de bord de matching pour étudiants (`ProfessorStudioPage.jsx`, `TeamsPage.jsx`). |
+| **`backend/`** | **Authentification & Sécurité** | ✅ Réalisé | Endpoints `/api/v1/auth/login`, `/register`, filtres `JwtAuthFilter`, hachage BCrypt (`backend/auth-service`). |
+| **`backend/`** | **Profils & Compétences** | ✅ Réalisé | CRUD compétences `/api/v1/skills`, gestion des compétences utilisateur `/api/v1/users/me` et seed automatique (`DataInitializer.java`). |
+| **`backend/`** | **Gestion des Sujets PFE** | ⏳ Prévu | Microservice `project-service` pour la création, publication et cycle de vie des sujets avec contraintes de taille d'équipe. |
+| **`backend/`** | **Moteur de Matching** | ⏳ Prévu | Microservice `team-matching-service` intégrant `SkillMatchingEngine`, règles de veto et flux de recommandation PFE. |
+| **`docker/`** | **Bases PostgreSQL Isolées** | ✅ Réalisé | 3 conteneurs PostgreSQL indépendants (`auth_db` :5431, `project_db` :5433, `team_matching_db` :5434) avec script `01-auth-init.sql`. |
+| **`docker/`** | **Messagerie Kafka KRaft** | ⏳ Prévu | Configuration et activation du broker Kafka sans ZooKeeper pour la communication événementielle. |
 
 ---
 
-## 🚀 11. Installation, Déploiement & Comptes de Démonstration
+## 🚀 11. Installation, Démarrage Rapide & Comptes de Démonstration
 
 ### Prérequis Système
 - **Java** : JDK 21 LTS
@@ -825,87 +845,63 @@ flowchart TD
 
 ---
 
-### Étape 1 : Démarrage des Bases de Données & Kafka via Docker
-Lancez les conteneurs PostgreSQL indépendants et le broker Kafka :
+### Étape 1 : Démarrage des Bases de Données via Docker
+
+Démarrez les conteneurs PostgreSQL indépendants depuis la racine du projet :
 ```bash
 docker compose -f docker/docker-compose.yml up -d
 ```
-*Vérifiez que tous les conteneurs sont `healthy` :*
+
+*Vérifiez que les 3 conteneurs de persistance sont bien actifs :*
 ```bash
 docker compose -f docker/docker-compose.yml ps
 ```
 
 ---
 
-### Étape 2 : Compilation du Backend
-Compilez l'ensemble des modules Maven à la racine du projet :
+### Étape 2 : Lancement du Microservice Backend (`auth-service`)
+
+Vous pouvez lancer le service d'authentification directement via Maven :
+
 ```bash
-mvn clean package -DskipTests -f backend/pom.xml
+mvn spring-boot:run -f backend/auth-service/pom.xml
 ```
 
----
+*Ou compiler l'ensemble des modules Maven puis exécuter le JAR :*
+```bash
+mvn clean package -DskipTests -f backend/pom.xml
+java -jar backend/auth-service/target/auth-service-1.0.0-SNAPSHOT.jar
+```
 
-### Étape 3 : Démarrage des Microservices (Ordre Recommandé)
-Démarrez les services dans des terminaux distincts (ou via script d'automatisation) :
-
-1. **Discovery Server (Eureka)** :
-   ```bash
-   java -jar backend/discovery-service/target/discovery-service-1.0.0-SNAPSHOT.jar
-   ```
-   *(Interface Eureka accessible sur : [http://localhost:8761](http://localhost:8761))*
-
-2. **Config Server** :
-   ```bash
-   java -jar backend/config-service/target/config-service-1.0.0-SNAPSHOT.jar
-   ```
-
-3. **API Gateway** :
-   ```bash
-   java -jar backend/gateway-service/target/gateway-service-1.0.0-SNAPSHOT.jar
-   ```
-
-4. **Auth Service** :
-   ```bash
-   java -jar backend/auth-service/target/auth-service-1.0.0-SNAPSHOT.jar
-   ```
-
-5. **Project Service** :
-   ```bash
-   java -jar backend/project-service/target/project-service-1.0.0-SNAPSHOT.jar
-   ```
-
-6. **Team Matching Service** :
-   ```bash
-   java -jar backend/team-matching-service/target/team-matching-service-1.0.0-SNAPSHOT.jar
-   ```
+Le microservice démarre sur le port **`8081`** et se connecte automatiquement à la base `auth_db` (`localhost:5431`). Au premier démarrage, le composant `DataInitializer` injecte automatiquement le catalogue des 8 compétences clés et les comptes de test.
 
 ---
 
-### Étape 4 : Lancement de l'Application Frontend React
-Dans un nouveau terminal :
+### Étape 3 : Lancement de l'Application Frontend React
+
+Dans un second terminal :
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Accédez à l'application web sur **[http://localhost:5173](http://localhost:5173)**.
+
+L'application web est accessible sur : **[http://localhost:5173](http://localhost:5173)**.
 
 ---
 
-### 🔑 Comptes de Test Pré-configurés
+### 🔑 Comptes de Démonstration Pré-configurés (`@emsi-edu.ma`)
 
-Tous les comptes ci-dessous sont pré-insérés en base avec le mot de passe unique : **`Password123!`**
+Tous les comptes ci-dessous sont pré-initialisés dans la base `auth_db` avec leurs rôles respectifs :
 
-| Utilisateur | Email | Rôle | Spécialité / Rôle Métier |
-| :--- | :--- | :--- | :--- |
-| **System Admin** | `admin@smartcollab.edu` | `ADMIN` | Administrateur global de la plateforme académique |
-| **Dr. Mehdi Alami** | `prof.alami@smartcollab.edu` | `PROFESSOR` | Professeur en Génie Logiciel & Architectures Cloud |
-| **Dr. Sara Bennani** | `prof.bennani@smartcollab.edu` | `PROFESSOR` | Professeure en Intelligence Artificielle & Big Data |
-| **Yassine Benali** | `yassine.benali@smartcollab.edu` | `STUDENT` | Étudiant Leader : Backend Java / Spring Boot (5/5), Kafka, Postgres |
-| **Fatima Zahra Mansouri**| `fatima.mansouri@smartcollab.edu`| `STUDENT` | Étudiante : DevOps, Docker & Kubernetes (5/5), Java |
-| **Omar Tazi** | `omar.tazi@smartcollab.edu` | `STUDENT` | Étudiant : Data Science, Python & Machine Learning (5/5), Kafka |
-| **Nour El Houda Idrissi**| `nour.houda@smartcollab.edu` | `STUDENT` | Étudiante : Frontend UI/UX, React.js (5/5), Tailwind |
+| Rôle | Nom & Prénom | Email Institutionnel | Mot de Passe | Description & Droits d'Accès |
+| :--- | :--- | :--- | :--- | :--- |
+| 🎓 **Étudiant** | **Hamza Arhrid** | `student@emsi-edu.ma` | `Student123!` | Identifiant : `STU-2026-001`. Accès à l'espace étudiant ingénieur, radar de compétences, matching et recommandations de PFE. |
+| 👨‍🏫 **Professeur** | **Karim Benali** | `prof@emsi-edu.ma` | `Prof123!` | Professeur en Génie Logiciel, responsable PFE. Accès à l'atelier de création de sujets et à la revue des candidatures. |
+| 🛡️ **Administrateur** | **Admin EMSICollab** | `admin@emsi-edu.ma` | `Admin123!` | Superviseur global de la plateforme académique EMSI. Gestion des comptes utilisateurs et gouvernance des compétences. |
+
+> 📌 **Note de Sécurité** : L'interface de connexion n'autorise que les adresses email se terminant par le domaine officiel **`@emsi-edu.ma`**.
 
 ---
 
-> 💡 **Conseil pour l'équipe** : Consultez régulièrement la section [Guide du Développeur](#-10-guide-du-développeur--répartition-des-tâches-collaborateurs) pour synchroniser vos développements sur vos branches respectives (`frontend`, `backend`, `devops`).
+> 💡 **Conseil pour l'équipe** : Le projet EMSICollab est géré en **Monorepo** sur la branche **`main`**. Référez-vous à la section [Guide du Développeur](#-10-guide-du-développeur--état-davancement-des-pôles) pour organiser vos contributions sur les dossiers respectifs (`frontend/`, `backend/`, `docker/`).

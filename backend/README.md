@@ -1,4 +1,4 @@
-# ⚙️ SmartCollab — Pôle Back-End (Microservices Spring Boot & Cloud)
+# ⚙️ EMSICollab — Pôle Back-End (Microservices Spring Boot & Cloud)
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2023.0.3-blue.svg)](https://spring.io/projects/spring-cloud)
@@ -6,7 +6,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
 [![Apache Kafka](https://img.shields.io/badge/Kafka-KRaft-black.svg)](https://kafka.apache.org/)
 
-Bienvenue sur la branche **`backend`** de SmartCollab ! Cette branche regroupe l'ensemble des microservices métier et d'infrastructure développés en **Java 21 LTS** avec **Spring Boot 3** et **Spring Cloud**.
+Bienvenue dans le dossier **`backend/`** d'EMSICollab ! Ce dossier regroupe l'ensemble des microservices métier et d'infrastructure développés en **Java 21 LTS** avec **Spring Boot 3** et **Spring Cloud**.
 
 ---
 
@@ -110,7 +110,7 @@ flowchart LR
 ### Prérequis
 - **Java** : JDK 21 LTS
 - **Maven** : Version 3.9+
-- **Docker** : Conteneurs des bases de données et Kafka démarrés (via la branche `devops`).
+- **Docker** : Conteneurs des bases de données PostgreSQL démarrés (via le dossier `docker/`).
 
 ### Étape 1 : Compilation Complète du Projet
 À la racine du dossier `backend/` :
@@ -118,48 +118,32 @@ flowchart LR
 mvn clean package -DskipTests
 ```
 
-### Étape 2 : Ordre de Démarrage Impératif des Microservices
-Démarrez les services dans l'ordre suivant (dans des terminaux distincts) :
+### Étape 2 : Démarrage du Microservice Actuel (`auth-service`)
+Le microservice `auth-service` est opérationnel :
+```bash
+mvn spring-boot:run -f auth-service/pom.xml
+```
+*Ou via JAR :*
+```bash
+java -jar auth-service/target/auth-service-1.0.0-SNAPSHOT.jar
+```
 
-1. **Discovery Server (Eureka)** :
-   ```bash
-   java -jar discovery-service/target/discovery-service-1.0.0-SNAPSHOT.jar
-   ```
-   *(Vérifiez la console Eureka sur : [http://localhost:8761](http://localhost:8761))*
-
-2. **Config Server** :
-   ```bash
-   java -jar config-service/target/config-service-1.0.0-SNAPSHOT.jar
-   ```
-
-3. **API Gateway** :
-   ```bash
-   java -jar gateway-service/target/gateway-service-1.0.0-SNAPSHOT.jar
-   ```
-
-4. **Auth Service** :
-   ```bash
-   java -jar auth-service/target/auth-service-1.0.0-SNAPSHOT.jar
-   ```
-
-5. **Project Service** :
-   ```bash
-   java -jar project-service/target/project-service-1.0.0-SNAPSHOT.jar
-   ```
-
-6. **Team Matching Service** :
-   ```bash
-   java -jar team-matching-service/target/team-matching-service-1.0.0-SNAPSHOT.jar
-   ```
+### Ordre de Déploiement Cible (Microservices Suivants) :
+1. **Discovery Server (Eureka)** (`:8761`)
+2. **Config Server** (`:8888`)
+3. **API Gateway** (`:8080`)
+4. **Auth Service** (`:8081`)
+5. **Project Service** (`:8082`)
+6. **Team Matching Service** (`:8083`)
 
 ---
 
-## 🌿 5. Règles de Contribution sur la Branche `backend`
+## 🌿 5. Règles de Contribution Monorepo
 
-1. **Partir de `backend`** : Mettez à jour votre branche locale avec `git pull origin backend`.
+1. **Partir de `main`** : Mettez à jour votre copie locale avec `git pull origin main`.
 2. **Créer votre Feature Branch** :
    ```bash
    git checkout -b feat/back-nom-de-votre-service
    ```
 3. **Convention pour les DTOs** : Tout DTO ou événement partagé entre plusieurs microservices **doit obligatoirement être déclaré dans `backend/common-dtos`** avant d'être utilisé dans un service métier.
-4. **Ouvrir une Pull Request** vers la branche **`backend`** pour validation par les pairs.
+4. **Ouvrir une Pull Request** vers la branche **`main`** pour validation par les pairs.

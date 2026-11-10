@@ -1,11 +1,11 @@
-# 🐳 SmartCollab — Pôle DevOps & Infrastructure
+# 🐳 EMSICollab — Pôle DevOps & Infrastructure
 
 [![Docker](https://img.shields.io/badge/Docker-Compose%20v2-2496ed.svg)](https://www.docker.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20Alpine-336791.svg)](https://www.postgresql.org/)
 [![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-KRaft%20Mode-black.svg)](https://kafka.apache.org/)
 [![Bash](https://img.shields.io/badge/Scripts-Bash%20Automated-4EAA25.svg)](https://www.gnu.org/software/bash/)
 
-Bienvenue sur la branche **`devops`** de SmartCollab ! Cette branche regroupe l'ensemble des configurations d'infrastructure conteneurisée, les scripts d'initialisation SQL des bases de données et le cluster Apache Kafka en mode KRaft.
+Bienvenue dans le dossier **`docker/`** d'EMSICollab ! Ce dossier regroupe l'ensemble des configurations d'infrastructure conteneurisée, les scripts d'initialisation SQL des bases de données et l'orchestration PostgreSQL.
 
 ---
 
@@ -108,12 +108,12 @@ docker compose -f docker/docker-compose.yml up -d
 
 ---
 
-## 🌿 5. Règles de Contribution sur la Branche `devops`
+## 🌿 5. Règles de Contribution Monorepo
 
-1. **Partir de `devops`** : Mettez à jour votre branche locale avec `git pull origin devops`.
+1. **Partir de `main`** : Mettez à jour votre copie locale avec `git pull origin main`.
 2. **Créer une Feature Branch d'infrastructure** :
    ```bash
    git checkout -b feat/infra-nom-de-fonctionnalite
    ```
 3. **Tester impérativement avec `--dry-run` et en conteneur isolé** avant de valider toute modification de schéma SQL ou de configuration réseau.
-4. **Ouvrir une Pull Request** vers la branche **`devops`** pour validation.
+4. **Ouvrir une Pull Request** vers la branche **`main`** pour validation par les pairs.
