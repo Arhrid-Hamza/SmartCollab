@@ -34,12 +34,30 @@ public class User {
     @Column(nullable = false, length = 30)
     private Role role;
 
+    @Column(name = "sexe", length = 20)
+    private String sexe;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "campus", length = 50)
     private Campus campus;
 
-    @Column(name = "student_identifier", unique = true, length = 50)
-    private String studentIdentifier;
+    @Column(name = "matricule", length = 50)
+    private String matricule;
+
+    @Column(name = "filiere", length = 100)
+    private String filiere;
+
+    @Column(name = "niveau", length = 50)
+    private String niveau;
+
+    @Column(name = "groupe", length = 50)
+    private String groupe;
+
+    @Column(name = "matiere", length = 150)
+    private String matiere;
+
+    @Column(name = "avatar_url", columnDefinition = "MEDIUMTEXT")
+    private String avatarUrl;
 
     @Column(columnDefinition = "TEXT")
     private String bio;
@@ -73,6 +91,16 @@ public class User {
         this.campus = campus;
     }
 
+    public User(String email, String passwordHash, String firstName, String lastName, Role role, String sexe, Campus campus) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.role = role;
+        this.sexe = sexe;
+        this.campus = campus;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = OffsetDateTime.now();
@@ -83,6 +111,8 @@ public class User {
     protected void onUpdate() {
         this.updatedAt = OffsetDateTime.now();
     }
+
+    // Getters and Setters
 
     public UUID getId() {
         return id;
@@ -132,6 +162,14 @@ public class User {
         this.role = role;
     }
 
+    public String getSexe() {
+        return sexe;
+    }
+
+    public void setSexe(String sexe) {
+        this.sexe = sexe;
+    }
+
     public Campus getCampus() {
         return campus;
     }
@@ -140,12 +178,61 @@ public class User {
         this.campus = campus;
     }
 
+    public String getMatricule() {
+        return matricule;
+    }
+
+    public void setMatricule(String matricule) {
+        this.matricule = matricule;
+    }
+
+    // Alias for studentIdentifier for backward compatibility
     public String getStudentIdentifier() {
-        return studentIdentifier;
+        return matricule;
     }
 
     public void setStudentIdentifier(String studentIdentifier) {
-        this.studentIdentifier = studentIdentifier;
+        this.matricule = studentIdentifier;
+    }
+
+    public String getFiliere() {
+        return filiere;
+    }
+
+    public void setFiliere(String filiere) {
+        this.filiere = filiere;
+    }
+
+    public String getNiveau() {
+        return niveau;
+    }
+
+    public void setNiveau(String niveau) {
+        this.niveau = niveau;
+    }
+
+    public String getGroupe() {
+        return groupe;
+    }
+
+    public void setGroupe(String groupe) {
+        this.groupe = groupe;
+    }
+
+    public String getMatiere() {
+        return matiere;
+    }
+
+    public void setMatiere(String matiere) {
+        this.matiere = matiere;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public String getBio() {

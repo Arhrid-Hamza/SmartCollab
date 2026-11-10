@@ -40,17 +40,12 @@ public class DataInitializer implements CommandLineRunner {
                     new Skill("Flutter / Dart", "MOBILE", "Développement d'applications mobiles cross-platform iOS & Android")
             );
             skillRepository.saveAll(defaultSkills);
-            System.out.println("✅ [DataInitializer] Seeded default skills");
+            System.out.println("[DataInitializer] Seeded default skills");
         }
 
-        // Clean up any old users except admin@emsi-edu.ma
-        List<User> existingUsers = userRepository.findAll();
-        for (User user : existingUsers) {
-            if (!"admin@emsi-edu.ma".equalsIgnoreCase(user.getEmail())) {
-                userRepository.delete(user);
-                System.out.println("🗑️ [DataInitializer] Removed old user: " + user.getEmail());
-            }
-        }
+        // Remove legacy demo accounts if present
+        userRepository.findByEmail("student@emsi-edu.ma").ifPresent(userRepository::delete);
+        userRepository.findByEmail("prof@emsi-edu.ma").ifPresent(userRepository::delete);
 
         // Seed / ensure the unique Administrator user: admin@emsi-edu.ma with password "admin"
         User adminUser = userRepository.findByEmail("admin@emsi-edu.ma").orElse(null);
@@ -61,18 +56,24 @@ public class DataInitializer implements CommandLineRunner {
                     "Direction",
                     "Admin EMSI",
                     Role.ADMIN,
+                    "HOMME",
                     Campus.ALL
             );
+            adminUser.setMatricule("ADM-EMSI-001");
             adminUser.setBio("Administrateur général EMSI avec supervision globale sur tous les campus et utilisateurs.");
             userRepository.save(adminUser);
-            System.out.println("✅ [DataInitializer] Created single admin user: admin@emsi-edu.ma (pwd: admin, role: ADMIN, campus: ALL)");
+            System.out.println("[DataInitializer] Created single admin user: admin@emsi-edu.ma (pwd: admin, role: ADMIN, campus: ALL)");
         } else {
             adminUser.setPasswordHash(passwordEncoder.encode("admin"));
             adminUser.setRole(Role.ADMIN);
+            adminUser.setSexe("HOMME");
             adminUser.setCampus(Campus.ALL);
+            if (adminUser.getMatricule() == null) {
+                adminUser.setMatricule("ADM-EMSI-001");
+            }
             adminUser.setBio("Administrateur général EMSI avec supervision globale sur tous les campus et utilisateurs.");
             userRepository.save(adminUser);
-            System.out.println("✅ [DataInitializer] Updated admin user password to 'admin' with all permissions (campus: ALL)");
+            System.out.println("[DataInitializer] Updated admin user password to 'admin' with all permissions (campus: ALL)");
         }
     }
 }
