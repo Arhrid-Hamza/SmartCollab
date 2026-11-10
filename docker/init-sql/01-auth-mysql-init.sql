@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     niveau VARCHAR(50),
     groupe VARCHAR(50),
     matiere VARCHAR(150),
-    avatar_url VARCHAR(500),
+    avatar_url MEDIUMTEXT,
     student_identifier VARCHAR(50) UNIQUE,
     bio TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

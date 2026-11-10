@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
+import { UserAvatar } from '../components/UserAvatar';
 import usersApi from '../api/users';
 import {
   GraduationCap,
@@ -9,12 +10,15 @@ import {
   Save,
   AlertCircle,
   CheckCircle2,
-  Camera,
+  UploadCloud,
+  Trash2,
   RefreshCw,
   Mail,
   Lock,
   Eye,
-  EyeOff
+  EyeOff,
+  User,
+  ShieldCheck
 } from 'lucide-react';
 
 const EMSI_CAMPUSES = [
@@ -23,16 +27,16 @@ const EMSI_CAMPUSES = [
   { code: 'ROUDANI', label: 'EMSI Roudani (Casablanca)' },
   { code: 'MAARIF', label: 'EMSI Maârif (Casablanca)' },
   { code: 'MOULAY_YOUSSEF', label: 'EMSI Moulay Youssef (Casablanca)' },
-  { code: 'ALL', label: '🌐 Tous les campus (Supervision)' },
+  { code: 'ALL', label: 'Tous les campus (Supervision Globale)' },
 ];
 
 const EMSI_FILIERES = [
-  { code: 'IIR', label: 'IIR — Ingénierie Informatique et Réseaux' },
-  { code: 'GESI', label: 'GESI — Génie Électrique et Systèmes Intelligents' },
-  { code: 'IAII', label: 'IAII — Ingénierie des Automatismes et Info. Industrielle' },
-  { code: 'GI', label: 'GI — Génie Industriel' },
-  { code: 'GCBTP', label: 'GCBTP — Génie Civil, Bâtiments et Travaux Publics' },
-  { code: 'IFA', label: 'IFA — Ingénierie Financière et Audit' },
+  { code: 'IIR', label: 'IIR - Ingénierie Informatique et Réseaux' },
+  { code: 'GESI', label: 'GESI - Génie Électrique et Systèmes Intelligents' },
+  { code: 'IAII', label: 'IAII - Ingénierie des Automatismes et Info. Industrielle' },
+  { code: 'GI', label: 'GI - Génie Industriel' },
+  { code: 'GCBTP', label: 'GCBTP - Génie Civil, Bâtiments et Travaux Publics' },
+  { code: 'IFA', label: 'IFA - Ingénierie Financière et Audit' },
 ];
 
 const NIVEAUX_STUDENT = [
@@ -49,6 +53,7 @@ export const UserFormPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
+  const fileInputRef = useRef(null);
   const isEditing = Boolean(id);
 
   const initialRole = searchParams.get('role') === 'PROFESSOR' ? 'PROFESSOR' : 'STUDENT';
@@ -111,10 +116,33 @@ export const UserFormPage = () => {
     setError('');
   };
 
-  const generateRandomAvatar = () => {
-    const seed = `${formData.firstName || 'emsi'}-${Math.floor(Math.random() * 10000)}`;
-    const avatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
-    setFormData((prev) => ({ ...prev, avatarUrl: avatar }));
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Veuillez sélectionner un fichier image valide (JPG, PNG, WebP).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("L'image est trop volumineuse (maximum 5 Mo).");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData((prev) => ({ ...prev, avatarUrl: reader.result }));
+      setError('');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removePhoto = () => {
+    setFormData((prev) => ({ ...prev, avatarUrl: '' }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -122,15 +150,14 @@ export const UserFormPage = () => {
     setError('');
     setSuccess('');
 
-    // Validation email @emsi-edu.ma
     const cleanEmail = formData.email.trim().toLowerCase();
     if (!cleanEmail.endsWith('@emsi-edu.ma')) {
-      setError("L'adresse email doit obligatoirement être institutionnelle et se terminer par @emsi-edu.ma");
+      setError("L'adresse email doit obligatoirement être une adresse institutionnelle se terminant par @emsi-edu.ma");
       return;
     }
 
     if (!isEditing && !formData.password) {
-      setError('Le mot de passe initial est requis pour la création du compte.');
+      setError('Le mot de passe initial est requis.');
       return;
     }
 
@@ -138,10 +165,10 @@ export const UserFormPage = () => {
     try {
       if (isEditing) {
         await usersApi.updateUser(id, formData);
-        setSuccess('Compte mis à jour avec succès !');
+        setSuccess('Compte mis à jour avec succès.');
       } else {
         await usersApi.createUser(formData);
-        setSuccess('Nouveau compte créé avec succès !');
+        setSuccess('Nouveau compte créé avec succès.');
       }
 
       setTimeout(() => {
@@ -153,7 +180,7 @@ export const UserFormPage = () => {
       }, 1000);
     } catch (err) {
       console.error(err);
-      const msg = err.response?.data?.message || err.response?.data || "Une erreur est survenue lors de l'enregistrement.";
+      const msg = err.response?.data?.message || err.response?.data || "Erreur lors de l'enregistrement.";
       setError(typeof msg === 'string' ? msg : "Erreur lors de l'enregistrement.");
     } finally {
       setLoading(false);
@@ -161,8 +188,6 @@ export const UserFormPage = () => {
   };
 
   const isStudent = formData.role === 'STUDENT';
-  const defaultPreview = formData.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${formData.email || 'emsi'}`;
-
   const inputClass =
     'w-full px-3.5 py-2.5 text-sm text-slate-800 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#15885a] focus:border-[#15885a] outline-none transition-all placeholder:text-slate-400';
 
@@ -198,7 +223,7 @@ export const UserFormPage = () => {
                 {isEditing ? 'Modifier le Compte Utilisateur' : 'Créer un Nouveau Compte'}
               </h1>
               <p className="text-sm text-slate-500 mt-1">
-                Renseignez les informations institutionnelles de l'étudiant ou du professeur pour la plateforme EMSICollab.
+                Renseignez les informations institutionnelles du membre pour la plateforme EMSICollab.
               </p>
             </div>
 
@@ -217,10 +242,10 @@ export const UserFormPage = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Role Toggle Selector */}
+              {/* Role Selector */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Type de profil & Rôle
+                  Profil & Rôle
                 </label>
                 <div className="grid grid-cols-2 gap-3 max-w-md">
                   <button
@@ -246,55 +271,68 @@ export const UserFormPage = () => {
                     }`}
                   >
                     <BookOpen className="w-5 h-5" />
-                    <span>Professeur / Encadrant</span>
+                    <span>Professeur</span>
                   </button>
                 </div>
               </div>
 
-              {/* Photo de profil / Avatar */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center gap-5">
-                <div className="relative group">
-                  <img
-                    src={defaultPreview}
-                    alt="Aperçu Avatar"
-                    className="w-20 h-20 rounded-2xl bg-white border-2 border-white shadow-md object-cover"
-                    onError={(e) => {
-                      e.target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=fallback`;
+              {/* Photo de profil - Téléchargement de fichier avec aperçu style Instagram */}
+              <div className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200 flex flex-col sm:flex-row items-center gap-6">
+                <div className="flex flex-col items-center gap-2 shrink-0">
+                  <UserAvatar
+                    user={{
+                      firstName: formData.firstName,
+                      lastName: formData.lastName,
+                      email: formData.email,
+                      avatarUrl: formData.avatarUrl,
                     }}
+                    size="xl"
+                    showStoryRing={true}
                   />
-                  <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs">
-                    <Camera className="w-5 h-5" />
-                  </div>
+                  <span className="text-[11px] font-medium text-slate-500">Aperçu Profil</span>
                 </div>
 
-                <div className="flex-1 w-full space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">Photo de Profil (URL de l'image)</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="url"
-                      name="avatarUrl"
-                      value={formData.avatarUrl}
-                      onChange={handleChange}
-                      placeholder="https://..."
-                      className={inputClass}
-                    />
+                <div className="flex-1 w-full space-y-3">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-800">Photo de profil</h4>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Téléchargez une photo depuis votre appareil (PNG, JPG, WebP jusqu'à 5 Mo). Si aucune photo n'est fournie, un avatar style profil sera généré automatiquement.
+                    </p>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+
+                  <div className="flex flex-wrap items-center gap-2.5">
                     <button
                       type="button"
-                      onClick={generateRandomAvatar}
-                      title="Générer un avatar automatique"
-                      className="shrink-0 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-4 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors"
                     >
-                      <RefreshCw className="w-4 h-4 text-[#15885a]" />
-                      <span className="hidden sm:inline">Aléatoire</span>
+                      <UploadCloud className="w-4 h-4 text-[#15885a]" />
+                      <span>{formData.avatarUrl ? 'Changer la photo' : 'Importer une photo'}</span>
                     </button>
+
+                    {formData.avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={removePhoto}
+                        className="px-3.5 py-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Supprimer la photo</span>
+                      </button>
+                    )}
                   </div>
-                  <span className="text-[11px] text-slate-500 block">
-                    Laissez vide pour utiliser l'avatar généré par défaut ou cliquez sur "Aléatoire".
-                  </span>
                 </div>
               </div>
 
-              {/* Identity & Matricule */}
+              {/* Identité & Matricule */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Prénom *</label>
@@ -323,7 +361,7 @@ export const UserFormPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Matricule / Identifiant</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Matricule</label>
                   <input
                     type="text"
                     name="matricule"
@@ -349,7 +387,7 @@ export const UserFormPage = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="prenom.nom@emsi-edu.ma"
+                      placeholder="nom.prenom@emsi-edu.ma"
                       className={`${inputClass} pl-10`}
                     />
                   </div>
@@ -366,7 +404,7 @@ export const UserFormPage = () => {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      placeholder={isEditing ? 'Laisser vide pour ne pas changer' : '••••••••'}
+                      placeholder={isEditing ? 'Laisser vide pour ne pas modifier' : 'Minimum 4 caractères'}
                       className={`${inputClass} pl-10 pr-10`}
                     />
                     <button
@@ -380,7 +418,7 @@ export const UserFormPage = () => {
                 </div>
               </div>
 
-              {/* Campus & Filière EMSI */}
+              {/* Campus & Filière */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Campus EMSI (Casablanca) *</label>
@@ -405,7 +443,7 @@ export const UserFormPage = () => {
                 </div>
               </div>
 
-              {/* Conditional Fields: Student vs Professor */}
+              {/* Conditional Fields */}
               {isStudent ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-emerald-50/50 border border-emerald-100">
                   <div>
@@ -433,9 +471,9 @@ export const UserFormPage = () => {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-indigo-50/50 border border-indigo-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-emerald-50/50 border border-emerald-100">
                   <div>
-                    <label className="block text-xs font-semibold text-indigo-900 mb-1">
+                    <label className="block text-xs font-semibold text-emerald-900 mb-1">
                       Matière(s) & Modules enseignés
                     </label>
                     <input
@@ -449,7 +487,7 @@ export const UserFormPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-indigo-900 mb-1">
+                    <label className="block text-xs font-semibold text-emerald-900 mb-1">
                       Niveaux d'intervention
                     </label>
                     <input
@@ -472,7 +510,7 @@ export const UserFormPage = () => {
                   name="bio"
                   value={formData.bio}
                   onChange={handleChange}
-                  placeholder="Présentation rapide, compétences clés ou centres d'intérêt..."
+                  placeholder="Présentation, compétences clés ou centres d'intérêt..."
                   className={inputClass}
                 />
               </div>
@@ -496,7 +534,7 @@ export const UserFormPage = () => {
                   {loading ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Enregistrement en cours...</span>
+                      <span>Enregistrement...</span>
                     </>
                   ) : (
                     <>

@@ -50,7 +50,7 @@ public class User {
     @Column(name = "matiere", length = 150)
     private String matiere;
 
-    @Column(name = "avatar_url", length = 500)
+    @Column(name = "avatar_url", columnDefinition = "MEDIUMTEXT")
     private String avatarUrl;
 
     @Column(name = "student_identifier", unique = true, length = 50)

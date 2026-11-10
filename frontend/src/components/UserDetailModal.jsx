@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Mail, Shield, Building, Award, BookOpen, Layers, Users, Calendar, Hash } from 'lucide-react';
+import { X, Mail, Building2, Award, BookOpen, Layers, Users, Calendar, Hash } from 'lucide-react';
+import { UserAvatar } from './UserAvatar';
 
 export const UserDetailModal = ({ user, onClose }) => {
   if (!user) return null;
@@ -7,13 +8,11 @@ export const UserDetailModal = ({ user, onClose }) => {
   const isStudent = user.role === 'STUDENT';
   const isProf = user.role === 'PROFESSOR';
 
-  const defaultAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email || 'user'}`;
-
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        {/* Header with background banner */}
-        <div className="relative bg-gradient-to-r from-[#15885a] to-[#0f6040] p-6 text-white">
+        {/* Header with EMSI Green banner */}
+        <div className="relative bg-gradient-to-r from-[#15885a] to-[#0e5f3e] p-6 text-white">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
@@ -22,18 +21,11 @@ export const UserDetailModal = ({ user, onClose }) => {
           </button>
 
           <div className="flex items-center gap-4">
-            <img
-              src={user.avatarUrl || defaultAvatar}
-              alt={`${user.firstName} ${user.lastName}`}
-              className="w-20 h-20 rounded-2xl bg-white p-1 border-2 border-white/50 object-cover shadow-lg"
-              onError={(e) => {
-                e.target.src = defaultAvatar;
-              }}
-            />
+            <UserAvatar user={user} size="xl" showStoryRing={true} className="bg-white" />
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs uppercase font-bold px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md">
-                  {user.role}
+                  {user.role === 'STUDENT' ? 'Élève Ingénieur' : user.role === 'PROFESSOR' ? 'Professeur' : 'Administrateur'}
                 </span>
                 {user.campus && (
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-400/30 text-emerald-100">
@@ -53,8 +45,8 @@ export const UserDetailModal = ({ user, onClose }) => {
         </div>
 
         {/* Details Grid */}
-        <div className="p-6 space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-3.5">
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
               <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mb-1">
                 <Hash className="w-3.5 h-3.5 text-slate-400" />
@@ -67,11 +59,11 @@ export const UserDetailModal = ({ user, onClose }) => {
 
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
               <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mb-1">
-                <Building className="w-3.5 h-3.5 text-slate-400" />
+                <Building2 className="w-3.5 h-3.5 text-slate-400" />
                 Campus EMSI
               </span>
               <p className="text-sm font-semibold text-slate-900">
-                {user.campus === 'ALL' ? '🌐 Tous les campus (Global)' : `EMSI ${user.campus || 'Non assigné'}`}
+                {user.campus === 'ALL' ? 'Tous les campus (Supervision)' : `EMSI ${user.campus || 'Non assigné'}`}
               </p>
             </div>
 
@@ -88,7 +80,7 @@ export const UserDetailModal = ({ user, onClose }) => {
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
               <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mb-1">
                 <Layers className="w-3.5 h-3.5 text-slate-400" />
-                Niveau d'études / Classes
+                Niveau
               </span>
               <p className="text-sm font-semibold text-slate-900">
                 {user.niveau || 'Non spécifié'}
@@ -113,7 +105,7 @@ export const UserDetailModal = ({ user, onClose }) => {
                   <BookOpen className="w-3.5 h-3.5 text-slate-400" />
                   Matière(s) & Modules dispensés
                 </span>
-                <p className="text-sm font-semibold text-indigo-700">
+                <p className="text-sm font-semibold text-emerald-800">
                   {user.matiere || 'Non renseigné'}
                 </p>
               </div>
@@ -148,4 +140,5 @@ export const UserDetailModal = ({ user, onClose }) => {
     </div>
   );
 };
+
 export default UserDetailModal;

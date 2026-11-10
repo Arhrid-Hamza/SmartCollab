@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { UserDetailModal } from '../components/UserDetailModal';
+import { UserAvatar } from '../components/UserAvatar';
 import usersApi from '../api/users';
 import {
   BookOpen,
@@ -129,7 +130,7 @@ export const ProfessorsListPage = () => {
               onChange={(e) => setFilterCampus(e.target.value)}
               className="w-full px-3 py-2 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#15885a] focus:border-[#15885a] outline-none transition-all"
             >
-              <option value="ALL">🏫 Tous les campus</option>
+              <option value="ALL">Tous les campus</option>
               <option value="ORANGERS">EMSI Les Orangers</option>
               <option value="CFC">EMSI CFC</option>
               <option value="ROUDANI">EMSI Roudani</option>
@@ -145,7 +146,7 @@ export const ProfessorsListPage = () => {
               onChange={(e) => setFilterFiliere(e.target.value)}
               className="w-full px-3 py-2 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#15885a] focus:border-[#15885a] outline-none transition-all"
             >
-              <option value="ALL">🎓 Toutes les filières</option>
+              <option value="ALL">Toutes les filières</option>
               <option value="IIR">IIR (Informatique & Réseaux)</option>
               <option value="GESI">GESI (Génie Électrique)</option>
               <option value="IAII">IAII (Automatismes)</option>
@@ -201,20 +202,11 @@ export const ProfessorsListPage = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
                   {filteredProfessors.map((p) => {
-                    const avatar =
-                      p.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.email || p.id}`;
                     return (
                       <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
-                            <img
-                              src={avatar}
-                              alt={`${p.firstName} ${p.lastName}`}
-                              className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 object-cover"
-                              onError={(e) => {
-                                e.target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=fallback`;
-                              }}
-                            />
+                            <UserAvatar user={p} size="sm" showRing={false} />
                             <div>
                               <p className="font-semibold text-slate-900 leading-tight">
                                 {p.firstName} {p.lastName}
