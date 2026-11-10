@@ -54,7 +54,59 @@ services:
       timeout: 5s
       retries: 5
 
+  emsicollab-mongodb:
+    image: mongo:7.0
+    container_name: emsicollab-mongodb
+    environment:
+      MONGO_INITDB_DATABASE: emsicollab_auth
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  emsicollab-mysql:
+    image: mysql:8.0
+    container_name: emsicollab-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: auth_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./init-sql/01-auth-mysql-init.sql:/docker-entrypoint-initdb.d/01-auth-mysql-init.sql:ro
+      - mysql-auth-data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  emsicollab-phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: emsicollab-phpmyadmin
+    environment:
+      PMA_HOST: emsicollab-mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8085:80"
+    depends_on:
+      emsicollab-mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres-auth-data:
   postgres-project-data:
   postgres-team-data:
+  mongodb-data:
+  mysql-auth-data:

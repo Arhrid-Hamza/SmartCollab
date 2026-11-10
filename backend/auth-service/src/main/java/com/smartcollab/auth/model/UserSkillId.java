@@ -2,6 +2,8 @@ package com.smartcollab.auth.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -9,10 +11,12 @@ import java.util.UUID;
 @Embeddable
 public class UserSkillId implements Serializable {
 
-    @Column(name = "user_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "user_id", length = 36)
     private UUID userId;
 
-    @Column(name = "skill_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "skill_id", length = 36)
     private UUID skillId;
 
     public UserSkillId() {
