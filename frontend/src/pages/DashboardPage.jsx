@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Navbar } from '../components/Navbar';
 import {
@@ -8,7 +9,9 @@ import {
   ShieldCheck,
   CheckCircle2,
   Code2,
-  ArrowRight
+  ArrowRight,
+  UserPlus,
+  Users
 } from 'lucide-react';
 
 export const DashboardPage = () => {
@@ -68,6 +71,65 @@ export const DashboardPage = () => {
             <span className="font-mono font-medium truncate max-w-[200px] block">{user?.id}</span>
           </div>
         </div>
+
+        {/* Admin Navigation Shortcuts */}
+        {user?.role === 'ADMIN' && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Link
+              to="/admin/students"
+              className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all group flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-[#15885a] flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 group-hover:text-[#15885a] transition-colors">
+                    Élèves Ingénieurs
+                  </h4>
+                  <p className="text-xs text-slate-500">Consulter, filtrer et gérer les étudiants</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#15885a] group-hover:translate-x-1 transition-all" />
+            </Link>
+
+            <Link
+              to="/admin/professors"
+              className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all group flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                    Corps Enseignant
+                  </h4>
+                  <p className="text-xs text-slate-500">Consulter et gérer les professeurs</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+            </Link>
+
+            <Link
+              to="/admin/users/new"
+              className="p-5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all group flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-[#15885a] text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-md shadow-emerald-900/10">
+                  <UserPlus className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 group-hover:text-[#15885a] transition-colors">
+                    Nouveau Compte
+                  </h4>
+                  <p className="text-xs text-slate-600">Créer un profil étudiant ou professeur</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#15885a] group-hover:translate-x-1 transition-all" />
+            </Link>
+          </div>
+        )}
 
         {/* Status of Feature 1 & Handover to Feature 2 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

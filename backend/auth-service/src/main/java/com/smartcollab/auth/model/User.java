@@ -38,6 +38,21 @@ public class User {
     @Column(name = "campus", length = 50)
     private Campus campus;
 
+    @Column(name = "filiere", length = 100)
+    private String filiere;
+
+    @Column(name = "niveau", length = 50)
+    private String niveau;
+
+    @Column(name = "groupe", length = 50)
+    private String groupe;
+
+    @Column(name = "matiere", length = 150)
+    private String matiere;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
     @Column(name = "student_identifier", unique = true, length = 50)
     private String studentIdentifier;
 
@@ -140,12 +155,60 @@ public class User {
         this.campus = campus;
     }
 
+    public String getFiliere() {
+        return filiere;
+    }
+
+    public void setFiliere(String filiere) {
+        this.filiere = filiere;
+    }
+
+    public String getNiveau() {
+        return niveau;
+    }
+
+    public void setNiveau(String niveau) {
+        this.niveau = niveau;
+    }
+
+    public String getGroupe() {
+        return groupe;
+    }
+
+    public void setGroupe(String groupe) {
+        this.groupe = groupe;
+    }
+
+    public String getMatiere() {
+        return matiere;
+    }
+
+    public void setMatiere(String matiere) {
+        this.matiere = matiere;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
     public String getStudentIdentifier() {
         return studentIdentifier;
     }
 
     public void setStudentIdentifier(String studentIdentifier) {
         this.studentIdentifier = studentIdentifier;
+    }
+
+    public String getMatricule() {
+        return studentIdentifier;
+    }
+
+    public void setMatricule(String matricule) {
+        this.studentIdentifier = matricule;
     }
 
     public String getBio() {

@@ -32,6 +32,12 @@ public record RegisterRequest(
 
     Campus campus,
 
+    String matricule,
+    String filiere,
+    String niveau,
+    String groupe,
+    String matiere,
+    String avatarUrl,
     String studentIdentifier,
     String bio
 ) {}

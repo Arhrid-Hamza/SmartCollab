@@ -43,14 +43,9 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ [DataInitializer] Seeded default skills");
         }
 
-        // Clean up any old users except admin@emsi-edu.ma
-        List<User> existingUsers = userRepository.findAll();
-        for (User user : existingUsers) {
-            if (!"admin@emsi-edu.ma".equalsIgnoreCase(user.getEmail())) {
-                userRepository.delete(user);
-                System.out.println("🗑️ [DataInitializer] Removed old user: " + user.getEmail());
-            }
-        }
+        // Remove legacy demo accounts if present
+        userRepository.findByEmail("student@emsi-edu.ma").ifPresent(userRepository::delete);
+        userRepository.findByEmail("prof@emsi-edu.ma").ifPresent(userRepository::delete);
 
         // Seed / ensure the unique Administrator user: admin@emsi-edu.ma with password "admin"
         User adminUser = userRepository.findByEmail("admin@emsi-edu.ma").orElse(null);

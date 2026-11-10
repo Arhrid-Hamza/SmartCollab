@@ -1,0 +1,335 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Navbar } from '../components/Navbar';
+import { UserDetailModal } from '../components/UserDetailModal';
+import usersApi from '../api/users';
+import {
+  BookOpen,
+  Plus,
+  Search,
+  Eye,
+  Pencil,
+  Trash2,
+  RefreshCw,
+  AlertCircle,
+  Building,
+  Award,
+  Layers,
+  Sparkles
+} from 'lucide-react';
+
+export const ProfessorsListPage = () => {
+  const navigate = useNavigate();
+  const [professors, setProfessors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [filterCampus, setFilterCampus] = useState('ALL');
+  const [filterFiliere, setFilterFiliere] = useState('ALL');
+
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const fetchProfessors = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await usersApi.getProfessors();
+      setProfessors(data);
+    } catch (err) {
+      console.error(err);
+      setError('Impossible de charger la liste des professeurs.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfessors();
+  }, []);
+
+  const handleDelete = async () => {
+    if (!userToDelete) return;
+    setDeleting(true);
+    try {
+      await usersApi.deleteUser(userToDelete.id);
+      setProfessors((prev) => prev.filter((p) => p.id !== userToDelete.id));
+      setUserToDelete(null);
+    } catch (err) {
+      alert('Erreur lors de la suppression du professeur.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Filtering
+  const filteredProfessors = professors.filter((p) => {
+    const term = search.toLowerCase();
+    const fullName = `${p.firstName || ''} ${p.lastName || ''}`.toLowerCase();
+    const email = (p.email || '').toLowerCase();
+    const matricule = (p.matricule || p.studentIdentifier || '').toLowerCase();
+    const matiere = (p.matiere || '').toLowerCase();
+
+    const matchesSearch =
+      fullName.includes(term) || email.includes(term) || matricule.includes(term) || matiere.includes(term);
+    const matchesCampus = filterCampus === 'ALL' || p.campus === filterCampus;
+    const matchesFiliere = filterFiliere === 'ALL' || p.filiere === filterFiliere;
+
+    return matchesSearch && matchesCampus && matchesFiliere;
+  });
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <Navbar />
+
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
+        {/* Top Header Card */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
+              <BookOpen className="w-4 h-4 text-[#15885a]" />
+              <span>Corps Professoral EMSI</span>
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900">
+              Liste des Enseignants & Encadrants ({filteredProfessors.length} / {professors.length})
+            </h1>
+            <p className="text-sm text-slate-500">
+              Supervision des enseignants intervenant sur les campus EMSI Casablanca.
+            </p>
+          </div>
+
+          <button
+            onClick={() => navigate('/admin/users/new?role=PROFESSOR')}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#15885a] hover:bg-[#0f7048] text-white text-sm font-semibold shadow-md shadow-emerald-900/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Ajouter un Professeur</span>
+          </button>
+        </div>
+
+        {/* Filter & Search Bar */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Search */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher nom, matricule, matière..."
+              className="w-full pl-9 pr-3 py-2 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#15885a] focus:border-[#15885a] outline-none transition-all placeholder:text-slate-400"
+            />
+          </div>
+
+          {/* Campus */}
+          <div>
+            <select
+              value={filterCampus}
+              onChange={(e) => setFilterCampus(e.target.value)}
+              className="w-full px-3 py-2 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#15885a] focus:border-[#15885a] outline-none transition-all"
+            >
+              <option value="ALL">🏫 Tous les campus</option>
+              <option value="ORANGERS">EMSI Les Orangers</option>
+              <option value="CFC">EMSI CFC</option>
+              <option value="ROUDANI">EMSI Roudani</option>
+              <option value="MAARIF">EMSI Maârif</option>
+              <option value="MOULAY_YOUSSEF">EMSI Moulay Youssef</option>
+            </select>
+          </div>
+
+          {/* Filière */}
+          <div>
+            <select
+              value={filterFiliere}
+              onChange={(e) => setFilterFiliere(e.target.value)}
+              className="w-full px-3 py-2 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#15885a] focus:border-[#15885a] outline-none transition-all"
+            >
+              <option value="ALL">🎓 Toutes les filières</option>
+              <option value="IIR">IIR (Informatique & Réseaux)</option>
+              <option value="GESI">GESI (Génie Électrique)</option>
+              <option value="IAII">IAII (Automatismes)</option>
+              <option value="GI">GI (Génie Industriel)</option>
+              <option value="GCBTP">GCBTP (Génie Civil)</option>
+              <option value="IFA">IFA (Finance & Audit)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Content Table */}
+        {loading ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+            <RefreshCw className="w-8 h-8 text-[#15885a] animate-spin mx-auto mb-3" />
+            <p className="text-sm text-slate-600 font-medium">Chargement des professeurs...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-white rounded-2xl border border-rose-200 p-8 text-center text-rose-700 shadow-sm">
+            <AlertCircle className="w-8 h-8 mx-auto mb-2 text-rose-500" />
+            <p className="font-semibold">{error}</p>
+          </div>
+        ) : filteredProfessors.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm space-y-3">
+            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+              <BookOpen className="w-8 h-8" />
+            </div>
+            <h3 className="text-base font-bold text-slate-800">Aucun professeur trouvé</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              Aucun profil enseignant ne correspond aux critères. Cliquez sur le bouton ci-dessous pour créer un profil enseignant.
+            </p>
+            <button
+              onClick={() => navigate('/admin/users/new?role=PROFESSOR')}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#15885a] text-white text-xs font-semibold shadow hover:bg-[#0f7048] transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Créer un compte professeur</span>
+            </button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    <th className="py-3.5 px-4">Professeur</th>
+                    <th className="py-3.5 px-4">Matricule</th>
+                    <th className="py-3.5 px-4">Campus</th>
+                    <th className="py-3.5 px-4">Filière</th>
+                    <th className="py-3.5 px-4">Matière(s) enseignée(s)</th>
+                    <th className="py-3.5 px-4">Niveaux</th>
+                    <th className="py-3.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm">
+                  {filteredProfessors.map((p) => {
+                    const avatar =
+                      p.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.email || p.id}`;
+                    return (
+                      <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={avatar}
+                              alt={`${p.firstName} ${p.lastName}`}
+                              className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 object-cover"
+                              onError={(e) => {
+                                e.target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=fallback`;
+                              }}
+                            />
+                            <div>
+                              <p className="font-semibold text-slate-900 leading-tight">
+                                {p.firstName} {p.lastName}
+                              </p>
+                              <p className="text-xs text-slate-500 leading-tight mt-0.5">{p.email}</p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-4 font-mono text-xs text-slate-700">
+                          {p.matricule || p.studentIdentifier || '—'}
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            {p.campus || '—'}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-xs text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                            {p.filiere || '—'}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <span className="text-xs font-medium text-slate-800">
+                            {p.matiere || '—'}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4 text-xs text-slate-600">{p.niveau || '—'}</td>
+
+                        <td className="py-3 px-4 text-right">
+                          <div className="inline-flex items-center gap-1.5 justify-end">
+                            <button
+                              onClick={() => setSelectedUser(p)}
+                              title="Voir les détails"
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              onClick={() => navigate(`/admin/users/edit/${p.id}`)}
+                              title="Modifier"
+                              className="p-1.5 rounded-lg text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition-colors"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              onClick={() => setUserToDelete(p)}
+                              title="Supprimer"
+                              className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Show Details Modal */}
+      {selectedUser && <UserDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} />}
+
+      {/* Delete Confirmation Modal */}
+      {userToDelete && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
+            <div className="w-12 h-12 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 mb-4">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <h3 className="text-lg font-bold text-slate-900">Confirmer la suppression</h3>
+            <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
+              Êtes-vous sûr de vouloir supprimer définitivement le compte du professeur{' '}
+              <strong className="text-slate-900 font-semibold">
+                {userToDelete.firstName} {userToDelete.lastName}
+              </strong>{' '}
+              ({userToDelete.email}) ?
+            </p>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setUserToDelete(null)}
+                className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                Annuler
+              </button>
+
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleDelete}
+                className="px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow transition-colors flex items-center gap-1.5"
+              >
+                {deleting && <RefreshCw className="w-4 h-4 animate-spin" />}
+                <span>Supprimer le compte</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProfessorsListPage;

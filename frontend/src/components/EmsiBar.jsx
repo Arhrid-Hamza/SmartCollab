@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { FacebookIcon, InstagramIcon, TiktokIcon, LinkedinIcon, YoutubeIcon } from './SocialIcons';
 import emsiLogo from '../assets/emsi-logo.png';
 
@@ -16,17 +17,23 @@ const SOCIALS = [
   { name: 'YouTube', href: 'https://www.youtube.com/channel/UC5BiOBai2N48ytbCRQWWqJw', Icon: YoutubeIcon },
 ];
 
-// Barre verte EMSI pleine largeur : logo à gauche, réseaux sociaux à droite (hauteur 64px)
-export const EmsiBar = ({ children }) => (
+export const EmsiBar = ({ children, navContent }) => (
   <header
     style={{ backgroundColor: EMSI_GREEN }}
     className="h-16 w-full shrink-0 sticky top-0 z-30 shadow-md shadow-black/10"
   >
-    <div className="h-full w-full px-4 sm:px-6 flex items-center justify-between">
-      <img src={emsiLogo} alt="EMSI" className="h-10 w-auto select-none" draggable="false" />
+    <div className="h-full w-full px-3 sm:px-6 flex items-center justify-between gap-3">
+      {/* Brand & Left Navigation */}
+      <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+        <Link to="/" className="shrink-0 flex items-center hover:opacity-90 transition-opacity">
+          <img src={emsiLogo} alt="EMSI" className="h-9 sm:h-10 w-auto select-none" draggable="false" />
+        </Link>
+        {navContent}
+      </div>
 
-      <div className="flex items-center gap-5">
-        <nav className="flex items-center gap-4" aria-label="Réseaux sociaux EMSI">
+      {/* Right Controls & Socials */}
+      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+        <nav className="hidden xl:flex items-center gap-3" aria-label="Réseaux sociaux EMSI">
           {SOCIALS.map(({ name, href, Icon }, index) => (
             <a
               key={name}
@@ -36,9 +43,9 @@ export const EmsiBar = ({ children }) => (
               aria-label={name}
               title={name}
               style={{ animationDelay: `${0.35 + index * 0.12}s` }}
-              className="social-icon text-white"
+              className="social-icon text-white/80 hover:text-white transition-colors"
             >
-              <Icon className="w-[22px] h-[22px]" />
+              <Icon className="w-5 h-5" />
             </a>
           ))}
         </nav>

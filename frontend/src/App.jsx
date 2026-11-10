@@ -4,6 +4,9 @@ import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { StudentsListPage } from './pages/StudentsListPage';
+import { ProfessorsListPage } from './pages/ProfessorsListPage';
+import { UserFormPage } from './pages/UserFormPage';
 
 export function App() {
   return (
@@ -16,6 +19,38 @@ export function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/students"
+            element={
+              <ProtectedRoute>
+                <StudentsListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/professors"
+            element={
+              <ProtectedRoute>
+                <ProfessorsListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users/new"
+            element={
+              <ProtectedRoute>
+                <UserFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users/edit/:id"
+            element={
+              <ProtectedRoute>
+                <UserFormPage />
               </ProtectedRoute>
             }
           />
