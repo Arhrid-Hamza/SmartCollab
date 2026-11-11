@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { UserDetailModal } from '../components/UserDetailModal';
+import { UserEditModal } from '../components/UserEditModal';
 import { UserAvatar } from '../components/UserAvatar';
 import usersApi from '../api/users';
 import {
@@ -21,16 +22,44 @@ import {
 
 export const ProfessorsListPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialCampus = searchParams.get('campus') || 'ALL';
+
   const [professors, setProfessors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [filterCampus, setFilterCampus] = useState('ALL');
+  const [filterCampus, setFilterCampus] = useState(initialCampus);
   const [filterFiliere, setFilterFiliere] = useState('ALL');
 
   const [selectedUser, setSelectedUser] = useState(null);
+  const [userToEdit, setUserToEdit] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Sync campus filter if URL query param changes
+  useEffect(() => {
+    const campusParam = searchParams.get('campus');
+    if (campusParam) {
+      setFilterCampus(campusParam);
+    }
+  }, [searchParams]);
+
+  const handleCampusChange = (newCampus) => {
+    setFilterCampus(newCampus);
+    const nextParams = new URLSearchParams(searchParams);
+    if (newCampus === 'ALL') {
+      nextParams.delete('campus');
+    } else {
+      nextParams.set('campus', newCampus);
+    }
+    setSearchParams(nextParams);
+  };
+
+  const handleUserUpdated = (updated) => {
+    setProfessors((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    setUserToEdit(null);
+  };
 
   const fetchProfessors = async () => {
     setLoading(true);
@@ -127,7 +156,7 @@ export const ProfessorsListPage = () => {
           <div>
             <select
               value={filterCampus}
-              onChange={(e) => setFilterCampus(e.target.value)}
+              onChange={(e) => handleCampusChange(e.target.value)}
               className="w-full px-3 py-2 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#15885a] focus:border-[#15885a] outline-none transition-all"
             >
               <option value="ALL">Tous les campus</option>
@@ -258,9 +287,9 @@ export const ProfessorsListPage = () => {
                             </button>
 
                             <button
-                              onClick={() => navigate(`/admin/users/edit/${p.id}`)}
-                              title="Modifier"
-                              className="p-1.5 rounded-lg text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition-colors"
+                              onClick={() => setUserToEdit(p)}
+                              title="Modifier les informations (popup)"
+                              className="p-1.5 rounded-lg text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 transition-colors"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
@@ -286,6 +315,15 @@ export const ProfessorsListPage = () => {
 
       {/* Show Details Modal */}
       {selectedUser && <UserDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} />}
+
+      {/* Edit User Modal Popup (rôle non modifiable) */}
+      {userToEdit && (
+        <UserEditModal
+          user={userToEdit}
+          onClose={() => setUserToEdit(null)}
+          onUserUpdated={handleUserUpdated}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       {userToDelete && (

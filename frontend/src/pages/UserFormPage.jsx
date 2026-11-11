@@ -246,36 +246,55 @@ export const UserFormPage = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Role Selector */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Profil & Rôle
-                </label>
-                <div className="grid grid-cols-2 gap-3 max-w-md">
-                  <button
-                    type="button"
-                    onClick={() => setFormData((p) => ({ ...p, role: 'STUDENT' }))}
-                    className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-sm font-semibold border transition-all ${
-                      isStudent
-                        ? 'bg-emerald-50 border-[#15885a] text-[#15885a] shadow-sm ring-1 ring-[#15885a]'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <GraduationCap className="w-5 h-5" />
-                    <span>Élève Ingénieur</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setFormData((p) => ({ ...p, role: 'PROFESSOR' }))}
-                    className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-sm font-semibold border transition-all ${
-                      !isStudent
-                        ? 'bg-emerald-50 border-[#15885a] text-[#15885a] shadow-sm ring-1 ring-[#15885a]'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <BookOpen className="w-5 h-5" />
-                    <span>Professeur</span>
-                  </button>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Profil &amp; Rôle
+                  </label>
+                  {isEditing && (
+                    <span className="text-[11px] text-slate-400 font-medium">
+                      Le rôle ne peut pas être modifié
+                    </span>
+                  )}
                 </div>
+
+                {isEditing ? (
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between max-w-md">
+                    <span className="text-sm font-bold text-slate-800">
+                      {isStudent ? 'Élève Ingénieur' : 'Professeur'}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#15885a] text-white">
+                      {formData.role}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 max-w-md">
+                    <button
+                      type="button"
+                      onClick={() => setFormData((p) => ({ ...p, role: 'STUDENT' }))}
+                      className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-sm font-semibold border transition-all ${
+                        isStudent
+                          ? 'bg-emerald-50 border-[#15885a] text-[#15885a] shadow-sm ring-1 ring-[#15885a]'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <GraduationCap className="w-5 h-5" />
+                      <span>Élève Ingénieur</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData((p) => ({ ...p, role: 'PROFESSOR' }))}
+                      className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-sm font-semibold border transition-all ${
+                        !isStudent
+                          ? 'bg-emerald-50 border-[#15885a] text-[#15885a] shadow-sm ring-1 ring-[#15885a]'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <BookOpen className="w-5 h-5" />
+                      <span>Professeur</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Photo de profil - Téléchargement de fichier avec aperçu style Instagram */}

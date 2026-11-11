@@ -15,6 +15,7 @@ import {
   Sparkles,
   Award
 } from 'lucide-react';
+import { UserAvatar } from './UserAvatar';
 
 import orangersImg from '../assets/campuses/campus-orangers.jpg';
 import cfcImg from '../assets/campuses/campus-cfc.jpg';
@@ -350,20 +351,20 @@ export const CampusCarousel = ({ students = [], professors = [] }) => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={() => navigate('/admin/students')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-[#15885a] text-xs font-semibold shadow-sm transition-all"
+              onClick={() => navigate(`/admin/students?campus=${currentCampus.id}`)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#15885a] hover:bg-[#0f7048] text-white text-xs font-semibold shadow-sm transition-all"
             >
               <GraduationCap className="w-3.5 h-3.5" />
-              <span>Voir Étudiants</span>
+              <span>Voir Étudiants de {currentCampus.shortName} ({campusStudents.length})</span>
             </button>
             <button
-              onClick={() => navigate('/admin/professors')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-[#15885a] text-xs font-semibold shadow-sm transition-all"
+              onClick={() => navigate(`/admin/professors?campus=${currentCampus.id}`)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-[#15885a] text-xs font-semibold shadow-sm transition-all"
             >
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Voir Professeurs</span>
+              <span>Voir Professeurs de {currentCampus.shortName} ({campusProfessors.length})</span>
             </button>
           </div>
         </div>
@@ -440,6 +441,72 @@ export const CampusCarousel = ({ students = [], professors = [] }) => {
               Campus Casablanca {currentCampus.id}
             </p>
           </div>
+        </div>
+
+        {/* Membres rattachés uniquement à ce campus */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#15885a]" />
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Utilisateurs inscrits à EMSI {currentCampus.shortName} ({campusStudents.length + campusProfessors.length})
+              </h4>
+            </div>
+            <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full self-start sm:self-auto">
+              Filtre actif : {currentCampus.name}
+            </span>
+          </div>
+
+          {campusStudents.length === 0 && campusProfessors.length === 0 ? (
+            <div className="py-4 text-center">
+              <p className="text-xs text-slate-400">
+                Aucun étudiant ni professeur n'est actuellement affecté au campus {currentCampus.name}.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
+              {campusStudents.map((s) => (
+                <div
+                  key={s.id}
+                  onClick={() => navigate(`/admin/students?campus=${currentCampus.id}`)}
+                  className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer group"
+                >
+                  <UserAvatar user={s} size="sm" showStoryRing={true} />
+                  <div className="min-w-0 flex-1 text-left">
+                    <p className="text-xs font-bold text-slate-800 truncate group-hover:text-[#15885a] transition-colors">
+                      {s.firstName} {s.lastName}
+                    </p>
+                    <p className="text-[10px] text-slate-500 truncate">
+                      {s.filiere || 'Filière non renseignée'} • {s.niveau || 'Niveau non renseigné'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              {campusProfessors.map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => navigate(`/admin/professors?campus=${currentCampus.id}`)}
+                  className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer group"
+                >
+                  <UserAvatar user={p} size="sm" showStoryRing={false} />
+                  <div className="min-w-0 flex-1 text-left">
+                    <div className="flex items-center gap-1">
+                      <p className="text-xs font-bold text-slate-800 truncate group-hover:text-[#15885a] transition-colors">
+                        Pr. {p.firstName} {p.lastName}
+                      </p>
+                      <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold shrink-0">
+                        Prof
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 truncate">
+                      {p.matiere || p.filiere || 'Enseignant EMSI'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Campus Description & Detail */}
