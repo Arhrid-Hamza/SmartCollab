@@ -1,6 +1,7 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getApiErrorMessage } from '../api/client';
 import { EmsiBar } from '../components/EmsiBar';
 import FoldText from '../components/FoldText';
 import loginBg from '../assets/login-bg.jpg';
@@ -56,9 +57,9 @@ export const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const cleanEmail = email.trim();
-    if (!EMAIL_REGEX.test(cleanEmail) || !cleanEmail.toLowerCase().endsWith(ALLOWED_EMAIL_DOMAIN)) {
-      setError('Adresse email invalide.');
+    const cleanEmail = email.trim().toLowerCase();
+    if (!EMAIL_REGEX.test(cleanEmail) || !cleanEmail.endsWith(ALLOWED_EMAIL_DOMAIN)) {
+      setError(`Adresse email invalide (utilisez votre adresse ${ALLOWED_EMAIL_DOMAIN}).`);
       return;
     }
     setLoading(true);
@@ -67,8 +68,7 @@ export const LoginPage = () => {
       navigate('/');
     } catch (err) {
       console.error(err);
-      const msg = err.response?.data?.message || err.response?.data || 'Identifiants invalides ou service indisponible';
-      setError(typeof msg === 'string' ? msg : 'Une erreur est survenue');
+      setError(getApiErrorMessage(err, 'Identifiants invalides ou service indisponible'));
     } finally {
       setLoading(false);
     }

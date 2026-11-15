@@ -38,4 +38,27 @@ api.interceptors.response.use(
   }
 );
 
+export const getApiErrorMessage = (err, fallback = 'Une erreur est survenue') => {
+  if (!err?.response) {
+    return 'Service indisponible. Vérifiez que le backend est démarré.';
+  }
+  const { status, data } = err.response;
+  if (typeof data === 'string' && data.trim()) {
+    return data;
+  }
+  if (data?.message) {
+    return data.message;
+  }
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    return data.errors[0].defaultMessage || data.errors[0].message || fallback;
+  }
+  if (status === 401) {
+    return 'Email ou mot de passe incorrect.';
+  }
+  if (status === 400) {
+    return 'Requête invalide. Vérifiez le format de votre adresse @emsi-edu.ma.';
+  }
+  return fallback;
+};
+
 export default api;

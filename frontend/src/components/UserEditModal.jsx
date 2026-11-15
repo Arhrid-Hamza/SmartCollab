@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
 import usersApi from '../api/users';
+import { getApiErrorMessage } from '../api/client';
 
 const CASABLANCA_CAMPUSES = [
   { code: 'ORANGERS', label: 'EMSI Les Orangers' },
@@ -126,6 +127,7 @@ export const UserEditModal = ({ user, onClose, onUserUpdated }) => {
       // Ensure role is preserved from original user (cannot be edited)
       const payload = {
         ...formData,
+        email: cleanEmail,
         role: user.role,
       };
 
@@ -139,11 +141,7 @@ export const UserEditModal = ({ user, onClose, onUserUpdated }) => {
       }, 700);
     } catch (err) {
       console.error(err);
-      const msg =
-        err.response?.data?.message ||
-        err.response?.data ||
-        "Erreur lors de la mise à jour des informations.";
-      setError(typeof msg === 'string' ? msg : "Erreur lors de l'enregistrement.");
+      setError(getApiErrorMessage(err, "Erreur lors de la mise à jour des informations."));
     } finally {
       setLoading(false);
     }

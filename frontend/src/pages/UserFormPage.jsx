@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { UserAvatar } from '../components/UserAvatar';
 import usersApi from '../api/users';
+import { getApiErrorMessage } from '../api/client';
 import {
   GraduationCap,
   BookOpen,
@@ -165,11 +166,12 @@ export const UserFormPage = () => {
 
     setLoading(true);
     try {
+      const payload = { ...formData, email: cleanEmail };
       if (isEditing) {
-        await usersApi.updateUser(id, formData);
+        await usersApi.updateUser(id, payload);
         setSuccess('Compte mis à jour avec succès.');
       } else {
-        await usersApi.createUser(formData);
+        await usersApi.createUser(payload);
         setSuccess('Nouveau compte créé avec succès.');
       }
 
@@ -182,8 +184,7 @@ export const UserFormPage = () => {
       }, 1000);
     } catch (err) {
       console.error(err);
-      const msg = err.response?.data?.message || err.response?.data || "Erreur lors de l'enregistrement.";
-      setError(typeof msg === 'string' ? msg : "Erreur lors de l'enregistrement.");
+      setError(getApiErrorMessage(err, "Erreur lors de l'enregistrement."));
     } finally {
       setLoading(false);
     }
