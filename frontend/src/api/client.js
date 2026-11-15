@@ -38,4 +38,19 @@ api.interceptors.response.use(
   }
 );
 
+// Origine du backend (ex. http://localhost:8081) pour afficher les fichiers servis par /uploads/...
+export const API_ORIGIN = (() => {
+  try {
+    return new URL(API_BASE_URL).origin;
+  } catch {
+    return '';
+  }
+})();
+
+// "/uploads/avatars/xxx.png" -> "http://localhost:8081/uploads/avatars/xxx.png"
+export const assetUrl = (path) => {
+  if (!path) return '';
+  return /^(https?:|data:|blob:)/.test(path) ? path : `${API_ORIGIN}${path}`;
+};
+
 export default api;

@@ -1,0 +1,299 @@
+.student-card {
+  --sc-light-x: 50%;
+  --sc-light-y: 50%;
+  --sc-rotate-x: 0deg;
+  --sc-rotate-y: 0deg;
+  --sc-shift-x: 0px;
+  --sc-shift-y: 0px;
+  --sc-tilt: 0;
+  --sc-active: 0;
+  --sc-emerald: #34d399;
+  position: relative;
+  width: 360px;
+  max-width: 100%;
+  perspective: 1000px;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.student-card__body {
+  position: relative;
+  isolation: isolate;
+  padding: 22px;
+  border-radius: 28px;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(180deg, #0c4a35 0%, #08382a 48%, #062b20 100%);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(52, 211, 153, 0.12),
+    0 28px 60px -22px rgba(16, 185, 129, 0.55),
+    0 10px 24px -12px rgba(0, 0, 0, 0.45);
+  transform: rotateX(var(--sc-rotate-x)) rotateY(var(--sc-rotate-y));
+  will-change: transform;
+}
+
+/* Photo du campus en fond, qui s'efface vers le bas (et bouge légèrement avec le pointeur) */
+.student-card__cover {
+  position: absolute;
+  inset: -12px -12px auto -12px;
+  height: 62%;
+  z-index: -2;
+  background-size: cover;
+  background-position: center 30%;
+  transform: translate3d(calc(var(--sc-shift-x) * -1.4), calc(var(--sc-shift-y) * -1.4), 0) scale(1.06);
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 30%, transparent 100%);
+  opacity: 0.95;
+}
+/* Voile vert pour la lisibilité et l'harmonie avec la marque */
+.student-card__body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 70% at 85% 0%, rgba(16, 185, 129, 0.28) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(6, 60, 42, 0.05) 0%, rgba(7, 48, 34, 0.55) 42%, rgba(6, 43, 32, 0.92) 100%);
+}
+
+/* Lumière qui suit le pointeur */
+.student-card__glare,
+.student-card__shade,
+.student-card__rim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.student-card__glare {
+  background: radial-gradient(
+    farthest-corner circle at var(--sc-light-x) var(--sc-light-y),
+    rgba(167, 243, 208, 0.34) 0%,
+    rgba(110, 231, 183, 0.1) 30%,
+    rgba(255, 255, 255, 0) 62%
+  );
+  mix-blend-mode: screen;
+  opacity: var(--sc-active);
+}
+.student-card__shade {
+  background: radial-gradient(
+    farthest-corner circle at var(--sc-light-x) var(--sc-light-y),
+    transparent 35%,
+    rgba(2, 20, 14, 0.4) 100%
+  );
+  opacity: calc(var(--sc-tilt) * 0.9);
+}
+.student-card__rim {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 0 28px rgba(52, 211, 153, 0.1);
+}
+
+.student-card__top {
+  display: flex;
+  align-items: flex-start;
+  min-height: 64px;
+}
+.student-card__avatar {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(180deg, #1f7a59, #0d4a35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 0 0 2px var(--sc-emerald), 0 0 0 6px rgba(52, 211, 153, 0.22), 0 8px 20px -6px rgba(0, 0, 0, 0.5);
+  transform: translate3d(var(--sc-shift-x), var(--sc-shift-y), 0);
+}
+.student-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.student-card__name {
+  margin: 78px 0 0;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+}
+.student-card__sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
+  min-width: 0;
+}
+.student-card__sub svg {
+  flex: none;
+  color: var(--sc-emerald);
+}
+.student-card__sub span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.student-card__chips {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+}
+.student-card__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(6, 43, 32, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.student-card__chip svg {
+  flex: none;
+  color: var(--sc-emerald);
+}
+.student-card__chip--mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+}
+
+.student-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 24px;
+  text-align: center;
+}
+.student-card__stat {
+  padding: 2px 6px;
+  min-width: 0;
+}
+.student-card__stat + .student-card__stat {
+  border-left: 1px solid rgba(52, 211, 153, 0.35);
+}
+.student-card__stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.student-card__stat-label {
+  margin-top: 5px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.student-card__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+.student-card__cta,
+.student-card__square {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 54px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.student-card__cta {
+  flex: 1;
+  gap: 9px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1fa971 0%, #0f6b46 100%);
+  border: 1px solid rgba(110, 231, 183, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 24px -10px rgba(16, 185, 129, 0.8);
+}
+.student-card__square {
+  width: 54px;
+  border-radius: 50%;
+  background: rgba(6, 43, 32, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(52, 211, 153, 0.55);
+}
+.student-card__cta:focus-visible,
+.student-card__square:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.student-card__cta:active,
+.student-card__square:active {
+  filter: brightness(0.85);
+  transform: scale(0.97);
+}
+@media (hover: hover) {
+  .student-card__cta:hover {
+    filter: brightness(1.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 14px 30px -10px rgba(16, 185, 129, 0.95);
+  }
+  .student-card__square:hover {
+    background: rgba(52, 211, 153, 0.2);
+  }
+}
+
+/* Bouton "modifier" (admin) en haut à droite de la carte */
+.student-card__edit {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 3;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  background: rgba(6, 43, 32, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(52, 211, 153, 0.55);
+  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.55);
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.student-card__edit:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.student-card__edit:active {
+  transform: scale(0.92);
+}
+@media (hover: hover) {
+  .student-card__edit:hover {
+    background: rgba(52, 211, 153, 0.28);
+    transform: rotate(-8deg) scale(1.06);
+  }
+}

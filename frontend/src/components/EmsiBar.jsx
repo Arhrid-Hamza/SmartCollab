@@ -17,7 +17,7 @@ const SOCIALS = [
 ];
 
 // Barre verte EMSI pleine largeur : logo à gauche, réseaux sociaux à droite (hauteur 64px)
-export const EmsiBar = ({ children }) => (
+export const EmsiBar = ({ children, center, showSocials = true }) => (
   <header
     style={{ backgroundColor: EMSI_GREEN }}
     className="h-16 w-full shrink-0 sticky top-0 z-30 shadow-md shadow-black/10"
@@ -26,6 +26,7 @@ export const EmsiBar = ({ children }) => (
       <img src={emsiLogo} alt="EMSI" className="h-10 w-auto select-none" draggable="false" />
 
       <div className="flex items-center gap-5">
+        {showSocials && (
         <nav className="flex items-center gap-4" aria-label="Réseaux sociaux EMSI">
           {SOCIALS.map(({ name, href, Icon }, index) => (
             <a
@@ -42,8 +43,16 @@ export const EmsiBar = ({ children }) => (
             </a>
           ))}
         </nav>
+        )}
         {children}
       </div>
     </div>
+
+    {/* Zone centrale (ex. barre de recherche) */}
+    {center && (
+      <div className="absolute inset-0 hidden sm:flex items-center justify-center pointer-events-none">
+        <div className="pointer-events-auto">{center}</div>
+      </div>
+    )}
   </header>
 );

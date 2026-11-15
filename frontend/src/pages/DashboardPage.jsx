@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navbar } from '../components/Navbar';
+import { AnimatePresence, motion } from 'motion/react';
+import { AdminCampusPanel } from '../components/AdminCampusPanel';
+import { AdminUserList } from '../components/AdminUserList';
+import { AdminStudentForm } from '../components/AdminStudentForm';
+import MicroSlats from '../components/MicroSlats';
 import {
   GraduationCap,
   Sparkles,
@@ -11,17 +16,45 @@ import {
   ArrowRight
 } from 'lucide-react';
 
+const SEARCH_DELAY = 900; // ms : durée minimale de l'animation de recherche
+
 export const DashboardPage = () => {
   const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+  // Admin : null = accueil, sinon { view, campus } = page liste (cartes d'accueil masquées)
+  const [adminList, setAdminList] = useState(null);
+  const [adminCampus, setAdminCampus] = useState(undefined);
+  const [adminSearch, setAdminSearch] = useState('');
+  // Recherche par matricule : "searching" reste vrai un court instant (la loupe tourne, la carte fantôme s'affiche)
+  const [searching, setSearching] = useState(false);
+  useEffect(() => {
+    if (adminList?.view !== 'STUDENTS' || adminSearch.trim().length < 3) {
+      setSearching(false);
+      return undefined;
+    }
+    setSearching(true);
+    const timer = setTimeout(() => setSearching(false), SEARCH_DELAY);
+    return () => clearTimeout(timer);
+  }, [adminSearch, adminList?.view]);
+  // Page "Ajouter un étudiant" : null = fermée, sinon { campus }
+  const [adminForm, setAdminForm] = useState(null);
+
+  const todayRaw = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const today = todayRaw.charAt(0).toUpperCase() + todayRaw.slice(1);
 
   const getRolePresentation = () => {
     switch (user?.role) {
       case 'ADMIN':
         return {
           title: 'Espace Administrateur',
-          desc: 'Gestion des rôles, référentiel de compétences et supervision système.',
+          desc: 'Vous gérez les comptes des étudiants et des professeurs, leurs accès et toute l’activité de la plateforme.',
           icon: ShieldCheck,
-          theme: 'from-purple-600 to-indigo-600',
+          theme: 'from-[#15885a] to-[#0f7048]',
         };
       case 'PROFESSOR':
         return {
@@ -43,31 +76,175 @@ export const DashboardPage = () => {
   const roleInfo = getRolePresentation();
   const Icon = roleInfo.icon;
 
+  const fullName = `${user?.firstName ?? ''} ${user?.lastName ?? ''}`;
+
+  // Admin : animation simple (fondu + glissement) et main qui salue
+  const heading = isAdmin ? (
+    <h1 className="text-2xl sm:text-3xl font-bold welcome-title">
+      Bienvenue, {fullName} ! <span className="wave-hand">👋</span>
+    </h1>
+  ) : (
+    <h1 className="text-2xl sm:text-3xl font-bold">Bienvenue, {fullName} ! 👋</h1>
+  );
+
+  const rightBox = isAdmin ? (
+    <div className="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20 text-xs">
+      <span className="text-white/70 block">Aujourd’hui</span>
+      <span className="text-sm font-semibold block whitespace-nowrap">{today}</span>
+    </div>
+  ) : (
+    <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 text-xs">
+      <span className="text-white/70 block">Identifiant Session :</span>
+      <span className="font-mono font-medium truncate max-w-[200px] block">{user?.id}</span>
+    </div>
+  );
+
+  const banner = (
+    <div
+      className={`relative overflow-hidden rounded-2xl ${
+        isAdmin ? 'bg-[#0c2a1e]' : `bg-gradient-to-r ${roleInfo.theme}`
+      } text-white p-6 sm:p-8 shadow-lg shadow-indigo-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4`}
+    >
+      {isAdmin && (
+        <>
+          {/* Fond animé (MicroSlats) */}
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+            <MicroSlats
+              preset="swell"
+              color="#168a55"
+              glintColor="#ffffff"
+              backgroundColor="#0c2a1e"
+              slatWidth={10}
+              slatHeight={25}
+              gap={3}
+              roundness={0.75}
+              interactive
+              cursorStrength={1}
+              cursorSize={40}
+              swirl={0}
+              trail={1.4}
+              lean={0}
+              intro
+              introDuration={1.5}
+              scale={1.5}
+              speed={0.6}
+              direction={250}
+              chop={0.55}
+              stretch={0}
+              glint={0.7}
+              contrast={1.25}
+              perspective={0.55}
+              fog={0.55}
+            />
+          </div>
+          {/* Voile léger pour garder le texte lisible */}
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-black/45 via-black/15 to-black/0" />
+        </>
+      )}
+
+      <div className="relative space-y-1">
+        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-sm ${isAdmin ? 'welcome-badge' : ''}`}>
+          <Icon className="w-3.5 h-3.5" />
+          <span>{roleInfo.title}</span>
+        </div>
+        {heading}
+        <p className={`text-sm text-white/80 max-w-xl ${isAdmin ? 'welcome-desc' : ''}`}>
+          {roleInfo.desc}
+        </p>
+      </div>
+
+      <div className={`relative ${isAdmin ? 'welcome-box' : ''}`}>{rightBox}</div>
+    </div>
+  );
+
+  if (isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#eaf4ee] flex flex-col">
+        <Navbar
+          hideSearch={!!adminForm}
+          onBack={
+            adminList || adminForm
+              ? () => {
+                  setAdminList(null);
+                  setAdminForm(null);
+                  setAdminSearch('');
+                }
+              : undefined
+          }
+          search={adminSearch}
+          onSearch={setAdminSearch}
+          searchLoading={searching}
+          searchPlaceholder={
+            adminList?.view === 'PROFESSORS'
+              ? 'Rechercher un professeur…'
+              : adminList?.view === 'ALL'
+              ? 'Rechercher un utilisateur…'
+              : 'Rechercher un étudiant…'
+          }
+        />
+        <main className="flex-1 max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+          <AnimatePresence mode="wait">
+            {adminForm ? (
+              <motion.div
+                key="student-form"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+              >
+                <AdminStudentForm
+                  initialCampus={adminForm.campus}
+                  onBack={() => {
+                    setAdminForm(null);
+                  }}
+                />
+              </motion.div>
+            ) : !adminList ? (
+              <motion.div
+                key="home"
+                className="space-y-6"
+                exit={{ opacity: 0, y: -30, scale: 0.97 }}
+                transition={{ duration: 0.35, ease: 'easeIn' }}
+              >
+                <div className="admin-banner-in">{banner}</div>
+                <div className="admin-panel-in">
+                  <AdminCampusPanel
+                    initialCampus={adminCampus}
+                    onViewChange={({ campus }) => setAdminCampus(campus)}
+                    onAddStudent={({ campus }) => {
+                      setAdminCampus(campus);
+                      setAdminForm({ campus });
+                    }}
+                    onOpenList={(next) => {
+                      setAdminCampus(next.campus);
+                      setAdminList(next);
+                    }}
+                  />
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="list"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+              >
+                <AdminUserList view={adminList.view} campus={adminList.campus} search={adminSearch} searching={searching} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
-        {/* Welcome Banner */}
-        <div className={`rounded-2xl bg-gradient-to-r ${roleInfo.theme} text-white p-6 sm:p-8 shadow-lg shadow-indigo-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4`}>
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-sm">
-              <Icon className="w-3.5 h-3.5" />
-              <span>{roleInfo.title}</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold">
-              Bienvenue, {user?.firstName} {user?.lastName} ! 👋
-            </h1>
-            <p className="text-sm text-white/80 max-w-xl">
-              {roleInfo.desc}
-            </p>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 text-xs">
-            <span className="text-white/70 block">Identifiant Session :</span>
-            <span className="font-mono font-medium truncate max-w-[200px] block">{user?.id}</span>
-          </div>
-        </div>
+        {banner}
 
         {/* Status of Feature 1 & Handover to Feature 2 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
