@@ -41,10 +41,16 @@ Dans les cursus d'ingénierie et d'informatique :
 
 ### Solution EMSICollab :
 - **Profilage fin des compétences** : Chaque étudiant déclare ses compétences techniques avec un niveau d'expertise (1 à 5) et ses années d'expérience, visualisées sous forme de Radar d'expertise.
-- **Publication granulaire des sujets PFE & Projets** : Les enseignants publient des sujets de projets (individuels `min=1` ou en équipe `min=2..4`) avec une description détaillée et des exigences technologiques précises (niveaux requis, pondérations $w_i$, compétences obligatoires/veto).
+- **Publication granulaire & Cahier des Charges PDF** : Les enseignants publient des sujets de projets (individuels `min=1` ou en équipe `min=2..4`) avec une description détaillée, des exigences technologiques précises (niveaux requis, pondérations $w_i$, compétences obligatoires/veto) et le **fichier PDF officiel du cahier des charges** téléchargeable et consultable en ligne.
 - **Moteur de recommandation PFE personnalisé pour chaque étudiant** : L'étudiant dispose d'un flux personnalisé de sujets PFE classés par score de compatibilité décroissant (ex: *95% Match*), avec mise en évidence des prérequis satisfaits et des compétences manquantes.
+- **Constitution collaborative des équipes depuis le Dashboard** : Les étudiants gèrent leurs groupes de projet directement depuis leur tableau de bord : recherche rapide de camarades, envoi d'invitations et ajout immédiat des membres dans l'équipe.
+- **Espaces de Communication Dédiés (Temps Réel)** :
+  - **Messagerie Privée 1-à-1** : Possibilité pour les étudiants et enseignants de discuter en tête-à-tête et en toute confidentialité.
+  - **Chatroom de Projet Intégrée** : Un salon de discussion d'équipe accessible directement depuis une icône dédiée sur la carte de chaque projet, permettant au professeur encadrant et à tous les étudiants membres d'échanger en direct.
+- **Roadmap Interactive des Étapes & Suivi par Cases à Cocher (Checkboxes)** : Les étapes du projet sont structurées sous forme de jalons munis de cases à cocher. Chaque fois qu'une étape est terminée, l'équipe la coche pour valider l'avancement, entraînant le recalcul en direct de la jauge de progression globale.
+- **Planification de Réunions & Visioconférence Google Meet** : Programmation de séances de suivi et soutenances intermédiaires avec une date et une heure précises, intégrant un **lien direct Google Meet** cliquable pour lancer la réunion sans friction.
 - **Moteur d'adéquation pondérée d'équipe (Skills Compatibility Engine)** : Évaluation automatique et en temps réel de l'adéquation d'une équipe avec un sujet, alertes sur les compétences manquantes et recommandations de coéquipiers.
-- **Gestion du cycle de vie complet** : De la publication du PFE, la recommandation, la postulation, jusqu'à la revue et la validation par l'enseignant.
+- **Gestion du cycle de vie complet** : De la publication du PFE, la recommandation, la postulation, jusqu'à la revue, l'avancement par jalons et la validation par l'enseignant.
 
 ---
 
@@ -105,9 +111,10 @@ flowchart TD
 | **`discovery-service`** | Spring Cloud Netflix Eureka | `8761` | Service Registry permettant l'enregistrement et la résolution dynamique des instances sans IP codées en dur. |
 | **`config-service`** | Spring Cloud Config Server | `8888` | Gestionnaire centralisé des configurations et profils applicatifs (`application.yml`) pour l'ensemble des microservices. |
 | **`auth-service`** | Spring Boot, Spring Security, BCrypt | `8081` | Authentification, émission des JWT, gestion des utilisateurs (Étudiant, Professeur, Admin) et référentiel global des compétences (`skills`). |
-| **`project-service`** | Spring Boot, Data JPA, Kafka Producer | `8082` | Gestion du cycle de vie des projets académiques, assignation des exigences de compétences pondérées, émission d'événements Kafka lors de la création d'un sujet. |
-| **`team-matching-service`** | Spring Boot, OpenFeign, Kafka Consumer | `8083` | Gestion des équipes d'étudiants, calcul matriciel d'affinité algorithmique, stockage des scores et historiques de compatibilité. |
-| **`common-dtos`** | Maven Module Java | — | Bibliothèque partagée contenant les DTOs communs (`UserDto`, `ProjectDto`, `MatchResultDto`, `TeamDto`) et les schémas d'événements Kafka. |
+| **`project-service`** | Spring Boot, Data JPA, Kafka Producer | `8082` | Gestion du cycle de vie des projets académiques, exigences pondérées, stockage du cahier des charges PDF, jalons de la roadmap (checkboxes), réunions Google Meet à date convenue et émission d'événements Kafka. |
+| **`team-matching-service`** | Spring Boot, OpenFeign, Kafka Consumer | `8083` | Gestion des équipes d'étudiants (constitution et ajouts depuis le dashboard), calcul matriciel d'affinité, stockage des scores et historiques de compatibilité. |
+| **`chat-service` (WebSocket)** | Spring Boot, STOMP / WebSocket, JPA | `8084` | Messagerie instantanée en temps réel : messagerie privée 1-à-1 entre étudiants et enseignants, et salon de discussion partagé (Chatroom de projet accessible depuis l'icône du projet). |
+| **`common-dtos`** | Maven Module Java | — | Bibliothèque partagée contenant les DTOs communs (`UserDto`, `ProjectDto`, `MatchResultDto`, `TeamDto`, `MilestoneDto`, `MeetingDto`, `ChatMessageDto`) et les schémas d'événements Kafka. |
 | **`frontend`** | React 18, Vite, Tailwind CSS, Lucide | `5173` | Interface utilisateur monopage réactive proposant les 3 espaces dédiés : Étudiant, Professeur et Administrateur. |
 | **`Apache Kafka`** | Confluent Kafka 7.5.3 (KRaft) | `9092` | Broker d'événements asynchrones garantissant le découplage événementiel (ex: notifications de projet, changements d'équipe). |
 
@@ -155,11 +162,16 @@ erDiagram
 
     %% Project Service DB
     PROJECTS ||--o{ PROJECT_REQUIREMENTS : "exige"
+    PROJECTS ||--o{ PROJECT_MILESTONES : "decoupe en jalons"
+    PROJECTS ||--o{ PROJECT_MEETINGS : "programme"
+    PROJECTS ||--o{ PROJECT_CHAT_MESSAGES : "canal chatroom"
 
     PROJECTS {
         uuid id PK
         string title
         text description
+        string cahier_des_charges_pdf_url "Lien / stockage document PDF"
+        string cahier_des_charges_filename "Nom du fichier PDF officiel"
         uuid professor_id "Logical FK -> auth_db.users"
         string status "DRAFT | PUBLISHED | ASSIGNED | COMPLETED | ARCHIVED"
         int min_team_size "CHECK: > 0"
@@ -177,6 +189,38 @@ erDiagram
         int minimum_level "CHECK: 1 a 5"
         numeric weight "CHECK: 0.1 a 1.0"
         boolean is_mandatory
+    }
+
+    PROJECT_MILESTONES {
+        uuid id PK
+        uuid project_id FK
+        string title
+        text description
+        int step_order "Ordre d execution"
+        boolean is_completed "Statut checkbox (cochee si terminee)"
+        uuid completed_by "Logical FK -> auth_db.users"
+        timestamp completed_at
+        timestamp due_date
+    }
+
+    PROJECT_MEETINGS {
+        uuid id PK
+        uuid project_id FK
+        uuid team_id "Logical FK -> team_matching_db.teams"
+        uuid organizer_id "Logical FK -> auth_db.users"
+        string title
+        text agenda
+        timestamp scheduled_at "Date et heure precises"
+        string google_meet_link "Lien visioconference Google Meet"
+        string status "SCHEDULED | COMPLETED | CANCELLED"
+    }
+
+    PROJECT_CHAT_MESSAGES {
+        uuid id PK
+        uuid project_id FK
+        uuid sender_id "Logical FK -> auth_db.users"
+        text content
+        timestamp sent_at
     }
 
     %% Team Matching Service DB
@@ -210,6 +254,18 @@ erDiagram
         jsonb score_breakdown
         timestamp calculated_at
     }
+
+    %% Communication Privée
+    USERS ||--o{ PRIVATE_MESSAGES : "envoie ou recoit"
+
+    PRIVATE_MESSAGES {
+        uuid id PK
+        uuid sender_id "Logical FK -> auth_db.users"
+        uuid recipient_id "Logical FK -> auth_db.users"
+        text content
+        boolean is_read
+        timestamp sent_at
+    }
 ```
 
 ### Détail des Entités par Base de Données
@@ -238,7 +294,9 @@ erDiagram
 1. **`projects`** :
    - `id` (UUID, PK) : Identifiant du sujet académique.
    - `title` (VARCHAR 255) : Titre explicite du projet.
-   - `description` (TEXT) : Cahier des charges, livrables attendus et contexte pédagogique.
+   - `description` (TEXT) : Descriptif détaillé, objectifs pédagogiques et contexte.
+   - `cahier_des_charges_pdf_url` (VARCHAR 500) : URL ou chemin de stockage du fichier PDF officiel du cahier des charges.
+   - `cahier_des_charges_filename` (VARCHAR 255) : Nom d'origine du fichier PDF (ex: `CDC_EMSI_PFE_2026.pdf`).
    - `professor_id` (UUID) : Identifiant du professeur responsable (référence logique vers `auth_db.users`).
    - `status` (VARCHAR 30) : Statut : `DRAFT` (Brouillon), `PUBLISHED` (Ouvert aux candidatures), `ASSIGNED` (Équipe validée), `COMPLETED` (Terminé).
    - `min_team_size` & `max_team_size` (INT) : Encadrement de la taille du groupe (ex: min 2, max 4).
@@ -251,6 +309,32 @@ erDiagram
    - `minimum_level` (INT, 1 à 5) : Niveau minimum exigé au sein de l'équipe.
    - `weight` (NUMERIC 3,2) : Coefficient de pondération dans le calcul du score (ex: 1.0 = critique, 0.5 = secondaire).
    - `is_mandatory` (BOOLEAN) : Si `true`, l'absence de ce niveau dans l'équipe déclenche un veto bloquant.
+3. **`project_milestones` (Roadmap & Jalons Checkbox)** :
+   - `id` (UUID, PK) : Identifiant du jalon / étape.
+   - `project_id` (UUID, FK) : Projet associé.
+   - `title` (VARCHAR 255) : Intitulé de l'étape (ex: *Spécifications & Architecture*, *Développement API*, *Tests d'intégration*).
+   - `description` (TEXT) : Détail des livrables requis pour cette étape.
+   - `step_order` (INT) : Numéro d'ordre chronologique de l'étape (1, 2, 3...).
+   - `is_completed` (BOOLEAN) : Indicateur d'achèvement (**case à cocher / checkbox**), passée à `true` dès que l'étape est terminée.
+   - `completed_by` (UUID, NULLABLE) : Identifiant de l'étudiant ayant validé la case à cocher.
+   - `completed_at` (TIMESTAMP, NULLABLE) : Horodatage précis de validation de l'étape.
+   - `due_date` (TIMESTAMP, NULLABLE) : Date d'échéance indicative pour franchir ce jalon.
+4. **`project_meetings` (Réunions & Liens Google Meet)** :
+   - `id` (UUID, PK) : Identifiant de la session de réunion.
+   - `project_id` (UUID, FK) : Projet concerné.
+   - `team_id` (UUID, FK, NULLABLE) : Équipe concernée (si réunion restreinte à un groupe).
+   - `organizer_id` (UUID) : Créateur de la réunion (Professeur encadrant ou Chef d'équipe).
+   - `title` (VARCHAR 255) : Motif ou ordre du jour (ex: *Point d'avancement Sprint 2*, *Pré-soutenance technique*).
+   - `agenda` (TEXT) : Ordre du jour détaillé et points à aborder.
+   - `scheduled_at` (TIMESTAMP) : **Date et heure précises** fixées pour la réunion (ex: `2026-11-25 15:30:00`).
+   - `google_meet_link` (VARCHAR 255) : **Lien direct Google Meet** cliquable (ex: `https://meet.google.com/ems-icol-lab`).
+   - `status` (VARCHAR 30) : Statut : `SCHEDULED` (Planifiée), `COMPLETED` (Tenue), `CANCELLED` (Annulée).
+5. **`project_chat_messages` (Chatroom de Projet)** :
+   - `id` (UUID, PK) : Identifiant du message.
+   - `project_id` (UUID, FK) : Projet rattaché (accessible depuis l'icône chatroom sur la carte projet).
+   - `sender_id` (UUID) : Auteur du message (Professeur ou Étudiant membre).
+   - `content` (TEXT) : Contenu du message échangé en temps réel dans le salon partagé.
+   - `sent_at` (TIMESTAMP) : Horodatage de l'envoi.
 
 #### C. Base `team_matching_db` (Port: 5434)
 1. **`teams`** :
@@ -264,7 +348,7 @@ erDiagram
    - `team_id` (UUID, FK) : Équipe concernée.
    - `student_id` (UUID) : Étudiant membre de l'équipe (référence logique vers `auth_db.users`).
    - `role` (VARCHAR 30) : Rôle au sein du groupe (`LEADER` ou `MEMBER`).
-   - `joined_at` (TIMESTAMP) : Date d'intégration.
+   - `joined_at` (TIMESTAMP) : Date d'intégration dans l'équipe.
 3. **`matching_scores`** :
    - `id` (UUID, PK) : Identifiant du résultat calculé.
    - `team_id` (UUID, FK) : Équipe évaluée.
@@ -272,6 +356,15 @@ erDiagram
    - `overall_score` (NUMERIC 5,2) : Score global d'adéquation en pourcentage (0.00% à 100.00%).
    - `mandatory_skills_satisfied` (BOOLEAN) : `true` si tous les prérequis obligatoires sont satisfaits.
    - `score_breakdown` (JSONB) : Détail complet pour chaque compétence (niveau d'équipe max, ratio obtenu, statut bloquant).
+
+#### D. Module Communication Privée (Messagerie 1-à-1)
+1. **`private_messages`** :
+   - `id` (UUID, PK) : Identifiant du message privé.
+   - `sender_id` (UUID) : Expéditeur du message (Étudiant ou Enseignant).
+   - `recipient_id` (UUID) : Destinataire du message en tête-à-tête.
+   - `content` (TEXT) : Corps du message privé.
+   - `is_read` (BOOLEAN) : Statut d'accusé de lecture (`true`/`false`).
+   - `sent_at` (TIMESTAMP) : Horodatage d'envoi.
 
 ---
 
@@ -299,6 +392,8 @@ flowchart LR
 
     subgraph Module_Projets["📁 Module Gestion des Sujets & PFE"]
         UC_CreateProj(["Publier un sujet de projet / PFE"])
+        UC_UploadPdf(["Attacher Cahier des Charges (PDF)"])
+        UC_DownloadPdf(["Consulter / Télécharger Cahier des Charges (PDF)"])
         UC_DefReq(["Définir exigences pondérées (w_i)"])
         UC_SetVeto(["Activer critère obligatoire (Veto)"])
         UC_BrowseProj(["Consulter catalogue des sujets"])
@@ -309,11 +404,23 @@ flowchart LR
     subgraph Module_Equipes["👥 Module Constitution & Matching"]
         UC_CreateTeam(["Créer une équipe (Leader)"])
         UC_InviteMember(["Inviter / Ajouter des membres"])
+        UC_ManageMembersDash(["Ajouter des membres d'équipe (depuis Dashboard)"])
         UC_CheckTeamSize(["Contrôler quotas taille (min/max)"])
         UC_SimMatch(["Simuler matching équipe-projet"])
         UC_CalcScore(["Calculer score adéquation pondéré"])
         UC_RecruitHelp(["Suggérer profils à recruter"])
         UC_SubmitTeam(["Déposer candidature (Individuelle ou Équipe)"])
+    end
+
+    subgraph Module_Communication["💬 Module Communication & Collaboration"]
+        UC_PrivateChat(["Échanger en message privé (1-à-1)"])
+        UC_ProjectChatroom(["Discuter dans la Chatroom Projet (Icône carte)"])
+    end
+
+    subgraph Module_Suivi_Jalons["📌 Module Suivi par Jalons & Réunions"]
+        UC_CheckMilestones(["Cocher / valider étapes du projet (Roadmap)"])
+        UC_ScheduleMeet(["Planifier réunion avec lien Google Meet & date fixée"])
+        UC_JoinMeet(["Rejoindre visioconférence Google Meet"])
     end
 
     subgraph Module_Revue["📋 Module Revue & Décision Enseignant"]
@@ -337,15 +444,27 @@ flowchart LR
     Etu --> UC_BrowseProj
     Etu --> UC_BrowsePfeRec
     Etu --> UC_CreateTeam
+    Etu --> UC_ManageMembersDash
     Etu --> UC_SimMatch
     Etu --> UC_SubmitTeam
+    Etu --> UC_PrivateChat
+    Etu --> UC_ProjectChatroom
+    Etu --> UC_DownloadPdf
+    Etu --> UC_CheckMilestones
+    Etu --> UC_JoinMeet
 
     Prof --> UC_Login
     Prof --> UC_Profile
     Prof --> UC_CreateProj
+    Prof --> UC_UploadPdf
     Prof --> UC_ReviewTeams
     Prof --> UC_ValidateTeam
     Prof --> UC_RejectTeam
+    Prof --> UC_PrivateChat
+    Prof --> UC_ProjectChatroom
+    Prof --> UC_ScheduleMeet
+    Prof --> UC_JoinMeet
+    Prof --> UC_CheckMilestones
 
     Admin --> UC_Login
     Admin --> UC_ManageUsers
@@ -359,6 +478,7 @@ flowchart LR
     UC_CreateProj -.->|"«include»"| UC_DefReq
     UC_CreateTeam -.->|"«include»"| UC_Login
     UC_CreateTeam -.->|"«include»"| UC_InviteMember
+    UC_ManageMembersDash -.->|"«include»"| UC_CreateTeam
     UC_BrowsePfeRec -.->|"«include»"| UC_CalcScore
     UC_SubmitTeam -.->|"«include»"| UC_CheckTeamSize
     UC_SimMatch -.->|"«include»"| UC_CalcScore
@@ -367,13 +487,19 @@ flowchart LR
     UC_ValidateTeam -.->|"«include»"| UC_Login
     UC_ManageUsers -.->|"«include»"| UC_Login
     UC_ManageSkills -.->|"«include»"| UC_Login
+    UC_PrivateChat -.->|"«include»"| UC_Login
+    UC_ProjectChatroom -.->|"«include»"| UC_Login
+    UC_CheckMilestones -.->|"«include»"| UC_Login
+    UC_ScheduleMeet -.->|"«include»"| UC_Login
 
     %% Relations «extend» avec Points d'Extension & Conditions explicites
     UC_Radar -.->|"«extend» [Condition: Profil complété]"| UC_Skills
     UC_SetVeto -.->|"«extend» [Condition: Compétence critique]"| UC_DefReq
+    UC_UploadPdf -.->|"«extend» [Condition: Fichier PDF joint]"| UC_CreateProj
     UC_RecruitHelp -.->|"«extend» [Condition: Veto activé ou Score < 70%]"| UC_SimMatch
     UC_LockProj -.->|"«extend» [Condition: Quota max validé atteint]"| UC_ValidateTeam
     UC_ImportCSV -.->|"«extend» [Condition: Fichier CSV conforme]"| UC_ManageUsers
+    UC_JoinMeet -.->|"«extend» [Condition: Session planifiée]"| UC_ScheduleMeet
 ```
 
 ### Grille d'Analyse des Relations Use Case
@@ -383,13 +509,20 @@ flowchart LR
 | **`UC_Skills` (Déclarer compétences)** | `«include»` | **`UC_Login`** | Un token JWT valide avec rôle `STUDENT` est obligatoire. |
 | **`UC_Radar` (Visualiser Radar)** | `«extend»` | **`UC_Skills`** | Condition : Déclenché lorsque l'étudiant a renseigné au moins 3 compétences. |
 | **`UC_CreateProj` (Publier sujet)** | `«include»` | **`UC_DefReq`** | Tout projet exige obligatoirement au moins une compétence pondérée ($w_i > 0$). |
+| **`UC_UploadPdf` (Attacher PDF CDC)** | `«extend»` | **`UC_CreateProj`** | Condition : L'enseignant téléverse un fichier PDF officiel de cahier des charges. |
 | **`UC_SetVeto` (Activer veto)** | `«extend»` | **`UC_DefReq`** | Condition : L'enseignant coche l'exigence comme critique (`isMandatory = true`). |
+| **`UC_ManageMembersDash` (Ajout membres)** | `«include»` | **`UC_CreateTeam`** | Permet au leader d'ajouter directement ses camarades depuis son tableau de bord. |
 | **`UC_SubmitTeam` (Candidater)** | `«include»` | **`UC_CheckTeamSize`**| Vérifie que l'équipe respecte : $\text{minTeamSize} \le |\text{membres}| \le \text{maxTeamSize}$ (1 pour PFE individuel). |
 | **`UC_BrowsePfeRec` (Recommandations PFE)** | `«include»` | **`UC_CalcScore`** | Évalue et classe automatiquement les sujets PFE ouverts selon les compétences de l'étudiant connecté. |
 | **`UC_SimMatch` (Simuler)** | `«include»` | **`UC_CalcScore`** | Exécution systématique du `SkillMatchingEngine` par le backend. |
 | **`UC_RecruitHelp` (Recommandation)**| `«extend»` | **`UC_SimMatch`** | Condition : Déclenché si une compétence obligatoire manque ou si le score est insuffisant. |
 | **`UC_LockProj` (Verrouiller projet)** | `«extend»` | **`UC_ValidateTeam`**| Condition : Déclenché automatiquement lorsque le nombre d'équipes approuvées atteint le quota. |
 | **`UC_ImportCSV` (Import en masse)** | `«extend»` | **`UC_ManageUsers`**| Condition : Déclenché si l'administrateur téléverse un fichier CSV institutionnel. |
+| **`UC_PrivateChat` (Messagerie privée)** | `«include»` | **`UC_Login`** | Discussion 1-à-1 privée en direct entre deux utilisateurs authentifiés. |
+| **`UC_ProjectChatroom` (Chatroom projet)** | `«include»` | **`UC_Login`** | Accès depuis l'icône de carte projet au salon partagé par l'équipe et le professeur. |
+| **`UC_CheckMilestones` (Cocher étapes)**| `«include»` | **`UC_Login`** | L'équipe coche au fur et à mesure les étapes validées de la roadmap de projet. |
+| **`UC_ScheduleMeet` (Planifier réunion)** | `«include»` | **`UC_Login`** | Programmation d'une réunion avec date et heure précises et lien Google Meet. |
+| **`UC_JoinMeet` (Rejoindre réunion)** | `«extend»` | **`UC_ScheduleMeet`** | Condition : Les participants cliquent sur le lien direct Google Meet pour lancer la visio. |
 
 ---
 
@@ -482,7 +615,7 @@ flowchart LR
 
 ### 6.1 Dashboard Étudiant (Student)
 
-L'espace de l'étudiant est centré sur la valorisation de son profil, la découverte personnalisée de sujets PFE adaptés à ses compétences, et la formation éventuelle d'équipes.
+L'espace de l'étudiant est centré sur la valorisation de son profil, la découverte personnalisée de sujets PFE adaptés à ses compétences, la constitution agile de groupes de projet, ainsi que le suivi collaboratif et la communication temps réel.
 
 #### Composants Clés & Fonctionnalités :
 1. **Fiche Profil & Compétences Personnelles** :
@@ -497,12 +630,39 @@ L'espace de l'étudiant est centré sur la valorisation de son profil, la décou
    - Décomposition visuelle des exigences : technologies maîtrisées (badges verts), niveau partiel (badges jaunes), et compétences manquantes ou critères veto (badges rouges).
    - Bouton de candidature directe pour les sujets PFE individuels (`min_team_size = 1`).
 
-3. **Espace « Mon Équipe » & Binômes** :
-   - **Mode Leader** : Créer une équipe, choisir le nom, rechercher des camarades par email ou nom, envoyer des invitations, désigner les rôles (`LEADER`, `MEMBER`).
-   - **Mode Membre** : Consulter son équipe active, voir les autres membres et leurs compétences combinées.
+3. **Espace « Mon Équipe » & Ajout Direct des Membres du Groupe depuis le Dashboard** :
+   - **Constitution & Ajout direct** : Les étudiants peuvent créer un groupe de projet et inviter ou ajouter directement des camarades depuis leur tableau de bord.
+   - **Recherche instantanée** : Moteur d'autocomplétion par nom, prénom, email institutionnel (`@emsi-edu.ma`) ou numéro CNE.
+   - **Attribution des Rôles** : Définition du créateur (`LEADER`) et des équipiers (`MEMBER`).
+   - **Contrôle dynamique des quotas** : Vérification en temps réel du respect des effectifs minimal et maximal imposés par le sujet (`min_team_size` $\le$ effectif $\le$ `max_team_size`).
    - **Matrice des Compétences d'Équipe** : Tableau croisé récapitulant les forces du groupe et identifiant les points faibles (lacunes en UI, en déploiement, etc.).
 
-4. **Catalogue des Projets & Matching Studio d'Équipe** :
+4. **Messagerie Privée 1-à-1 (Direct Messaging)** :
+   - Module de chat direct intégré permettant à l'étudiant de **discuter en privé et en tête-à-tête** avec chaque camarade de promotion, membre de son groupe ou professeur.
+   - Volet de conversations récentes, indicateurs de messages non lus, recherche de contacts et statuts de lecture en direct.
+   - Échanges sécurisés et confidentiels pour les questions personnelles et le travail préparatoire.
+
+5. **Chatroom de Projet Dédiée (Accessible via l'Icône sur la Carte du Projet)** :
+   - Présence d'une **icône dédiée 💬 Chatroom** sur chaque carte de projet (dans le catalogue, les favoris et les projets affectés).
+   - En un clic sur l'icône, ouverture d'un **salon de discussion d'équipe partagé en temps réel** regroupant l'ensemble des étudiants membres et le professeur encadrant.
+   - Espace idéal pour synchroniser l'avancement, poser des questions techniques au professeur, partager des snippets de code ou de la documentation, et recevoir des retours d'encadrement collectifs sans recourir à des applications tierces.
+
+6. **Description Détaillée & Cahier des Charges en Fichier PDF** :
+   - Fiche descriptive complète du projet : contexte pédagogique, objectifs d'ingénierie, livrables attendus et barème d'évaluation.
+   - **Encart officiel « Cahier des Charges (PDF) »** : Bouton de prévisualisation directe dans le navigateur et de téléchargement du fichier PDF officiel attaché par le professeur encadrant (`cahier_des_charges.pdf`), servant de document de référence contractuel pour l'équipe.
+
+7. **Roadmap Interactive des Étapes & Suivi par Cases à Cocher (Checkboxes)** :
+   - Découpage structuré de la trajectoire du projet en étapes séquentielles / jalons ordonnés (ex: *Étape 1 : Cadrage & Cahier des charges*, *Étape 2 : Conception UML & Architecture*, *Étape 3 : Développement Backend APIs*, *Étape 4 : Frontend React & Intégration*, *Étape 5 : Tests & Validation*, *Étape 6 : Soutenance finale*).
+   - Chaque étape se présente sous la forme d'une **case à cocher interactive (checkbox)**.
+   - **Validation progressive** : À chaque fois qu'une étape est achevée par l'équipe, l'étudiant coche la case correspondante. Le système enregistre l'auteur du cochage et l'horodatage exact.
+   - **Jauge de progression dynamique** : Mise à jour instantanée du pourcentage d'avancement global du projet (ex: *4/6 étapes validées — 67% complété*).
+
+8. **Planification des Réunions & Lien Visioconférence Google Meet** :
+   - Calendrier des rendez-vous pédagogiques : réunions de cadrage, points de sprint hebdomadaires et soutenances intermédiaires.
+   - Chaque réunion est affichée avec une **date et une heure précises et convenues** (ex: *Mardi 24 Novembre 2026 à 15h30*).
+   - **Bouton d'accès direct « Rejoindre sur Google Meet »** intégrant le lien officiel de la visioconférence (`https://meet.google.com/xxx-yyyy-zzz`), permettant à l'étudiant et au professeur de se connecter immédiatement en un clic.
+
+9. **Catalogue des Projets & Matching Studio d'Équipe** :
    - Liste des projets collaboratifs avec filtres par technologie ou professeur.
    - **Simulateur de Matching en temps réel** : L'étudiant sélectionne son équipe et un projet :
      - Affichage du Score Global (% de compatibilité).
@@ -510,19 +670,21 @@ L'espace de l'étudiant est centré sur la valorisation de son profil, la décou
      - Tableau détaillé compétence par compétence : Niveau de l'équipe vs Niveau exigé par le professeur, coefficient de poids, indicateur de veto.
      - **Assistant de recrutement prédictif** : Si une compétence obligatoire manque, le studio suggère le profil type à recruter pour débloquer la candidature.
 
-5. **Suivi des Candidatures** :
-   - Statut des candidatures individuelles ou d'équipe (`EN ATTENTE`, `APPROUVÉE`, `REFUSÉE`).
-   - Consultation des retours ou remarques du professeur encadrant.
+10. **Suivi des Candidatures** :
+    - Statut des candidatures individuelles ou d'équipe (`EN ATTENTE`, `APPROUVÉE`, `REFUSÉE`).
+    - Consultation des retours ou remarques du professeur encadrant.
 
 ---
 
 ### 6.2 Dashboard Professeur (Professor)
 
-L'espace du professeur lui permet de déposer ses sujets PFE et projets académiques, de formaliser avec précision ses attentes technologiques et de sélectionner les candidats les plus compétents de manière objective.
+L'espace du professeur lui permet de déposer ses sujets PFE et projets académiques, de formaliser avec précision ses attentes technologiques, de mettre à disposition le cahier des charges PDF, de configurer les étapes d'avancement (checkboxes), d'animer les chatrooms de projets, de planifier les réunions Google Meet à date convenue et de sélectionner les candidats les plus compétents de manière objective.
 
 #### Composants Clés & Fonctionnalités :
 1. **Atelier de Conception de Sujets PFE & Projets (Project Studio)** :
    - Formulaire de création : Titre du sujet, description détaillée, contexte et livrables attendus, année académique, date limite de candidature.
+   - **Téléversement du Cahier des Charges en format PDF** : Dépôt du fichier officiel PDF de spécifications techniques (`.pdf`), automatiquement associé au sujet pour consultation par les étudiants.
+   - **Configuration de la Roadmap & des Jalons (Checklist)** : Définition des étapes séquentielles du projet que les étudiants devront franchir et cocher au fil de leur avancement (avec intitulé, description des livrables et dates limites indicatives).
    - Définition du format et des quotas : Sujet PFE individuel (`min_team_size = 1, max_team_size = 1`) ou projet en groupe (`min = 2, max = 4`).
    - **Éditeur d'Exigences Techniques Avancées** :
      - Sélection des technologies souhaitées depuis le catalogue de compétences.
@@ -531,13 +693,26 @@ L'espace du professeur lui permet de déposer ses sujets PFE et projets académi
      - Bascule **Critère Obligatoire (Veto)** : activation pour bloquer les candidatures ne disposant pas du niveau minimum exigé.
    - Enregistrement en brouillon (`DRAFT`) ou publication immédiate (`PUBLISHED`).
 
-2. **Tableau de Bord des Candidatures & Sélection** :
+2. **Animation de la Chatroom de Projet & Encadrement Temps Réel** :
+   - Accès immédiat via l'icône de chatroom sur chaque carte de projet supervisé.
+   - Communication bidirectionnelle en direct avec les étudiants affectés au projet.
+   - Canal unifié évitant la dispersion des informations sur les messageries externes.
+
+3. **Messagerie Privée 1-à-1** :
+   - Possibilité d'échanger en tête-à-tête avec un étudiant particulier ou un chef d'équipe pour un accompagnement individualisé ou des consignes spécifiques.
+
+4. **Planificateur de Réunions Pédagogiques Google Meet** :
+   - Module de planification de rendez-vous (points d'étape, revues de code, pré-soutenances).
+   - Saisie de l'ordre du jour, fixation d'une **date et d'une heure précises**, et intégration / génération automatique du **lien Google Meet**.
+   - Synchronisation avec les tableaux de bord des étudiants membres du groupe avec bouton direct de connexion.
+
+5. **Tableau de Bord des Candidatures & Sélection** :
    - Vue tabulaire et Kanban des candidatures d'étudiants (pour les PFE) ou des équipes (pour les projets de groupe).
    - Classement automatique des candidats par **Score de Matching décroissant**.
    - Alerte visuelle immédiate sur les candidatures bloquées par veto (`BLOCKED_MANDATORY_MISSING`) avec mise en évidence des lacunes.
    - Vue détaillée du profil de l'étudiant candidat (compétences, niveau, bio) ou de la composition du binôme/groupe.
 
-3. **Centre de Décision & Validation** :
+6. **Centre de Décision & Validation** :
    - Boutons d'action rapide : **Valider la candidature (`APPROVE`)** ou **Refuser (`REJECT`)**.
    - En cas d'approbation : clôture automatique ou décrémentation des places disponibles sur le sujet, et notification instantanée.
    - Export récapitulatif des attributions de sujets PFE (CSV / PDF).
@@ -653,6 +828,49 @@ sequenceDiagram
     end
 ```
 
+### Diagramme de Séquence : Collaboration Temps Réel, Validation de Jalons (Checkboxes) & Réunion Google Meet
+
+Ce diagramme illustre les interactions collaboratives quotidiennes : l'échange en temps réel dans la chatroom du projet (via l'icône sur la carte projet), la validation progressive des étapes (cases à cocher) avec recalcul de la progression, et la planification d'un point d'étape avec lien Google Meet.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Prof as 👨‍🏫 Professeur Encadrant
+    actor Etu as 🎓 Étudiant (Membre / Leader)
+    participant Front as 💻 Frontend React SPA (:5173)
+    participant Gateway as 🚪 API Gateway (:8080)
+    participant ProjSvc as 📁 project-service (:8082)
+    participant ChatSvc as 💬 chat-service (WebSocket :8084)
+    participant Meet as 📹 Google Meet Platform
+
+    Note over Prof, Etu: Scénario 1 : Échanges dans la Chatroom du Projet (Icône carte)
+    Etu->>Front: Clique sur l'icône 💬 Chatroom sur la carte du projet
+    Front->>ChatSvc: Connexion WebSocket STOMP (Abonnement: /topic/project.{id})
+    Etu->>Front: Saisit un message ou pose une question technique
+    Front->>ChatSvc: STOMP SEND /app/project/{id}/chat
+    ChatSvc->>ChatSvc: Persiste le message dans project_chat_messages
+    ChatSvc-->>Front: Broadcast temps réel vers l'équipe et le professeur
+    Prof->>Front: Répond directement dans la chatroom du projet
+
+    Note over Etu, ProjSvc: Scénario 2 : Validation d'un Jalon (Case à cocher / Checkbox)
+    Etu->>Front: Coche la case d'une étape achevée (ex: "Étape 3 : Backend APIs")
+    Front->>Gateway: PATCH /api/v1/projects/{id}/milestones/{milestoneId}/toggle
+    Gateway->>ProjSvc: Reroute requête (avec X-User-Id)
+    ProjSvc->>ProjSvc: Met à jour is_completed=true, completed_by, completed_at
+    ProjSvc->>ProjSvc: Recalcule le % d'avancement global (ex: 67% complété)
+    ProjSvc-->>Front: 200 OK (MilestoneDto mis à jour & nouveau taux de complétion)
+    Front-->>Front: Mise à jour immédiate de la jauge et des checkboxes
+
+    Note over Prof, Meet: Scénario 3 : Planification de Réunion & Visioconférence Google Meet
+    Prof->>Front: Fixe une date/heure précise (ex: 25 Nov 15h30) et génère le lien Meet
+    Front->>Gateway: POST /api/v1/projects/{id}/meetings
+    Gateway->>ProjSvc: Sauvegarde la réunion dans project_meetings
+    ProjSvc-->>Front: 201 Created (MeetingDto avec google_meet_link)
+    Front-->>Etu: Notification calendrier affichée sur le Dashboard Étudiant
+    Etu->>Front: Clique sur le bouton direct "Rejoindre sur Google Meet"
+    Front->>Meet: Redirection transparente vers https://meet.google.com/xxx-yyyy-zzz
+```
+
 ### Diagramme d'États : Cycles de Vie Projet et Équipe
 
 ```mermaid
@@ -702,9 +920,16 @@ Toutes les requêtes passent par l'API Gateway sur le port **`8080`**.
 | Méthode | Endpoint Gateway | Rôle Minimum | Description | Corps de Requête / Réponse Clé |
 | :--- | :--- | :--- | :--- | :--- |
 | `GET` | `/api/v1/projects` | Authentifié | Liste de tous les projets publiés | Res: `List<ProjectDto>` |
-| `GET` | `/api/v1/projects/{id}` | Authentifié | Détails d'un projet et ses exigences | Res: `ProjectDto` (avec `requirements[]`) |
+| `GET` | `/api/v1/projects/{id}` | Authentifié | Détails d'un projet et ses exigences | Res: `ProjectDto` (avec `requirements[]`, metadata CDC PDF) |
 | `GET` | `/api/v1/projects/professor/{profId}` | `PROFESSOR`, `ADMIN` | Projets créés par un professeur | Res: `List<ProjectDto>` |
 | `POST` | `/api/v1/projects` | `PROFESSOR`, `ADMIN` | Création d'un nouveau projet | Req: `ProjectDto` (titre, desc, quotas, requirements[]) |
+| `POST` | `/api/v1/projects/{id}/cahier-des-charges` | `PROFESSOR`, `ADMIN` | **Cahier des Charges PDF :** Téléversement du document PDF officiel | Multipart form-data : `file` (.pdf)<br>Res: `{ pdfUrl, filename }` |
+| `GET` | `/api/v1/projects/{id}/cahier-des-charges` | Authentifié | **Cahier des Charges PDF :** Téléchargement ou prévisualisation du PDF | Res: Flux binaire PDF (`application/pdf`) |
+| `GET` | `/api/v1/projects/{id}/milestones` | Authentifié | **Roadmap :** Liste des étapes et jalons ordonnés avec statut checkbox | Res: `List<MilestoneDto>` (id, title, stepOrder, isCompleted, ...) |
+| `POST` | `/api/v1/projects/{id}/milestones` | `PROFESSOR`, `ADMIN` | **Roadmap :** Définition d'un nouveau jalon / étape pour le projet | Req: `{ title, description, stepOrder, dueDate }` |
+| `PATCH` | `/api/v1/projects/{id}/milestones/{milestoneId}/toggle` | Authentifié | **Roadmap Checkbox :** Cocher ou décocher une étape terminée (recalcul progression) | Res: `{ milestone, progressPercentage }` |
+| `GET` | `/api/v1/projects/{id}/meetings` | Authentifié | **Réunions & Meet :** Liste des réunions planifiées avec date et lien Google Meet | Res: `List<MeetingDto>` (id, title, scheduledAt, googleMeetLink, ...) |
+| `POST` | `/api/v1/projects/{id}/meetings` | `PROFESSOR`, `STUDENT` | **Réunions & Meet :** Planification d'une réunion avec date fixée et lien Google Meet | Req: `{ title, agenda, scheduledAt, googleMeetLink, teamId? }` |
 
 ### 3. Service d'Équipes & Matching (`team-matching-service`)
 
@@ -713,10 +938,21 @@ Toutes les requêtes passent par l'API Gateway sur le port **`8080`**.
 | `GET` | `/api/v1/teams` | Authentifié | Liste de toutes les équipes | Res: `List<TeamDto>` |
 | `GET` | `/api/v1/teams/{id}` | Authentifié | Détail d'une équipe et ses membres | Res: `TeamDto` (avec `members[]`) |
 | `POST` | `/api/v1/teams` | `STUDENT` | Création d'une nouvelle équipe | Req: `{ name, projectId? }` |
-| `POST` | `/api/v1/teams/{id}/members/{studentId}` | `STUDENT` | Ajout d'un étudiant dans l'équipe | Path params : `id`, `studentId` |
+| `POST` | `/api/v1/teams/{id}/members` | `STUDENT` | **Ajout depuis Dashboard :** Ajout direct d'un camarade dans le groupe | Req: `{ studentId, role }` |
+| `POST` | `/api/v1/teams/{id}/members/{studentId}` | `STUDENT` | Ajout d'un étudiant par paramètre d'URL | Path params : `id`, `studentId` |
 | `POST` | `/api/v1/matching/calculate` | Authentifié | Calcul d'affinité d'équipe | Query params: `teamId`, `projectId`<br>Res: `MatchResultDto` |
 | `GET` | `/api/v1/matching/recommendations/students/{studentId}` | `STUDENT`, `PROFESSOR` | **Recommandation PFE :** Liste des sujets PFE classés par score de compatibilité pour l'étudiant | Res: `List<PfeRecommendationDto>` (project, score, mandatorySatisfied, breakdown) |
 | `GET` | `/api/v1/matching/project/{projectId}` | `PROFESSOR`, `ADMIN` | Scores de toutes les équipes candidates | Res: `List<MatchingScore>` |
+
+### 4. Service de Messagerie & Collaboration (`chat-service` & WebSockets)
+
+| Méthode | Endpoint Gateway / WS | Rôle Minimum | Description | Corps de Requête / Réponse Clé |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/api/v1/chat/private/{otherUserId}` | Authentifié | **Messagerie Privée :** Historique des échanges 1-à-1 avec un utilisateur | Res: `List<PrivateMessageDto>` |
+| `POST` | `/api/v1/chat/private` | Authentifié | **Messagerie Privée :** Envoi d'un message privé en tête-à-tête | Req: `{ recipientId, content }`<br>Res: `PrivateMessageDto` |
+| `GET` | `/api/v1/projects/{projectId}/chat/messages` | Authentifié | **Chatroom Projet :** Historique du salon de discussion (icône sur la carte) | Res: `List<ProjectChatMessageDto>` |
+| `POST` | `/api/v1/projects/{projectId}/chat/messages` | Authentifié | **Chatroom Projet :** Envoi d'un message partagé entre l'équipe et le professeur | Req: `{ content }`<br>Res: `ProjectChatMessageDto` |
+| `WS` | `/ws/chat` (STOMP) | Authentifié | **Flux Temps Réel :** Connexion WebSocket pour broadcast chatroom et messages privés | Topics : `/topic/project.{projectId}`, `/user/queue/private` |
 
 ---
 
@@ -803,12 +1039,14 @@ flowchart TD
         F1["✅ Écran de Connexion EMSI\n- Charte verte #15885a & EmsiBar\n- Titre FoldText GSAP & logo EMSICollab\n- Validation du domaine @emsi-edu.ma"]
         F2["✅ Session & Dashboard Multi-Rôles\n- AuthContext, token JWT & intercepteur Axios\n- Vue adaptative Étudiant / Professeur / Admin\n- Déconnexion et protection des routes"]
         F3["⏳ En cours : Profil Étudiant & Studio PFE\n- Radar d'expertise de compétences\n- Éditeur de sujets professeur & veto\n- Simulateur de matching d'équipe"]
+        F4["⏳ Prévu : Collaboration, Jalons & Meet\n- Ajout des membres d'équipe depuis Dashboard\n- Messagerie privée 1-à-1 & Chatroom projet\n- Roadmap à cases à cocher & lecteur PDF CDC\n- Planification réunions & bouton Google Meet"]
     end
 
     subgraph Pôle_Back["⚙️ Pôle Back-End (Dossier: backend/)"]
         B1["✅ auth-service (:8081)\n- Modèles User, Skill, UserSkill\n- Sécurité Spring Security 6 & JJWT 0.12.6\n- DataInitializer : 3 comptes EMSI & 8 skills"]
-        B2["⏳ project-service (:8082)\n- Cycle de vie des sujets PFE & projets\n- Quotas min/max et exigences techniques\n- Événements Kafka (Topic: emsicollab.projects.v1)"]
-        B3["⏳ team-matching-service (:8083)\n- Algorithme SkillMatchingEngine & Veto\n- Recommandation PFE personnalisée\n- Communication synchrone OpenFeign"]
+        B2["⏳ project-service (:8082)\n- Cycle de vie des sujets PFE & projets\n- Spécifications CDC PDF & Jalons checkbox\n- Réunions Google Meet & Événements Kafka"]
+        B3["⏳ team-matching-service (:8083)\n- Algorithme SkillMatchingEngine & Veto\n- Recommandation PFE personnalisée\n- Gestion des équipes & ajouts membres"]
+        B4["⏳ chat-service (:8084)\n- STOMP WebSocket pour chat privé 1-à-1\n- Chatrooms de projets (icône carte projet)\n- Historique et accusés de lecture"]
     end
 
     subgraph Pôle_DevOps["🐳 Pôle DevOps & Infra (Dossier: docker/)"]
@@ -826,10 +1064,16 @@ flowchart TD
 | **`frontend/`** | **Dashboard Adaptatif** | ✅ Réalisé | Tableau de bord avec affichage conditionnel selon le rôle (`STUDENT`, `PROFESSOR`, `ADMIN`) et déconnexion sécurisée (`frontend/src/pages/DashboardPage.jsx`). |
 | **`frontend/`** | **Profil & Radar Compétences** | ⏳ Prévu | Formulaire de profil étudiant avec sliders d'expertise (1 à 5) et visualisation Radar (`ProfilePage.jsx`). |
 | **`frontend/`** | **Studio PFE & Matching UI** | ⏳ Prévu | Interface professeur de publication de sujets avec veto et tableau de bord de matching pour étudiants (`ProfessorStudioPage.jsx`, `TeamsPage.jsx`). |
+| **`frontend/`** | **Gestion des Équipes & Ajout Membres** | ⏳ Prévu | Ajout et invitation directe des camarades dans le groupe de projet depuis le tableau de bord avec recherche autocomplétée (`TeamManagementModal.jsx`). |
+| **`frontend/`** | **Messagerie Privée & Chatroom Projet** | ⏳ Prévu | Chat 1-à-1 confidentiel et salon partagé accessible en 1 clic sur l'icône de carte projet (`PrivateChatDrawer.jsx`, `ProjectChatroomModal.jsx`). |
+| **`frontend/`** | **Roadmap à Checkboxes & Progression** | ⏳ Prévu | Suivi des étapes du projet avec cases à cocher interactives validées au fil de l'eau et jauge dynamique (`ProjectMilestonesChecklist.jsx`). |
+| **`frontend/`** | **Cahier des Charges PDF & Google Meet** | ⏳ Prévu | Visualiseur / téléchargement du document PDF officiel et encart réunions avec bouton direct Google Meet (`ProjectCdcViewer.jsx`, `MeetingsCalendar.jsx`). |
 | **`backend/`** | **Authentification & Sécurité** | ✅ Réalisé | Endpoints `/api/v1/auth/login`, `/register`, filtres `JwtAuthFilter`, hachage BCrypt (`backend/auth-service`). |
 | **`backend/`** | **Profils & Compétences** | ✅ Réalisé | CRUD compétences `/api/v1/skills`, gestion des compétences utilisateur `/api/v1/users/me` et seed automatique (`DataInitializer.java`). |
-| **`backend/`** | **Gestion des Sujets PFE** | ⏳ Prévu | Microservice `project-service` pour la création, publication et cycle de vie des sujets avec contraintes de taille d'équipe. |
-| **`backend/`** | **Moteur de Matching** | ⏳ Prévu | Microservice `team-matching-service` intégrant `SkillMatchingEngine`, règles de veto et flux de recommandation PFE. |
+| **`backend/`** | **Gestion des Sujets PFE & CDC PDF** | ⏳ Prévu | Microservice `project-service` pour la création, publication des sujets et upload/consultation du cahier des charges PDF. |
+| **`backend/`** | **Roadmap Checkboxes & Google Meet** | ⏳ Prévu | Endpoints de gestion des jalons à cocher (`PATCH /milestones/{id}/toggle`) et planification des sessions avec lien Google Meet à date convenue. |
+| **`backend/`** | **Moteur de Matching & Équipes** | ⏳ Prévu | Microservice `team-matching-service` intégrant `SkillMatchingEngine`, règles de veto, flux de recommandation PFE et constitution de groupes. |
+| **`backend/`** | **Messagerie Temps Réel (STOMP)** | ⏳ Prévu | Microservice `chat-service` avec broker WebSocket STOMP pour les messages privés 1-à-1 et les chatrooms de projets. |
 | **`docker/`** | **Bases PostgreSQL Isolées** | ✅ Réalisé | 3 conteneurs PostgreSQL indépendants (`auth_db` :5431, `project_db` :5433, `team_matching_db` :5434) avec script `01-auth-init.sql`. |
 | **`docker/`** | **Messagerie Kafka KRaft** | ⏳ Prévu | Configuration et activation du broker Kafka sans ZooKeeper pour la communication événementielle. |
 

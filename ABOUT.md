@@ -23,11 +23,20 @@ Traditionnellement, le choix des sujets PFE et la formation des équipes se font
 ### 🎓 Pour les Étudiants
 - **Valorisation du Profil Technique** : Déclaration fine de compétences standardisées par niveau (1 à 5) et visualisation sous forme de diagramme Radar d'expertise.
 - **Recommandation Intelligente de Sujets PFE** : Flux personnalisé de sujets PFE proposés par les enseignants, classés par score d'adéquation décroissant (ex: *95% Match*), avec mise en exergue des technologies acquises et des prérequis manquants.
-- **Constitution Stratégique d'Équipes** : Recherche de coéquipiers et analyse en direct des forces et faiblesses du groupe.
+- **Constitution d'Équipe depuis le Dashboard** : Recherche de camarades par nom/email/CNE et ajout direct des membres dans le groupe de projet avec respect des quotas.
+- **Messagerie Privée 1-à-1** : Chat direct et privé en tête-à-tête avec chaque camarade ou enseignant pour des échanges ciblés.
+- **Chatroom de Projet Dédiée (Icône Carte Projet)** : Salon de discussion partagé en temps réel accessible via l'icône de la carte projet, réunissant l'équipe et le professeur encadrant.
+- **Roadmap Interactive des Étapes (Checkboxes)** : Suivi par jalons avec cases à cocher interactives à valider dès qu'une étape est terminée, avec recalcul automatique de la barre de progression.
+- **Cahier des Charges PDF Officiel** : Consultation et téléchargement immédiat du document PDF officiel du cahier des charges associé au projet.
+- **Réunions Pédagogiques Google Meet** : Calendrier des séances de suivi à date et heure précises avec bouton d'accès direct au lien Google Meet.
 - **Matching Studio Prédictif** : Simulation de compatibilité avec les sujets proposés par les professeurs, calcul d'un score d'adéquation pondéré (0 à 100%) et recommandations ciblées de profils à recruter pour combler les lacunes bloquantes (veto).
 
 ### 👨‍🏫 Pour les Professeurs
 - **Atelier de Conception de Sujets PFE & Projets** : Publication de sujets PFE ou projets académiques avec description détaillée, livrables attendus, contraintes de taille d'équipe (individuel `min=1, max=1` ou binôme/groupe `min=2, max=4`), échéances et exigences techniques pondérées ($w_i$).
+- **Dépôt du Cahier des Charges PDF** : Téléversement du document PDF officiel de spécifications rattaché au sujet.
+- **Définition de la Roadmap & Jalons Checkbox** : Configuration de la checklist ordonnée des étapes que les étudiants doivent cocher au fil de l'avancement.
+- **Animation de la Chatroom de Projet** : Suivi collectif et échanges en direct avec les équipes supervisées via le salon de discussion du projet.
+- **Planification de Réunions Google Meet** : Programmation de revues d'avancement à date et heure fixées avec lien Google Meet cliquable.
 - **Critères Obligatoires (Veto)** : Possibilité de rendre certaines compétences indispensables pour empêcher les candidatures inadéquates.
 - **Revue Objective des Candidatures** : Classement automatisé des étudiants et équipes postulants par score de compatibilité décroissant et validation en un clic.
 
