@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
 import { GraduationCap, BookOpen, Users, MapPin, SearchX } from 'lucide-react';
 import api from '../api/client';
 import { CAMPUSES, BACKEND_CAMPUS } from './AdminCampusPanel';
@@ -6,6 +7,8 @@ import { StudentStats } from './StudentStats';
 import { StudentCardGrid, StudentResultList, BackToListButton } from './StudentCard';
 import { StudentCardSkeleton } from './StudentCardSkeleton';
 import { AdminStudentEditForm } from './AdminStudentEditForm';
+import { AdminBulkEditForm } from './AdminBulkEditForm';
+import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 
 const GREEN = '#15885a';
 
@@ -41,6 +44,12 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
   const [selected, setSelected] = useState(null);
   // Étudiant en cours de modification (page formulaire)
   const [editing, setEditing] = useState(null);
+  // Étudiant dont la suppression est en cours de confirmation
+  const [deleting, setDeleting] = useState(null);
+  // Modification groupée : mode sélection, étudiants cochés, page de modification
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkEditing, setBulkEditing] = useState(null);
   const config = VIEWS[view] || VIEWS.STUDENTS;
   const Icon = config.icon;
   const campusLabel = CAMPUSES.find((c) => c.id === campus)?.label || campus;
@@ -68,7 +77,7 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
       .filter((u) => {
         if (!q) return true;
         if (looksLikeMatricule) return (u.matricule || '').toLowerCase() === q;
-        return [u.firstName, u.lastName, `${u.firstName} ${u.lastName}`, u.email, u.matricule, u.filiere, u.niveau, u.matiere]
+        return [u.firstName, u.lastName, `${u.firstName} ${u.lastName}`, u.email, u.matricule, u.groupe, u.filiere, u.niveau, u.matiere]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(q));
       });
@@ -94,7 +103,31 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
   useEffect(() => {
     setSelected(null);
     setEditing(null);
+    setSelectMode(false);
+    setSelectedIds(new Set());
+    setBulkEditing(null);
   }, [q]);
+
+  const toggleOne = (id) =>
+    setSelectedIds((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const toggleMode = () => {
+    setSelectMode((on) => !on);
+    setSelectedIds(new Set());
+  };
+
+  // Après modification groupée : mise à jour de la liste en mémoire, retour à la liste
+  const handleBulkSaved = (updatedList) => {
+    const byId = new Map(updatedList.map((u) => [u.id, u]));
+    setUsers((list) => list.map((u) => (byId.has(u.id) ? { ...u, ...byId.get(u.id) } : u)));
+    setBulkEditing(null);
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  };
 
   // Après enregistrement : on met à jour la liste en mémoire (la carte affiche aussitôt les nouvelles valeurs)
   const handleSaved = (updated) => {
@@ -103,21 +136,70 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
     setEditing(null);
   };
 
+  // Suppression : appel API, puis mise à jour de la liste en mémoire (la carte disparaît, la recherche se réactualise)
+  const deleteStudent = (student) => api.delete(`/admin/students/${student.id}`);
+  const handleDeleted = (student) => {
+    setUsers((list) => list.filter((u) => u.id !== student.id));
+    setSelected((cur) => (cur && cur.id === student.id ? null : cur));
+    setDeleting(null);
+  };
+  const deleteDialog = (
+    <AnimatePresence>
+      {deleting && (
+        <ConfirmDeleteDialog
+          key={deleting.id}
+          student={deleting}
+          onDelete={() => deleteStudent(deleting)}
+          onDeleted={() => handleDeleted(deleting)}
+          onClose={() => setDeleting(null)}
+        />
+      )}
+    </AnimatePresence>
+  );
+  const withDialog = (node) => (
+    <>
+      {node}
+      {deleteDialog}
+    </>
+  );
+
   if (view === 'STUDENTS' && !loading) {
     const { kind, list } = studentSearch;
     if (editing) return <AdminStudentEditForm student={editing} onCancel={() => setEditing(null)} onSaved={handleSaved} />;
+    if (bulkEditing) {
+      const suggestions = [...new Set(users.filter((u) => u.role === 'STUDENT').map((u) => u.filiere).filter(Boolean))];
+      return <AdminBulkEditForm students={bulkEditing} suggestions={suggestions} onCancel={() => setBulkEditing(null)} onSaved={handleBulkSaved} />;
+    }
     if (searching) return <StudentCardSkeleton />;
     if (selected) {
-      return (
+      return withDialog(
         <div>
           <BackToListButton onClick={() => setSelected(null)} />
-          <StudentCardGrid students={[selected]} query={search} kind={kind || 'nom'} hideHeading onEdit={setEditing} />
+          <StudentCardGrid students={[selected]} query={search} kind={kind || 'nom'} hideHeading onEdit={setEditing} onDelete={setDeleting} />
         </div>
       );
     }
-    if (kind === 'matricule' || kind === 'email') return <StudentCardGrid students={list} query={search} kind={kind} onEdit={setEditing} />;
-    if (kind === 'nom' && list.length === 1) return <StudentCardGrid students={list} query={search} kind="nom" onEdit={setEditing} />;
-    if (kind === 'nom' && list.length > 1) return <StudentResultList students={list} query={search} onSelect={setSelected} />;
+    if (kind === 'matricule' || kind === 'email') {
+      return withDialog(<StudentCardGrid students={list} query={search} kind={kind} onEdit={setEditing} onDelete={setDeleting} />);
+    }
+    if (kind === 'nom' && list.length === 1) {
+      return withDialog(<StudentCardGrid students={list} query={search} kind="nom" onEdit={setEditing} onDelete={setDeleting} />);
+    }
+    if (kind === 'nom' && list.length > 1) {
+      return (
+        <StudentResultList
+          students={list}
+          query={search}
+          onSelect={setSelected}
+          selectMode={selectMode}
+          onToggleMode={toggleMode}
+          selectedIds={selectedIds}
+          onToggleOne={toggleOne}
+          onToggleAll={() => setSelectedIds((cur) => (cur.size === list.length ? new Set() : new Set(list.map((s) => s.id))))}
+          onBulkEdit={() => setBulkEditing(list.filter((s) => selectedIds.has(s.id)))}
+        />
+      );
+    }
     if (q && rows.length === 0) return <NoResult label={config.none} query={search} />;
     return <StudentStats rows={rows} campusLabel={campusLabel} />;
   }

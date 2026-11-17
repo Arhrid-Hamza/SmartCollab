@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
-import { Mail, Copy, Check, Hash, GraduationCap, ChevronRight, ArrowLeft, Pencil } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { Mail, Copy, Check, Hash, GraduationCap, ChevronRight, ArrowLeft, Pencil, Trash2, Minus, X } from 'lucide-react';
 import { assetUrl } from '../api/client';
 import { CAMPUSES, BACKEND_CAMPUS } from './AdminCampusPanel';
 
@@ -273,7 +273,7 @@ const HEADINGS = {
 
 // Résultat d'une recherche : une ou plusieurs cartes, qui apparaissent l'une après l'autre
 // kind : 'matricule' | 'email' | 'nom' (adapte la phrase d'en-tête) ; hideHeading : masque la phrase
-export const StudentCardGrid = ({ students, query, kind = 'matricule', hideHeading = false, onEdit }) => (
+export const StudentCardGrid = ({ students, query, kind = 'matricule', hideHeading = false, onEdit, onDelete }) => (
   <div>
     {!hideHeading && (
       <p className="text-sm text-slate-600 mb-8 text-center">
@@ -298,6 +298,16 @@ export const StudentCardGrid = ({ students, query, kind = 'matricule', hideHeadi
           }}
         >
           <MemoCard student={s} onEdit={onEdit} />
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(s)}
+              className="sc-delete-in group mt-5 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full text-sm font-semibold text-rose-600 bg-white/70 hover:bg-rose-600 hover:text-white border border-rose-300 hover:border-rose-600 shadow-sm hover:shadow-lg hover:shadow-rose-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 transition-all duration-200 cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4 transition-transform duration-200 group-hover:-rotate-12 group-hover:scale-110" />
+              Supprimer l’étudiant
+            </button>
+          )}
         </motion.div>
       ))}
     </div>
@@ -305,58 +315,216 @@ export const StudentCardGrid = ({ students, query, kind = 'matricule', hideHeadi
 );
 
 // Plusieurs étudiants correspondent (même nom / prénom) : liste photo + nom prénom + matricule, un clic ouvre la carte
-export const StudentResultList = ({ students, query, onSelect }) => (
-  <div className="max-w-3xl mx-auto">
-    <p className="text-sm text-slate-600 mb-6 text-center">
-      {students.length} résultats pour <strong className="text-slate-800">« {query.trim()} »</strong>
-      <span className="block text-xs text-slate-500 mt-1">Cliquez sur un étudiant pour afficher sa carte</span>
-    </p>
+const Checkbox = ({ checked, indeterminate = false }) => (
+  <span
+    aria-hidden="true"
+    className={`inline-flex items-center justify-center w-[22px] h-[22px] rounded-md border-2 transition-colors duration-200 ${
+      checked || indeterminate ? 'bg-[#15885a] border-[#15885a]' : 'bg-white/80 border-slate-300'
+    }`}
+  >
+    <AnimatePresence initial={false}>
+      {(checked || indeterminate) && (
+        <motion.span
+          key={indeterminate && !checked ? 'dash' : 'check'}
+          initial={{ scale: 0, rotate: -45 }}
+          animate={{ scale: 1, rotate: 0 }}
+          exit={{ scale: 0 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+          className="text-white"
+        >
+          {indeterminate && !checked ? <Minus className="w-3.5 h-3.5" strokeWidth={3} /> : <Check className="w-3.5 h-3.5" strokeWidth={3.5} />}
+        </motion.span>
+      )}
+    </AnimatePresence>
+  </span>
+);
 
-    <div className="rounded-2xl bg-white/40 backdrop-blur-xl backdrop-saturate-150 border border-white/70 shadow-[0_8px_32px_rgba(21,136,90,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] overflow-hidden">
-      <div className="grid grid-cols-[56px_1fr_auto_20px] sm:grid-cols-[64px_1fr_200px_20px] gap-3 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 border-b border-white/70">
-        <span>Photo</span>
-        <span>Nom et prénom</span>
-        <span>Matricule</span>
-        <span />
+// Liste de résultats : clic = ouvre la carte ; icône "éditer" = mode sélection pour modifier niveau et filière en groupe
+export const StudentResultList = ({
+  students,
+  query,
+  onSelect,
+  selectMode = false,
+  onToggleMode,
+  selectedIds,
+  onToggleOne,
+  onToggleAll,
+  onBulkEdit,
+}) => {
+  const count = selectedIds ? selectedIds.size : 0;
+  const allSelected = count > 0 && count === students.length;
+  const someSelected = count > 0 && !allSelected;
+
+  return (
+    <div className="max-w-3xl mx-auto pb-28">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <motion.p
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="text-sm text-slate-600"
+        >
+          {students.length} résultats pour <strong className="text-slate-800">« {query.trim()} »</strong>
+          <span className="block text-xs text-slate-500 mt-0.5">
+            {selectMode ? 'Cochez les étudiants à modifier' : 'Cliquez sur un étudiant pour afficher sa carte'}
+          </span>
+        </motion.p>
+
+        {onToggleMode && (
+          <motion.button
+            type="button"
+            onClick={onToggleMode}
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.96 }}
+            aria-pressed={selectMode}
+            className={`inline-flex items-center gap-2 pl-2.5 pr-4 py-1.5 rounded-full text-sm font-semibold border shadow-sm transition-colors cursor-pointer ${
+              selectMode
+                ? 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                : 'text-white border-transparent shadow-[0_8px_18px_-8px_rgba(21,136,90,0.9)]'
+            }`}
+            style={selectMode ? undefined : { background: 'linear-gradient(135deg,#1fa971,#0f6b46)' }}
+          >
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-black/10">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={selectMode ? 'x' : 'pencil'}
+                  initial={{ rotate: -90, scale: 0.5, opacity: 0 }}
+                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                  exit={{ rotate: 90, scale: 0.5, opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                  className="inline-flex"
+                >
+                  {selectMode ? <X className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                </motion.span>
+              </AnimatePresence>
+            </span>
+            {selectMode ? 'Annuler' : 'Éditer niveau, filière et campus'}
+          </motion.button>
+        )}
       </div>
 
-      <ul className="divide-y divide-white/70">
-        {students.map((s, i) => {
-          const name = `${s.firstName || ''} ${s.lastName || ''}`.trim();
-          const initials = `${s.firstName?.[0] || ''}${s.lastName?.[0] || ''}`.toUpperCase();
-          return (
-            <motion.li
-              key={s.id}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3, ease: 'easeOut' }}
-            >
+      <div className="rounded-2xl bg-white/40 backdrop-blur-xl backdrop-saturate-150 border border-white/70 shadow-[0_8px_32px_rgba(21,136,90,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] overflow-hidden">
+        <div className="flex items-center gap-3 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 border-b border-white/70">
+          {/* Colonne photo : en mode sélection, la case "tout sélectionner" + le mot "Tous" prennent la place de "Photo" */}
+          <motion.div
+            initial={false}
+            animate={{ width: selectMode ? 82 : 44 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="shrink-0 overflow-hidden flex items-center"
+          >
+            {selectMode ? (
+              <button type="button" onClick={onToggleAll} aria-label="Tout sélectionner" className="inline-flex items-center gap-2 cursor-pointer uppercase">
+                <Checkbox checked={allSelected} indeterminate={someSelected} />
+                <span className={allSelected ? 'text-[#15885a]' : ''}>Tous</span>
+              </button>
+            ) : (
+              <span>Photo</span>
+            )}
+          </motion.div>
+          <span className="flex-1 min-w-0">Nom et prénom</span>
+          <span className="w-[120px] sm:w-[190px] shrink-0">Matricule</span>
+          <span className="w-4 shrink-0" />
+        </div>
+
+        <ul>
+          {students.map((s, i) => {
+            const name = `${s.firstName || ''} ${s.lastName || ''}`.trim();
+            const initials = `${s.firstName?.[0] || ''}${s.lastName?.[0] || ''}`.toUpperCase();
+            const checked = !!selectedIds?.has(s.id);
+            return (
+              <motion.li
+                key={s.id}
+                initial={{ opacity: 0, y: 22, scale: 0.97, filter: 'blur(6px)' }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                transition={{ delay: Math.min(i, 12) * 0.06, type: 'spring', stiffness: 260, damping: 24 }}
+                className="relative border-b border-white/70 last:border-b-0"
+              >
+                <motion.span
+                  aria-hidden="true"
+                  initial={false}
+                  animate={{ scaleY: checked ? 1 : 0, opacity: checked ? 1 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute left-0 top-0 bottom-0 w-1 bg-[#15885a] origin-center"
+                />
+                <button
+                  type="button"
+                  role={selectMode ? 'checkbox' : undefined}
+                  aria-checked={selectMode ? checked : undefined}
+                  onClick={() => (selectMode ? onToggleOne?.(s.id) : onSelect(s))}
+                  className={`group w-full flex items-center gap-3 px-4 py-3 text-left focus-visible:outline-none transition-colors duration-200 cursor-pointer ${
+                    checked ? 'bg-emerald-100/60' : 'bg-white/30 hover:bg-white/75 focus-visible:bg-white/75'
+                  }`}
+                >
+                  <motion.span
+                    initial={false}
+                    animate={{ width: selectMode ? 26 : 0, opacity: selectMode ? 1 : 0, marginRight: selectMode ? 0 : -12 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="overflow-hidden shrink-0 flex items-center"
+                  >
+                    <Checkbox checked={checked} />
+                  </motion.span>
+                  <span
+                    className={`inline-flex items-center justify-center w-11 h-11 shrink-0 rounded-full overflow-hidden text-sm font-bold text-white bg-[#15885a] ring-2 transition-all duration-200 ${
+                      checked ? 'ring-[#15885a] scale-105' : 'ring-emerald-300/60 group-hover:ring-emerald-400'
+                    }`}
+                  >
+                    {s.avatarUrl ? (
+                      <img src={assetUrl(s.avatarUrl)} alt={name} className="w-full h-full object-cover object-top" draggable={false} />
+                    ) : (
+                      initials
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1 transition-transform duration-200 group-hover:translate-x-0.5">
+                    <span className="block text-sm font-semibold text-slate-800 truncate">{name}</span>
+                    <span className="block text-xs text-slate-500 truncate">{s.email}</span>
+                  </span>
+                  <span className="w-[120px] sm:w-[190px] shrink-0 font-mono text-xs sm:text-sm font-medium text-slate-700 truncate">{s.matricule || '—'}</span>
+                  <ChevronRight
+                    className={`w-4 h-4 shrink-0 text-slate-400 transition-all duration-200 ${selectMode ? 'opacity-0' : 'group-hover:translate-x-1 group-hover:text-[#15885a]'}`}
+                  />
+                </button>
+              </motion.li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Barre du bas : apparaît dès qu'au moins un étudiant est coché */}
+      <AnimatePresence>
+        {selectMode && count > 0 && (
+          <motion.div
+            key="bulk-bar"
+            initial={{ y: 90, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 90, opacity: 0, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+            className="fixed bottom-6 inset-x-0 z-40 flex justify-center px-4 pointer-events-none"
+          >
+            <div className="pointer-events-auto flex items-center gap-3 pl-5 pr-2 py-2 rounded-full bg-[#0b3d2c]/95 backdrop-blur-xl border border-emerald-300/30 shadow-[0_18px_40px_-12px_rgba(6,43,32,0.8)] text-white">
+              <span className="text-sm font-semibold">
+                <motion.span key={count} initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="inline-block font-extrabold text-emerald-300">
+                  {count}
+                </motion.span>{' '}
+                sélectionné{count > 1 ? 's' : ''}
+              </span>
+              <button type="button" onClick={onToggleAll} className="text-xs font-semibold text-white/70 hover:text-white underline-offset-2 hover:underline cursor-pointer">
+                {allSelected ? 'Tout désélectionner' : 'Tout sélectionner'}
+              </button>
               <button
                 type="button"
-                onClick={() => onSelect(s)}
-                className="w-full grid grid-cols-[56px_1fr_auto_20px] sm:grid-cols-[64px_1fr_200px_20px] gap-3 items-center px-4 py-3 text-left bg-white/30 hover:bg-white/70 focus-visible:bg-white/70 focus-visible:outline-none transition-colors cursor-pointer"
+                onClick={onBulkEdit}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-[#06281c] bg-gradient-to-r from-emerald-300 to-emerald-400 hover:brightness-105 active:scale-95 transition cursor-pointer"
               >
-                <span className="inline-flex items-center justify-center w-11 h-11 rounded-full overflow-hidden text-sm font-bold text-white bg-[#15885a] ring-2 ring-emerald-300/60">
-                  {s.avatarUrl ? (
-                    <img src={assetUrl(s.avatarUrl)} alt={name} className="w-full h-full object-cover object-top" draggable={false} />
-                  ) : (
-                    initials
-                  )}
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-slate-800 truncate">{name}</span>
-                  <span className="block text-xs text-slate-500 truncate">{s.email}</span>
-                </span>
-                <span className="font-mono text-xs sm:text-sm font-medium text-slate-700 truncate">{s.matricule || '—'}</span>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
+                <Pencil className="w-4 h-4" />
+                Modifier
               </button>
-            </motion.li>
-          );
-        })}
-      </ul>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-  </div>
-);
+  );
+};
 
 // Bouton "retour à la liste" affiché au-dessus de la carte ouverte depuis la liste
 export const BackToListButton = ({ onClick }) => (

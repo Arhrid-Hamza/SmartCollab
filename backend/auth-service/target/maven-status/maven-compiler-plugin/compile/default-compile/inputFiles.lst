@@ -8,6 +8,7 @@ C:\Users\user\SmartCollab\backend\auth-service\src\main\java\com\smartcollab\aut
 C:\Users\user\SmartCollab\backend\auth-service\src\main\java\com\smartcollab\auth\controller\UserController.java
 C:\Users\user\SmartCollab\backend\auth-service\src\main\java\com\smartcollab\auth\dto\AuthRequest.java
 C:\Users\user\SmartCollab\backend\auth-service\src\main\java\com\smartcollab\auth\dto\AuthResponse.java
+C:\Users\user\SmartCollab\backend\auth-service\src\main\java\com\smartcollab\auth\dto\BulkAcademicUpdateRequest.java
 C:\Users\user\SmartCollab\backend\auth-service\src\main\java\com\smartcollab\auth\dto\RegisterRequest.java
 C:\Users\user\SmartCollab\backend\auth-service\src\main\java\com\smartcollab\auth\dto\SkillDto.java
 C:\Users\user\SmartCollab\backend\auth-service\src\main\java\com\smartcollab\auth\dto\StudentCreatedResponse.java

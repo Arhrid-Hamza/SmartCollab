@@ -1,6 +1,7 @@
 package com.smartcollab.auth.service;
 
 import com.smartcollab.auth.dto.StudentCreatedResponse;
+import com.smartcollab.auth.dto.UserDto;
 import com.smartcollab.auth.model.Campus;
 import com.smartcollab.auth.model.Role;
 import com.smartcollab.auth.model.User;
@@ -29,6 +30,7 @@ import java.text.Normalizer;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -317,6 +319,89 @@ public class StudentProvisioningService {
             // Le compte est déjà créé : on ne bloque pas, le mot de passe est de toute façon renvoyé à l'admin
             log.error("Écriture du fichier .env impossible pour {}", matricule, ex);
         }
+    }
+
+    // ------------------------------------------------------------------ suppression
+
+    private static final Pattern AVATAR_FILE = Pattern.compile("^[0-9a-fA-F\\-]{36}\\.png$");
+    private static final Pattern SAFE_MATRICULE = Pattern.compile("^[A-Za-z0-9\\-]{3,40}$");
+
+    /**
+     * Modifie la filière, le niveau et/ou le campus de plusieurs étudiants en une seule opération (tout ou rien).
+     * Un champ vide n'est pas modifié ; au moins un des trois doit être renseigné.
+     */
+    @Transactional
+    public List<UserDto> updateStudentsAcademic(List<UUID> ids, String filiere, String niveau, String campusValue) {
+        if (ids == null || ids.isEmpty()) {
+            throw bad("Sélectionnez au moins un étudiant.");
+        }
+        if (ids.size() > 500) {
+            throw bad("Trop d'étudiants sélectionnés (500 maximum).");
+        }
+        boolean changeFiliere = filiere != null && !filiere.isBlank();
+        boolean changeNiveau = niveau != null && !niveau.isBlank();
+        boolean changeCampus = campusValue != null && !campusValue.isBlank();
+        if (!changeFiliere && !changeNiveau && !changeCampus) {
+            throw bad("Renseignez la filière, le niveau et/ou le campus à appliquer.");
+        }
+        String filiereClean = changeFiliere ? cleanFreeText(filiere, "La filière") : null;
+        String niveauClean = changeNiveau ? cleanFreeText(niveau, "Le niveau") : null;
+        Campus campusClean = changeCampus ? cleanCampus(campusValue) : null;
+
+        List<User> users = userRepository.findAllById(new HashSet<>(ids));
+        if (users.size() != new HashSet<>(ids).size()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Un ou plusieurs étudiants sont introuvables.");
+        }
+        for (User user : users) {
+            if (user.getRole() != Role.STUDENT) {
+                throw bad("Seuls des comptes étudiants peuvent être modifiés ici.");
+            }
+        }
+        for (User user : users) {
+            if (filiereClean != null) {
+                user.setFiliere(filiereClean);
+            }
+            if (niveauClean != null) {
+                user.setNiveau(niveauClean);
+            }
+            if (campusClean != null) {
+                user.setCampus(campusClean);
+            }
+        }
+        List<User> saved = userRepository.saveAll(users);
+        log.info("{} étudiant(s) modifié(s) en groupe (filière={}, niveau={}, campus={})", saved.size(), filiereClean, niveauClean, campusClean);
+        return saved.stream().map(authService::toDto).toList();
+    }
+
+    /**
+     * Supprime un compte étudiant ainsi que sa photo (uploads/avatars) et son fichier d'identifiants (.env/<matricule>.env).
+     * Seuls les comptes STUDENT sont concernés : un admin ne peut pas effacer un autre admin ni un professeur par ici.
+     */
+    @Transactional
+    public void deleteStudent(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Étudiant introuvable."));
+        if (user.getRole() != Role.STUDENT) {
+            throw bad("Seul un compte étudiant peut être supprimé ici.");
+        }
+        String avatarUrl = user.getAvatarUrl();
+        String matricule = user.getMatricule();
+        String email = user.getEmail();
+
+        userRepository.delete(user);
+        userRepository.flush();
+
+        // Fichiers supprimés seulement après la suppression en base
+        if (avatarUrl != null && avatarUrl.startsWith("/uploads/avatars/")) {
+            String filename = avatarUrl.substring(avatarUrl.lastIndexOf('/') + 1);
+            if (AVATAR_FILE.matcher(filename).matches()) { // jamais de chemin fourni par l'extérieur
+                deleteQuietly(avatarDir.resolve(filename));
+            }
+        }
+        if (matricule != null && SAFE_MATRICULE.matcher(matricule).matches()) {
+            deleteQuietly(credentialsDir.resolve(matricule + ".env"));
+        }
+        log.info("Étudiant supprimé : {} ({})", email, matricule);
     }
 
     private void deleteQuietly(Path file) {
