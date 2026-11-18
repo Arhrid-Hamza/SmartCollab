@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { AlertCircle, ArrowLeft, ArrowRight, Check, GraduationCap, Layers, MapPin, Minus, Sparkles, Users, X } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, Check, GraduationCap, MapPin, Minus, Users, X } from 'lucide-react';
+import appLogo from '../assets/emsicollab-logo.png';
 import api, { assetUrl } from '../api/client';
 import { CAMPUSES, BACKEND_CAMPUS } from './AdminCampusPanel';
 import { NIVEAUX, cleanFree } from './AdminStudentForm';
@@ -146,9 +147,9 @@ export const AdminBulkEditForm = ({ students, suggestions = [], onCancel, onSave
               initial={{ scale: 0, rotate: -20 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 260, damping: 16, delay: 0.15 }}
-              className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg"
+              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/95 shadow-lg ring-1 ring-white/60"
             >
-              <Layers className="w-7 h-7" />
+              <img src={appLogo} alt="EMSICollab" className="h-10 w-auto select-none" draggable={false} />
             </motion.span>
             <motion.h2
               initial={{ opacity: 0, y: 12 }}
@@ -200,10 +201,6 @@ export const AdminBulkEditForm = ({ students, suggestions = [], onCancel, onSave
                 </span>
               )}
             </div>
-            <p className="text-xs text-white/70 flex items-start gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-              Un champ laissé vide n’est pas modifié.
-            </p>
           </div>
         </div>
       </div>

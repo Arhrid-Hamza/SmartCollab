@@ -9,6 +9,7 @@ import {
   EyeOff,
   ChevronDown,
   GraduationCap,
+  MapPin,
   AlertCircle,
   Check,
   X,
@@ -49,7 +50,9 @@ export const AdminStudentEditForm = ({ student, onCancel, onSaved }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const campusId = Object.keys(BACKEND_CAMPUS).find((k) => BACKEND_CAMPUS[k] === student.campus) || student.campus;
+  // Campus modifiable : l'image et le nom à gauche suivent le choix en direct
+  const initialCampusId = Object.keys(BACKEND_CAMPUS).find((k) => BACKEND_CAMPUS[k] === student.campus) || student.campus;
+  const [campusId, setCampusId] = useState(initialCampusId);
   const campus = CAMPUSES.find((c) => c.id === campusId) || null;
   const niveaux = niveau && !NIVEAUX.includes(niveau) ? [niveau, ...NIVEAUX] : NIVEAUX;
   const currentPhoto = preview || (student.avatarUrl ? assetUrl(student.avatarUrl) : '');
@@ -88,6 +91,7 @@ export const AdminStudentEditForm = ({ student, onCancel, onSaved }) => {
     if (!filiere.trim()) return setError('La filière est obligatoire.');
     if (!niveau) return setError('Choisissez le niveau.');
     if (!groupe.trim()) return setError('Le groupe est obligatoire.');
+    if (!CAMPUSES.some((c) => c.id === campusId)) return setError('Choisissez le campus.');
     if (password && password.trim().length < 8) return setError('Le mot de passe doit contenir au moins 8 caractères.');
 
     const fd = new FormData();
@@ -96,6 +100,7 @@ export const AdminStudentEditForm = ({ student, onCancel, onSaved }) => {
     fd.append('filiere', filiere.trim());
     fd.append('niveau', niveau);
     fd.append('groupe', groupe.trim());
+    fd.append('campus', BACKEND_CAMPUS[campusId] || campusId);
     if (password.trim()) fd.append('password', password.trim());
     if (photo) fd.append('photo', photo);
 
@@ -117,9 +122,9 @@ export const AdminStudentEditForm = ({ student, onCancel, onSaved }) => {
         <div className="flex flex-col gap-4">
           {campus?.image && (
             <div className="form-in relative rounded-xl overflow-hidden bg-slate-100 aspect-[16/10] shadow-inner" style={{ animationDelay: '0.15s' }}>
-              <img src={campus.image} alt={`Campus EMSI ${campus.label}`} className="campus-img absolute inset-0 w-full h-full object-cover" draggable="false" />
+              <img key={campus.id} src={campus.image} alt={`Campus EMSI ${campus.label}`} className="campus-img absolute inset-0 w-full h-full object-cover" draggable="false" />
               <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
-                <span className="campus-label inline-flex items-center gap-1.5 text-white text-sm font-semibold">EMSI {campus.label}</span>
+                <span key={campus.id} className="campus-label inline-flex items-center gap-1.5 text-white text-sm font-semibold">EMSI {campus.label}</span>
               </div>
             </div>
           )}
@@ -247,7 +252,31 @@ export const AdminStudentEditForm = ({ student, onCancel, onSaved }) => {
               <input type="text" value={groupe} onChange={(e) => setGroupe(cleanFree(e.target.value))} className={inputClass} autoComplete="off" />
             </Field>
 
-            <Field label="Nouveau mot de passe" index={5} className="sm:col-span-2">
+            <Field label="Campus" required index={5} className="sm:col-span-2">
+              <div className="relative">
+                <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <select
+                  value={campusId}
+                  onChange={(e) => setCampusId(e.target.value)}
+                  className={`${inputClass} appearance-none pl-9 pr-10 cursor-pointer`}
+                  aria-label="Campus"
+                >
+                  {!CAMPUSES.some((c) => c.id === campusId) && (
+                    <option value={campusId} disabled>
+                      {campusId || 'Choisir le campus…'}
+                    </option>
+                  )}
+                  {CAMPUSES.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      EMSI {c.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </Field>
+
+            <Field label="Nouveau mot de passe" index={6} className="sm:col-span-2">
               <div className="relative">
                 <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
@@ -270,7 +299,7 @@ export const AdminStudentEditForm = ({ student, onCancel, onSaved }) => {
             </Field>
           </div>
 
-          <div className="form-in mt-6 flex flex-wrap items-center gap-3" style={{ animationDelay: `${0.25 + 6 * 0.07}s` }}>
+          <div className="form-in mt-6 flex flex-wrap items-center gap-3" style={{ animationDelay: `${0.25 + 7 * 0.07}s` }}>
             <button
               type="submit"
               disabled={loading}

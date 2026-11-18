@@ -51,6 +51,23 @@ public class AdminStudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    /** Modification d'un étudiant (multipart) : nom, prénom, filière, niveau, groupe, campus ; mot de passe et photo optionnels. */
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserDto> updateStudent(
+            @PathVariable UUID id,
+            @RequestParam(value = "lastName", required = false) String lastName,
+            @RequestParam(value = "firstName", required = false) String firstName,
+            @RequestParam(value = "filiere", required = false) String filiere,
+            @RequestParam(value = "niveau", required = false) String niveau,
+            @RequestParam(value = "groupe", required = false) String groupe,
+            @RequestParam(value = "campus", required = false) String campus,
+            @RequestParam(value = "password", required = false) String password,
+            @RequestParam(value = "photo", required = false) MultipartFile photo
+    ) {
+        return ResponseEntity.ok(provisioningService.updateStudent(
+                id, lastName, firstName, filiere, niveau, groupe, campus, password, photo));
+    }
+
     /** Modification groupée de la filière, du niveau et/ou du campus d'étudiants sélectionnés. */
     @PutMapping(value = "/bulk", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<UserDto>> updateStudentsAcademic(@RequestBody BulkAcademicUpdateRequest request) {

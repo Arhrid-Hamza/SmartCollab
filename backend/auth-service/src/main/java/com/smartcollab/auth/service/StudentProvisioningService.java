@@ -327,6 +327,114 @@ public class StudentProvisioningService {
     private static final Pattern SAFE_MATRICULE = Pattern.compile("^[A-Za-z0-9\\-]{3,40}$");
 
     /**
+     * Modifie un étudiant (nom, prénom, filière, niveau, groupe, campus) ; mot de passe et photo sont optionnels.
+     * Le matricule et l'email ne changent jamais.
+     */
+    @Transactional
+    public UserDto updateStudent(
+            UUID id,
+            String lastName,
+            String firstName,
+            String filiere,
+            String niveau,
+            String groupe,
+            String campusValue,
+            String newPassword,
+            MultipartFile photo
+    ) {
+        User student = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Étudiant introuvable."));
+        if (student.getRole() != Role.STUDENT) {
+            throw bad("Seul un compte étudiant peut être modifié ici.");
+        }
+
+        // ---------- Validation ----------
+        String last = cleanPersonName(lastName, "Le nom");
+        String first = cleanPersonName(firstName, "Le prénom");
+        String filiereClean = cleanFreeText(filiere, "La filière");
+        String niveauClean = cleanFreeText(niveau, "Le niveau");
+        String groupeClean = cleanFreeText(groupe, "Le groupe");
+        Campus campus = (campusValue == null || campusValue.isBlank()) ? student.getCampus() : cleanCampus(campusValue);
+
+        String rawPassword = newPassword == null ? "" : newPassword.trim();
+        if (!rawPassword.isEmpty() && rawPassword.length() < 8) {
+            throw bad("Le mot de passe doit contenir au moins 8 caractères.");
+        }
+        if (rawPassword.length() > 64) {
+            throw bad("Le mot de passe est trop long (64 caractères maximum).");
+        }
+
+        boolean replacePhoto = photo != null && !photo.isEmpty();
+        byte[] photoBytes = replacePhoto ? readPng(photo) : null;
+        String oldAvatarUrl = student.getAvatarUrl();
+        String newAvatarUrl = replacePhoto ? storeAvatar(photoBytes) : null;
+
+        // ---------- Mise à jour ----------
+        student.setLastName(last);
+        student.setFirstName(first);
+        student.setFiliere(filiereClean);
+        student.setNiveau(niveauClean);
+        student.setGroupe(groupeClean);
+        student.setCampus(campus);
+        if (!rawPassword.isEmpty()) {
+            student.setPasswordHash(passwordEncoder.encode(rawPassword));
+        }
+        if (newAvatarUrl != null) {
+            student.setAvatarUrl(newAvatarUrl);
+        }
+
+        User saved;
+        try {
+            saved = userRepository.saveAndFlush(student);
+        } catch (RuntimeException ex) {
+            if (newAvatarUrl != null) {
+                deleteQuietly(avatarDir.resolve(newAvatarUrl.substring(newAvatarUrl.lastIndexOf('/') + 1)));
+            }
+            throw ex;
+        }
+
+        // L'ancienne photo n'est supprimée qu'une fois la base à jour
+        if (newAvatarUrl != null && oldAvatarUrl != null && oldAvatarUrl.startsWith("/uploads/avatars/")) {
+            String oldName = oldAvatarUrl.substring(oldAvatarUrl.lastIndexOf('/') + 1);
+            if (AVATAR_FILE.matcher(oldName).matches()) {
+                deleteQuietly(avatarDir.resolve(oldName));
+            }
+        }
+        updateCredentialsFile(saved.getMatricule(), last, first, rawPassword.isEmpty() ? null : rawPassword);
+
+        log.info("Étudiant modifié : {} ({})", saved.getEmail(), saved.getMatricule()); // jamais le mot de passe dans les logs
+        return authService.toDto(saved);
+    }
+
+    /** Garde le fichier .env cohérent (nom, prénom, et mot de passe s'il a été changé). Sans effet si le fichier n'existe pas. */
+    private void updateCredentialsFile(String matricule, String lastName, String firstName, String newPassword) {
+        if (matricule == null || !SAFE_MATRICULE.matcher(matricule).matches()) {
+            return;
+        }
+        Path file = credentialsDir.resolve(matricule + ".env");
+        if (!Files.isRegularFile(file)) {
+            return;
+        }
+        try {
+            List<String> lines = new ArrayList<>();
+            for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
+                if (line.startsWith("NOM=")) {
+                    lines.add("NOM=" + lastName);
+                } else if (line.startsWith("PRENOM=")) {
+                    lines.add("PRENOM=" + firstName);
+                } else if (newPassword != null && line.startsWith("PASSWORD=")) {
+                    lines.add("PASSWORD=" + newPassword);
+                } else {
+                    lines.add(line);
+                }
+            }
+            Files.writeString(file, String.join("\n", lines) + "\n", StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+            log.warn("Mise à jour du fichier .env impossible pour {}", matricule, ex);
+        }
+    }
+
+    /**
      * Modifie la filière, le niveau et/ou le campus de plusieurs étudiants en une seule opération (tout ou rien).
      * Un champ vide n'est pas modifié ; au moins un des trois doit être renseigné.
      */
