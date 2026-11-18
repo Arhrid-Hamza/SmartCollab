@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { AdminCampusPanel } from '../components/AdminCampusPanel';
 import { AdminUserList } from '../components/AdminUserList';
 import { AdminStudentForm } from '../components/AdminStudentForm';
+import { AdminProfessorForm } from '../components/AdminProfessorForm';
 import MicroSlats from '../components/MicroSlats';
 import {
   GraduationCap,
@@ -38,6 +39,8 @@ export const DashboardPage = () => {
   }, [adminSearch, adminList?.view]);
   // Page "Ajouter un étudiant" : null = fermée, sinon { campus }
   const [adminForm, setAdminForm] = useState(null);
+  // Page "Ajouter un professeur" : null = fermée, sinon { campus }
+  const [profForm, setProfForm] = useState(null);
 
   const todayRaw = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long',
@@ -161,12 +164,13 @@ export const DashboardPage = () => {
     return (
       <div className="min-h-screen bg-[#eaf4ee] flex flex-col">
         <Navbar
-          hideSearch={!!adminForm}
+          hideSearch={!!adminForm || !!profForm}
           onBack={
-            adminList || adminForm
+            adminList || adminForm || profForm
               ? () => {
                   setAdminList(null);
                   setAdminForm(null);
+                  setProfForm(null);
                   setAdminSearch('');
                 }
               : undefined
@@ -184,7 +188,22 @@ export const DashboardPage = () => {
         />
         <main className="flex-1 max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
           <AnimatePresence mode="wait">
-            {adminForm ? (
+            {profForm ? (
+              <motion.div
+                key="professor-form"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+              >
+                <AdminProfessorForm
+                  initialCampus={profForm.campus}
+                  onBack={() => {
+                    setProfForm(null);
+                  }}
+                />
+              </motion.div>
+            ) : adminForm ? (
               <motion.div
                 key="student-form"
                 initial={{ opacity: 0, y: 30 }}
@@ -214,6 +233,10 @@ export const DashboardPage = () => {
                     onAddStudent={({ campus }) => {
                       setAdminCampus(campus);
                       setAdminForm({ campus });
+                    }}
+                    onAddProfessor={({ campus }) => {
+                      setAdminCampus(campus);
+                      setProfForm({ campus });
                     }}
                     onOpenList={(next) => {
                       setAdminCampus(next.campus);

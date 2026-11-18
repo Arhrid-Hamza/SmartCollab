@@ -77,7 +77,7 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
       .filter((u) => {
         if (!q) return true;
         if (looksLikeMatricule) return (u.matricule || '').toLowerCase() === q;
-        return [u.firstName, u.lastName, `${u.firstName} ${u.lastName}`, u.email, u.matricule, u.groupe, u.filiere, u.niveau, u.matiere]
+        return [u.firstName, u.lastName, `${u.firstName} ${u.lastName}`, u.email, u.matricule, u.groupe, ...(u.groupes || []), u.filiere, u.niveau, u.matiere]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(q));
       });
@@ -244,8 +244,10 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
                 </p>
                 <p className="text-xs text-slate-500 truncate">{u.email}</p>
               </div>
-              <span className="text-xs font-medium text-slate-600 hidden sm:block">
-                {u.role === 'STUDENT' ? [u.filiere, u.niveau].filter(Boolean).join(' · ') : u.matiere || ''}
+              <span className="text-xs font-medium text-slate-600 hidden sm:block max-w-[45%] truncate text-right">
+                {u.role === 'STUDENT'
+                  ? [u.filiere, u.niveau].filter(Boolean).join(' · ')
+                  : [u.matiere, (u.groupes || []).join(', ')].filter(Boolean).join(' · ')}
               </span>
             </li>
           ))}

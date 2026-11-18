@@ -196,7 +196,8 @@ public class AuthService {
                 user.getStudentIdentifier(),
                 user.getBio(),
                 user.getCreatedAt(),
-                skillDtos
+                skillDtos,
+                user.getGroupes().stream().sorted().toList()
         );
     }
 }

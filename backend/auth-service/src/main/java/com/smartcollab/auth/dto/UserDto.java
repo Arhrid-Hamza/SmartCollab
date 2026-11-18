@@ -23,5 +23,6 @@ public record UserDto(
     String studentIdentifier,
     String bio,
     OffsetDateTime createdAt,
-    List<UserSkillDto> skills
+    List<UserSkillDto> skills,
+    List<String> groupes
 ) {}

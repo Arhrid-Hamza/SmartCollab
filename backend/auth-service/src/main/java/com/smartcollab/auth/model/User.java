@@ -5,6 +5,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -55,6 +56,12 @@ public class User {
 
     @Column(name = "matiere", length = 150)
     private String matiere;
+
+    // Un professeur enseigne souvent à plusieurs groupes (ex. 5DSIO G1, 5DSIO G2, 5DSIO G3) : table user_groupes
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_groupes", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "groupe", length = 60)
+    private Set<String> groupes = new LinkedHashSet<>();
 
     @Column(name = "avatar_url", columnDefinition = "MEDIUMTEXT")
     private String avatarUrl;
@@ -225,6 +232,14 @@ public class User {
 
     public void setMatiere(String matiere) {
         this.matiere = matiere;
+    }
+
+    public Set<String> getGroupes() {
+        return groupes;
+    }
+
+    public void setGroupes(Set<String> groupes) {
+        this.groupes = groupes == null ? new LinkedHashSet<>() : groupes;
     }
 
     public String getAvatarUrl() {
