@@ -29,7 +29,7 @@ export const DashboardPage = () => {
   // Recherche par matricule : "searching" reste vrai un court instant (la loupe tourne, la carte fantôme s'affiche)
   const [searching, setSearching] = useState(false);
   useEffect(() => {
-    if (adminList?.view !== 'STUDENTS' || adminSearch.trim().length < 3) {
+    if (!['STUDENTS', 'PROFESSORS'].includes(adminList?.view) || adminSearch.trim().length < 3) {
       setSearching(false);
       return undefined;
     }

@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Mail, Copy, Check, Hash, GraduationCap, ChevronRight, ArrowLeft, Pencil, Trash2, Minus, X } from 'lucide-react';
+import { Mail, Copy, Check, Hash, GraduationCap, BookOpen, Users, ChevronRight, ArrowLeft, Pencil, Trash2, Minus, X } from 'lucide-react';
 import { assetUrl } from '../api/client';
 import { CAMPUSES, BACKEND_CAMPUS } from './AdminCampusPanel';
 
@@ -176,6 +176,9 @@ const StudentCard = ({ student, onEdit }) => {
   const campus = campusOf(student.campus);
   const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim();
   const initials = `${student.firstName?.[0] || ''}${student.lastName?.[0] || ''}`.toUpperCase();
+  // La même carte sert pour les professeurs : matière + groupes à la place de matricule / filière / niveau
+  const isProf = student.role === 'PROFESSOR';
+  const groupes = student.groupes || [];
 
   return (
     <div ref={rootRef} className="student-card">
@@ -186,8 +189,8 @@ const StudentCard = ({ student, onEdit }) => {
           <button
             type="button"
             className="student-card__edit"
-            title="Modifier l’étudiant"
-            aria-label="Modifier l’étudiant"
+            title={isProf ? 'Modifier le professeur' : 'Modifier l’étudiant'}
+            aria-label={isProf ? 'Modifier le professeur' : 'Modifier l’étudiant'}
             onClick={() => onEdit(student)}
           >
             <Pencil size={18} />
@@ -207,26 +210,56 @@ const StudentCard = ({ student, onEdit }) => {
         </p>
 
         <div className="student-card__chips">
-          {student.matricule && (
-            <span className="student-card__chip student-card__chip--mono">
-              <Hash size={16} />
-              {student.matricule}
-            </span>
-          )}
-          {student.filiere && (
-            <span className="student-card__chip" title={student.filiere}>
-              <GraduationCap size={16} />
-              {student.filiere}
-            </span>
+          {isProf ? (
+            <>
+              {student.matiere && (
+                <span className="student-card__chip" title={student.matiere}>
+                  <BookOpen size={16} />
+                  {student.matiere}
+                </span>
+              )}
+              {groupes.slice(0, 3).map((g) => (
+                <span key={g} className="student-card__chip" title={g}>
+                  <Users size={16} />
+                  {g}
+                </span>
+              ))}
+              {groupes.length > 3 && (
+                <span className="student-card__chip" title={groupes.slice(3).join(', ')}>
+                  +{groupes.length - 3}
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              {student.matricule && (
+                <span className="student-card__chip student-card__chip--mono">
+                  <Hash size={16} />
+                  {student.matricule}
+                </span>
+              )}
+              {student.filiere && (
+                <span className="student-card__chip" title={student.filiere}>
+                  <GraduationCap size={16} />
+                  {student.filiere}
+                </span>
+              )}
+            </>
           )}
         </div>
 
-        <div className="student-card__stats">
-          {[
-            ['Niveau', student.niveau],
-            ['Groupe', student.groupe],
-            ['Campus', campus?.label || student.campus],
-          ].map(([label, value]) => (
+        <div className="student-card__stats" style={isProf ? { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' } : undefined}>
+          {(isProf
+            ? [
+                ['Groupes', groupes.length ? String(groupes.length) : ''],
+                ['Campus', campus?.label || student.campus],
+              ]
+            : [
+                ['Niveau', student.niveau],
+                ['Groupe', student.groupe],
+                ['Campus', campus?.label || student.campus],
+              ]
+          ).map(([label, value]) => (
             <div key={label} className="student-card__stat">
               <div className="student-card__stat-value" title={value || ''}>
                 {value || '—'}
@@ -244,10 +277,10 @@ const StudentCard = ({ student, onEdit }) => {
           <button
             type="button"
             className="student-card__square"
-            aria-label="Copier le matricule"
-            title="Copier le matricule"
+            aria-label={isProf ? 'Copier l’email' : 'Copier le matricule'}
+            title={isProf ? 'Copier l’email' : 'Copier le matricule'}
             onClick={async () => {
-              await copyText(student.matricule || '');
+              await copyText((isProf ? student.email : student.matricule) || '');
               flash('matricule');
             }}
           >
@@ -305,7 +338,7 @@ export const StudentCardGrid = ({ students, query, kind = 'matricule', hideHeadi
               className="sc-delete-in group mt-5 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full text-sm font-semibold text-rose-600 bg-white/70 hover:bg-rose-600 hover:text-white border border-rose-300 hover:border-rose-600 shadow-sm hover:shadow-lg hover:shadow-rose-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 transition-all duration-200 cursor-pointer"
             >
               <Trash2 className="w-4 h-4 transition-transform duration-200 group-hover:-rotate-12 group-hover:scale-110" />
-              Supprimer l’étudiant
+              {s.role === 'PROFESSOR' ? 'Supprimer le professeur' : 'Supprimer l’étudiant'}
             </button>
           )}
         </motion.div>
@@ -350,7 +383,9 @@ export const StudentResultList = ({
   onToggleOne,
   onToggleAll,
   onBulkEdit,
+  variant = 'student', // 'student' | 'professor'
 }) => {
+  const isProf = variant === 'professor';
   const count = selectedIds ? selectedIds.size : 0;
   const allSelected = count > 0 && count === students.length;
   const someSelected = count > 0 && !allSelected;
@@ -366,7 +401,9 @@ export const StudentResultList = ({
         >
           {students.length} résultats pour <strong className="text-slate-800">« {query.trim()} »</strong>
           <span className="block text-xs text-slate-500 mt-0.5">
-            {selectMode ? 'Cochez les étudiants à modifier' : 'Cliquez sur un étudiant pour afficher sa carte'}
+            {selectMode
+              ? `Cochez les ${isProf ? 'professeurs' : 'étudiants'} à modifier`
+              : `Cliquez sur un ${isProf ? 'professeur' : 'étudiant'} pour afficher sa carte`}
           </span>
         </motion.p>
 
@@ -398,7 +435,7 @@ export const StudentResultList = ({
                 </motion.span>
               </AnimatePresence>
             </span>
-            {selectMode ? 'Annuler' : 'Éditer niveau, filière et campus'}
+            {selectMode ? 'Annuler' : isProf ? 'Éditer matière, groupes et campus' : 'Éditer niveau, filière et campus'}
           </motion.button>
         )}
       </div>
@@ -422,7 +459,7 @@ export const StudentResultList = ({
             )}
           </motion.div>
           <span className="flex-1 min-w-0">Nom et prénom</span>
-          <span className="w-[120px] sm:w-[190px] shrink-0">Matricule</span>
+          <span className="w-[120px] sm:w-[190px] shrink-0">{isProf ? 'Matière' : 'Matricule'}</span>
           <span className="w-4 shrink-0" />
         </div>
 
@@ -478,7 +515,9 @@ export const StudentResultList = ({
                     <span className="block text-sm font-semibold text-slate-800 truncate">{name}</span>
                     <span className="block text-xs text-slate-500 truncate">{s.email}</span>
                   </span>
-                  <span className="w-[120px] sm:w-[190px] shrink-0 font-mono text-xs sm:text-sm font-medium text-slate-700 truncate">{s.matricule || '—'}</span>
+                  <span className={`w-[120px] sm:w-[190px] shrink-0 text-xs sm:text-sm font-medium text-slate-700 truncate ${isProf ? '' : 'font-mono'}`} title={isProf ? s.matiere || '' : undefined}>
+                    {(isProf ? s.matiere : s.matricule) || '—'}
+                  </span>
                   <ChevronRight
                     className={`w-4 h-4 shrink-0 text-slate-400 transition-all duration-200 ${selectMode ? 'opacity-0' : 'group-hover:translate-x-1 group-hover:text-[#15885a]'}`}
                   />
@@ -489,7 +528,7 @@ export const StudentResultList = ({
         </ul>
       </div>
 
-      {/* Barre du bas : apparaît dès qu'au moins un étudiant est coché */}
+      {/* Barre du bas : apparaît dès qu'au moins une personne est cochée */}
       <AnimatePresence>
         {selectMode && count > 0 && (
           <motion.div

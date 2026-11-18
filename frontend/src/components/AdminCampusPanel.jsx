@@ -80,7 +80,7 @@ export const AdminCampusPanel = ({ onAddStudent, onAddProfessor, onViewChange, o
   const chooseView = (next) => {
     setView(next);
     onViewChange?.({ view: next, campus: campusId });
-    if (next === 'STUDENTS') onOpenList?.({ view: next, campus: campusId });
+    if (next === 'STUDENTS' || next === 'PROFESSORS') onOpenList?.({ view: next, campus: campusId });
   };
 
   const pill =

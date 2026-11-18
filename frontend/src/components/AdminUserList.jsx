@@ -8,6 +8,8 @@ import { StudentCardGrid, StudentResultList, BackToListButton } from './StudentC
 import { StudentCardSkeleton } from './StudentCardSkeleton';
 import { AdminStudentEditForm } from './AdminStudentEditForm';
 import { AdminBulkEditForm } from './AdminBulkEditForm';
+import { AdminProfessorEditForm } from './AdminProfessorEditForm';
+import { AdminProfessorBulkEditForm } from './AdminProfessorBulkEditForm';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 
 const GREEN = '#15885a';
@@ -52,6 +54,8 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
   const [bulkEditing, setBulkEditing] = useState(null);
   const config = VIEWS[view] || VIEWS.STUDENTS;
   const Icon = config.icon;
+  const isProf = view === 'PROFESSORS';
+  const isPeople = view === 'STUDENTS' || isProf; // même parcours (recherche, carte, modification, suppression)
   const campusLabel = CAMPUSES.find((c) => c.id === campus)?.label || campus;
 
   useEffect(() => {
@@ -68,7 +72,7 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
 
   const q = search.trim().toLowerCase();
   // Une saisie qui commence par "C-" est une recherche de matricule : il doit être complet et exact
-  const looksLikeMatricule = /^c-/i.test(q);
+  const looksLikeMatricule = view === 'STUDENTS' && /^c-/i.test(q);
 
   const rows = useMemo(() => {
     const code = BACKEND_CAMPUS[campus] || campus;
@@ -81,23 +85,25 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(q));
       });
-  }, [users, campus, config.role, q, looksLikeMatricule]);
+  }, [users, campus, config.role, q, looksLikeMatricule, view]);
 
   // Recherche étudiants :
   //  1. matricule complet et exact (tous campus)  -> carte
   //  2. email complet et exact                    -> carte
   //  3. nom / prénom : 1 seul résultat -> carte, plusieurs -> liste (photo, nom prénom, matricule) puis clic -> carte
   const studentSearch = useMemo(() => {
-    if (view !== 'STUDENTS' || !q) return { kind: null, list: [] };
-    const students = users.filter((u) => u.role === 'STUDENT');
-    const byMatricule = students.filter((u) => (u.matricule || '').toLowerCase() === q);
-    if (byMatricule.length) return { kind: 'matricule', list: byMatricule };
+    if (!isPeople || !q) return { kind: null, list: [] };
+    const pool = users.filter((u) => u.role === config.role);
+    if (view === 'STUDENTS') {
+      const byMatricule = pool.filter((u) => (u.matricule || '').toLowerCase() === q);
+      if (byMatricule.length) return { kind: 'matricule', list: byMatricule };
+    }
     if (q.includes('@')) {
-      const byEmail = students.filter((u) => (u.email || '').toLowerCase() === q);
+      const byEmail = pool.filter((u) => (u.email || '').toLowerCase() === q);
       if (byEmail.length) return { kind: 'email', list: byEmail };
     }
     return { kind: 'nom', list: rows };
-  }, [users, q, view, rows]);
+  }, [users, q, view, rows, isPeople, config.role]);
 
   // Nouvelle saisie : on referme la carte ouverte depuis la liste
   useEffect(() => {
@@ -137,7 +143,7 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
   };
 
   // Suppression : appel API, puis mise à jour de la liste en mémoire (la carte disparaît, la recherche se réactualise)
-  const deleteStudent = (student) => api.delete(`/admin/students/${student.id}`);
+  const deleteStudent = (student) => api.delete(`/admin/${student.role === 'PROFESSOR' ? 'professors' : 'students'}/${student.id}`);
   const handleDeleted = (student) => {
     setUsers((list) => list.filter((u) => u.id !== student.id));
     setSelected((cur) => (cur && cur.id === student.id ? null : cur));
@@ -163,10 +169,20 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
     </>
   );
 
-  if (view === 'STUDENTS' && !loading) {
+  if (isPeople && !loading) {
     const { kind, list } = studentSearch;
-    if (editing) return <AdminStudentEditForm student={editing} onCancel={() => setEditing(null)} onSaved={handleSaved} />;
+    if (editing) {
+      return isProf ? (
+        <AdminProfessorEditForm professor={editing} onCancel={() => setEditing(null)} onSaved={handleSaved} />
+      ) : (
+        <AdminStudentEditForm student={editing} onCancel={() => setEditing(null)} onSaved={handleSaved} />
+      );
+    }
     if (bulkEditing) {
+      if (isProf) {
+        const matieres = [...new Set(users.filter((u) => u.role === 'PROFESSOR').map((u) => u.matiere).filter(Boolean))];
+        return <AdminProfessorBulkEditForm professors={bulkEditing} suggestions={matieres} onCancel={() => setBulkEditing(null)} onSaved={handleBulkSaved} />;
+      }
       const suggestions = [...new Set(users.filter((u) => u.role === 'STUDENT').map((u) => u.filiere).filter(Boolean))];
       return <AdminBulkEditForm students={bulkEditing} suggestions={suggestions} onCancel={() => setBulkEditing(null)} onSaved={handleBulkSaved} />;
     }
@@ -191,6 +207,7 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
           students={list}
           query={search}
           onSelect={setSelected}
+          variant={isProf ? 'professor' : 'student'}
           selectMode={selectMode}
           onToggleMode={toggleMode}
           selectedIds={selectedIds}
@@ -201,7 +218,8 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
       );
     }
     if (q && rows.length === 0) return <NoResult label={config.none} query={search} />;
-    return <StudentStats rows={rows} campusLabel={campusLabel} />;
+    if (!isProf) return <StudentStats rows={rows} campusLabel={campusLabel} />;
+    // Professeurs sans recherche : on retombe sur la liste simple ci-dessous (un clic ouvre la carte)
   }
 
   return (
@@ -230,7 +248,11 @@ export const AdminUserList = ({ view = 'STUDENTS', campus = 'ORANGER', search = 
       ) : (
         <ul className="divide-y divide-white/70 rounded-xl bg-white/55 border border-white/80 overflow-hidden">
           {rows.map((u) => (
-            <li key={u.id} className="flex items-center gap-3 px-4 py-3">
+            <li
+              key={u.id}
+              onClick={isProf ? () => setSelected(u) : undefined}
+              className={`flex items-center gap-3 px-4 py-3 ${isProf ? 'cursor-pointer hover:bg-white/70 transition-colors' : ''}`}
+            >
               <span
                 className="inline-flex items-center justify-center w-9 h-9 rounded-full text-xs font-bold text-white shrink-0"
                 style={{ backgroundColor: GREEN }}

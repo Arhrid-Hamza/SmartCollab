@@ -42,7 +42,7 @@ const Avatar = ({ student }) => {
 };
 
 /**
- * Confirmation de suppression d'un étudiant, en 4 étapes animées :
+ * Confirmation de suppression d'un étudiant ou d'un professeur, en 4 étapes animées :
  *  confirm (alerte) -> deleting (chargement) -> done (✔ supprimé) | error
  * `onDelete` fait l'appel API ; `onDeleted` est appelé à la fin pour mettre à jour la liste.
  */
@@ -52,6 +52,7 @@ export const ConfirmDeleteDialog = ({ student, onDelete, onDeleted, onClose }) =
   const cancelRef = useRef(null);
   const alive = useRef(true);
   const name = `${student.firstName || ''} ${student.lastName || ''}`.trim();
+  const isProf = student.role === 'PROFESSOR';
 
   useEffect(() => {
     alive.current = true;
@@ -155,9 +156,9 @@ export const ConfirmDeleteDialog = ({ student, onDelete, onDeleted, onClose }) =
           </div>
 
           <h2 id="delete-dialog-title" className="text-xl font-bold text-slate-900">
-            {phase === 'confirm' && 'Supprimer cet étudiant ?'}
+            {phase === 'confirm' && (isProf ? 'Supprimer ce professeur ?' : 'Supprimer cet étudiant ?')}
             {phase === 'deleting' && 'Suppression en cours…'}
-            {phase === 'done' && 'Étudiant supprimé'}
+            {phase === 'done' && (isProf ? 'Professeur supprimé' : 'Étudiant supprimé')}
             {phase === 'error' && 'Suppression impossible'}
           </h2>
 

@@ -1,6 +1,7 @@
 package com.smartcollab.auth.service;
 
 import com.smartcollab.auth.dto.ProfessorCreatedResponse;
+import com.smartcollab.auth.dto.UserDto;
 import com.smartcollab.auth.model.Campus;
 import com.smartcollab.auth.model.Role;
 import com.smartcollab.auth.model.User;
@@ -28,6 +29,7 @@ import java.security.SecureRandom;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -54,6 +56,8 @@ public class ProfessorProvisioningService {
     private static final byte[] PNG_MAGIC = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
     private static final int MAX_GROUPES = 20;
     private static final int MAX_GROUPE_LENGTH = 50;
+    private static final Pattern AVATAR_FILE = Pattern.compile("^[0-9a-fA-F\\-]{36}\\.png$");
+    private static final Pattern SAFE_LOCAL_PART = Pattern.compile("^[a-z0-9.]{3,120}$");
 
     private static final Pattern PERSON_NAME = Pattern.compile("^\\p{L}[\\p{L} '\\-]{0,49}$");
     private static final Pattern FREE_TEXT = Pattern.compile("^[\\p{L}\\p{N}][\\p{L}\\p{N} .,'/()&+\\-_\u00B7]{0,99}$");
@@ -141,6 +145,204 @@ public class ProfessorProvisioningService {
 
         log.info("Professeur créé : {} ({} groupe(s))", email, groupesClean.size()); // jamais le mot de passe dans les logs
         return new ProfessorCreatedResponse(authService.toDto(saved), email, rawPassword, avatarUrl);
+    }
+
+
+    // ------------------------------------------------------------------ modification / suppression
+
+    /**
+     * Modifie un professeur (nom, prénom, matière, groupes, campus) ; mot de passe et photo sont optionnels.
+     * L'email ne change jamais.
+     */
+    @Transactional
+    public UserDto updateProfessor(
+            UUID id,
+            String lastName,
+            String firstName,
+            String matiere,
+            List<String> groupes,
+            String campusValue,
+            String newPassword,
+            MultipartFile photo
+    ) {
+        User professor = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Professeur introuvable."));
+        if (professor.getRole() != Role.PROFESSOR) {
+            throw bad("Seul un compte professeur peut être modifié ici.");
+        }
+
+        String last = cleanPersonName(lastName, "Le nom");
+        String first = cleanPersonName(firstName, "Le prénom");
+        String matiereClean = cleanFreeText(matiere, "La matière");
+        Set<String> groupesClean = cleanGroupes(groupes);
+        Campus campus = (campusValue == null || campusValue.isBlank()) ? professor.getCampus() : cleanCampus(campusValue);
+
+        String rawPassword = newPassword == null ? "" : newPassword.trim();
+        if (!rawPassword.isEmpty() && rawPassword.length() < 8) {
+            throw bad("Le mot de passe doit contenir au moins 8 caractères.");
+        }
+        if (rawPassword.length() > 64) {
+            throw bad("Le mot de passe est trop long (64 caractères maximum).");
+        }
+
+        boolean replacePhoto = photo != null && !photo.isEmpty();
+        byte[] photoBytes = replacePhoto ? readPng(photo) : null;
+        String oldAvatarUrl = professor.getAvatarUrl();
+        String newAvatarUrl = replacePhoto ? "/uploads/avatars/prof/" + storeAvatar(photoBytes) : null;
+
+        professor.setLastName(last);
+        professor.setFirstName(first);
+        professor.setMatiere(matiereClean);
+        professor.setGroupes(groupesClean);
+        professor.setCampus(campus);
+        if (!rawPassword.isEmpty()) {
+            professor.setPasswordHash(passwordEncoder.encode(rawPassword));
+        }
+        if (newAvatarUrl != null) {
+            professor.setAvatarUrl(newAvatarUrl);
+        }
+
+        User saved;
+        try {
+            saved = userRepository.saveAndFlush(professor);
+        } catch (RuntimeException ex) {
+            if (newAvatarUrl != null) {
+                deleteQuietly(avatarDir.resolve(newAvatarUrl.substring(newAvatarUrl.lastIndexOf('/') + 1)));
+            }
+            throw ex;
+        }
+
+        // L'ancienne photo n'est supprimée qu'une fois la base à jour
+        deleteAvatarFile(newAvatarUrl != null ? oldAvatarUrl : null);
+        updateCredentialsFile(saved.getEmail(), last, first, rawPassword.isEmpty() ? null : rawPassword);
+
+        log.info("Professeur modifié : {}", saved.getEmail()); // jamais le mot de passe dans les logs
+        return authService.toDto(saved);
+    }
+
+    /**
+     * Modifie la matière, les groupes et/ou le campus de plusieurs professeurs en une seule opération (tout ou rien).
+     * Un champ vide n'est pas modifié ; au moins un des trois doit être renseigné.
+     */
+    @Transactional
+    public List<UserDto> updateProfessorsBulk(List<UUID> ids, String matiere, List<String> groupes, String groupesMode, String campusValue) {
+        if (ids == null || ids.isEmpty()) {
+            throw bad("Sélectionnez au moins un professeur.");
+        }
+        if (ids.size() > 500) {
+            throw bad("Trop de professeurs sélectionnés (500 maximum).");
+        }
+        boolean changeMatiere = matiere != null && !matiere.isBlank();
+        boolean changeGroupes = groupes != null && groupes.stream().anyMatch(g -> g != null && !g.isBlank());
+        boolean changeCampus = campusValue != null && !campusValue.isBlank();
+        if (!changeMatiere && !changeGroupes && !changeCampus) {
+            throw bad("Renseignez la matière, les groupes et/ou le campus à appliquer.");
+        }
+        String matiereClean = changeMatiere ? cleanFreeText(matiere, "La matière") : null;
+        Set<String> groupesClean = changeGroupes ? cleanGroupes(groupes) : null;
+        Campus campusClean = changeCampus ? cleanCampus(campusValue) : null;
+        boolean addMode = groupesMode != null && groupesMode.trim().equalsIgnoreCase("ADD");
+
+        List<User> users = userRepository.findAllById(new HashSet<>(ids));
+        if (users.size() != new HashSet<>(ids).size()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Un ou plusieurs professeurs sont introuvables.");
+        }
+        for (User user : users) {
+            if (user.getRole() != Role.PROFESSOR) {
+                throw bad("Seuls des comptes professeurs peuvent être modifiés ici.");
+            }
+        }
+        for (User user : users) {
+            if (matiereClean != null) {
+                user.setMatiere(matiereClean);
+            }
+            if (groupesClean != null) {
+                if (addMode) {
+                    LinkedHashMap<String, String> merged = new LinkedHashMap<>();
+                    for (String g : user.getGroupes()) {
+                        merged.putIfAbsent(g.toLowerCase(Locale.ROOT), g);
+                    }
+                    for (String g : groupesClean) {
+                        merged.putIfAbsent(g.toLowerCase(Locale.ROOT), g);
+                    }
+                    if (merged.size() > MAX_GROUPES) {
+                        throw bad("Maximum " + MAX_GROUPES + " groupes par professeur (" + user.getFirstName() + " " + user.getLastName() + ").");
+                    }
+                    user.setGroupes(new LinkedHashSet<>(merged.values()));
+                } else {
+                    user.setGroupes(new LinkedHashSet<>(groupesClean));
+                }
+            }
+            if (campusClean != null) {
+                user.setCampus(campusClean);
+            }
+        }
+        List<User> saved = userRepository.saveAll(users);
+        log.info("{} professeur(s) modifié(s) en groupe (matière={}, groupes={}, campus={})",
+                saved.size(), matiereClean, groupesClean == null ? null : (addMode ? "ajout" : "remplacement"), campusClean);
+        return saved.stream().map(authService::toDto).toList();
+    }
+
+    /** Supprime un compte professeur ainsi que sa photo (uploads/avatars/prof) et son fichier d'identifiants (.env/prof). */
+    @Transactional
+    public void deleteProfessor(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Professeur introuvable."));
+        if (user.getRole() != Role.PROFESSOR) {
+            throw bad("Seul un compte professeur peut être supprimé ici.");
+        }
+        String avatarUrl = user.getAvatarUrl();
+        String email = user.getEmail();
+
+        userRepository.delete(user);
+        userRepository.flush();
+
+        deleteAvatarFile(avatarUrl);
+        String localPart = email.substring(0, email.indexOf('@'));
+        if (SAFE_LOCAL_PART.matcher(localPart).matches()) {
+            deleteQuietly(credentialsDir.resolve(localPart + ".env"));
+        }
+        log.info("Professeur supprimé : {}", email);
+    }
+
+    /** Supprime le fichier photo d'après son URL (jamais de chemin fourni par l'extérieur). */
+    private void deleteAvatarFile(String avatarUrl) {
+        if (avatarUrl == null || !avatarUrl.startsWith("/uploads/avatars/prof/")) {
+            return;
+        }
+        String filename = avatarUrl.substring(avatarUrl.lastIndexOf('/') + 1);
+        if (AVATAR_FILE.matcher(filename).matches()) {
+            deleteQuietly(avatarDir.resolve(filename));
+        }
+    }
+
+    /** Garde le fichier .env/prof cohérent (nom, prénom, et mot de passe s'il a été changé). Sans effet si le fichier n'existe pas. */
+    private void updateCredentialsFile(String email, String lastName, String firstName, String newPassword) {
+        String localPart = email.substring(0, email.indexOf('@'));
+        if (!SAFE_LOCAL_PART.matcher(localPart).matches()) {
+            return;
+        }
+        Path file = credentialsDir.resolve(localPart + ".env");
+        if (!Files.isRegularFile(file)) {
+            return;
+        }
+        try {
+            List<String> lines = new ArrayList<>();
+            for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
+                if (line.startsWith("NOM=")) {
+                    lines.add("NOM=" + lastName);
+                } else if (line.startsWith("PRENOM=")) {
+                    lines.add("PRENOM=" + firstName);
+                } else if (newPassword != null && line.startsWith("PASSWORD=")) {
+                    lines.add("PASSWORD=" + newPassword);
+                } else {
+                    lines.add(line);
+                }
+            }
+            Files.writeString(file, String.join("\n", lines) + "\n", StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+            log.warn("Mise à jour du fichier .env/prof impossible pour {}", email, ex);
+        }
     }
 
     // ------------------------------------------------------------------ validation
