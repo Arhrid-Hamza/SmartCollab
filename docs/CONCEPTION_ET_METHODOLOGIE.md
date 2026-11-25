@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="images/emsi_logo.jpg" alt="Logo EMSI" width="220" />
+</div>
+
 # 📘 EMSICollab — Cadre Général, Méthodologie Agile & Conception UML du Projet
 
 > **Projet de Fin d'Études / Projet Académique d'Ingénierie**  
