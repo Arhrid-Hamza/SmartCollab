@@ -1,0 +1,43 @@
+@startuml Class_Chat_Service
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 6
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    HeaderBackgroundColor #E8F5E9
+    FontColor #212121
+    FontStyle bold
+    AttributeFontColor #37474F
+    MethodFontColor #1B5E20
+    ArrowColor #2E7D32
+}
+
+title **Diagramme de Classes Détaillé 4 : Messagerie Privée & Chatroom de Projet (`chat-service`)**
+
+package "chat-service (:8084)" {
+
+    class PrivateMessage {
+        + id: UUID
+        + senderId: UUID
+        + recipientId: UUID
+        + content: String
+        + isRead: boolean
+        + sentAt: Timestamp
+        --
+        + markAsRead(): void
+    }
+
+    class ProjectChatMessage {
+        + id: UUID
+        + projectId: UUID
+        + senderId: UUID
+        + content: String
+        + sentAt: Timestamp
+        --
+        + getFormattedTimestamp(): String
+    }
+}
+@enduml

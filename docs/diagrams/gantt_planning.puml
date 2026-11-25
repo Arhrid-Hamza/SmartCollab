@@ -1,0 +1,77 @@
+@startgantt EMSICollab_Gantt_Planning
+!theme plain
+language fr
+projectscale weekly
+projectstart 2026-09-15
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+header Plateforme EMSICollab
+title **Planning Prévisionnel Gantt — Sprints & Jalons Académiques**
+footer Cycle de Développement Microservices — EMSI 2026-2027
+
+-- SPRINT 0 : Cadrage Méthodologique & Socle Technique --
+[Étude comparative & Benchmarking (Trello, Jira, GitHub)] as [S0_Bench] lasts 6 days
+[Spécification Architecturale DDD & Microservices] as [S0_Arch] lasts 6 days
+[Initialisation Monorepo Git & Docker Multi-PostgreSQL] as [S0_Infra] lasts 4 days
+
+[S0_Arch] starts at [S0_Bench]'s end
+[S0_Infra] starts at [S0_Arch]'s end
+
+[JALON 1 : Validation de l'Architecture & Cadrage] as [Jalon1] happens at [S0_Infra]'s end
+
+-- SPRINT 1 : Sécurité, JWT & Profils Métier --
+[auth-service : Spring Security 6 & JJWT 0.12.6] as [S1_Auth] lasts 5 days
+[Référentiel Compétences & Matrice UserSkills] as [S1_Skills] lasts 5 days
+[Frontend : Login EMSI, AuthContext & Radar Chart] as [S1_Front] lasts 6 days
+
+[S1_Auth] starts at [Jalon1]'s end
+[S1_Skills] starts at [S1_Auth]'s end
+[S1_Front] starts at [S1_Skills]'s end
+
+[JALON 2 : MVP Authentification & Profils Opérationnels] as [Jalon2] happens at [S1_Front]'s end
+
+-- SPRINT 2 : Gestion des Sujets, CDC PDF & Jalons Checkbox --
+[project-service : Cycle de vie des sujets & Quotas] as [S2_Proj] lasts 5 days
+[Module Cahier des Charges PDF (Upload & Download)] as [S2_PDF] lasts 5 days
+[Roadmap Jalons & Checkboxes interactives d'avancement] as [S2_Roadmap] lasts 6 days
+
+[S2_Proj] starts at [Jalon2]'s end
+[S2_PDF] starts at [S2_Proj]'s end
+[S2_Roadmap] starts at [S2_PDF]'s end
+
+[JALON 3 : Sujets & Roadmap Checkbox Prêts] as [Jalon3] happens at [S2_Roadmap]'s end
+
+-- SPRINT 3 : Moteur de Matching Algorithmique & Groupes --
+[team-matching-service : Gestion équipes & Ajout dashboard] as [S3_Team] lasts 5 days
+[Algorithme SkillMatchingEngine & Règle de Veto bloquant] as [S3_Engine] lasts 6 days
+[Feed IA Recommandation PFE & Recrutement prédictif] as [S3_Rec] lasts 5 days
+
+[S3_Team] starts at [Jalon3]'s end
+[S3_Engine] starts at [S3_Team]'s end
+[S3_Rec] starts at [S3_Engine]'s end
+
+[JALON 4 : Moteur de Matching Validé par l'Encadrement] as [Jalon4] happens at [S3_Rec]'s end
+
+-- SPRINT 4 : Communication Temps Réel & Google Meet --
+[chat-service : Broker WebSocket STOMP (:8084)] as [S4_WS] lasts 5 days
+[Chatroom de Projet (Icône carte) & Chat Privé 1-à-1] as [S4_Chat] lasts 5 days
+[Module Réunions à date fixe & Visioconférence Google Meet] as [S4_Meet] lasts 6 days
+
+[S4_WS] starts at [Jalon4]'s end
+[S4_Chat] starts at [S4_WS]'s end
+[S4_Meet] starts at [S4_Chat]'s end
+
+[JALON 5 : Espace Collaboratif & Réunions Fonctionnel] as [Jalon5] happens at [S4_Meet]'s end
+
+-- SPRINT 5 : Recette Globale, Tests E2E & Soutenance Finale --
+[Tests de Charge, Monitoring Actuator & Dockerisation] as [S5_Tests] lasts 6 days
+[Rapport Technique Final, Documentation & Slides] as [S5_Docs] lasts 6 days
+
+[S5_Tests] starts at [Jalon5]'s end
+[S5_Docs] starts at [S5_Tests]'s end
+
+[JALON 6 : Soutenance Finale PFE Devant le Jury EMSI] as [Jalon6] happens at [S5_Docs]'s end
+
+@endgantt

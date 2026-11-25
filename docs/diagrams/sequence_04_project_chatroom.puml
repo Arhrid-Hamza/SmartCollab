@@ -1,0 +1,109 @@
+@startuml Sequence_04_Project_Chatroom
+!theme plain
+autonumber "<b>[00]</b>"
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 8
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam sequence {
+    ArrowColor #15885a
+    ActorBorderColor #15885a
+    LifeLineBorderColor #2E7D32
+    LifeLineBackgroundColor #E8F5E9
+    ParticipantBorderColor #15885a
+    ParticipantBackgroundColor #F1F8E9
+    ParticipantFontColor #1b5e20
+    ParticipantFontStyle bold
+    BoxBackgroundColor #FAFAFA
+    BoxBorderColor #BDBDBD
+}
+
+header EMSICollab — Module Collaboration & Chatroom
+title **Diagramme de Séquence 4 : Échanges en Temps Réel dans la Chatroom de Projet (Icône Carte Projet)**
+footer Cycle d'Ingénierie Logicielle — EMSI 2026-2027
+
+actor "🎓 Étudiant" as Etu #E8F5E9
+actor "👨‍🏫 Professeur" as Prof #E8F5E9
+
+box "Front-End Clients (:5173)" #FFFFFF
+    participant "💻 Front Étudiant\n(React SPA)" as FrontEtu #E8F5E9
+    participant "💻 Front Professeur\n(React SPA)" as FrontProf #E8F5E9
+end box
+
+box "Passerelle & Broker WebSocket (:8080 / :8084)" #F9FBE7
+    participant "🚪 API Gateway\n(WebSocket Proxy)" as Gateway #E0F2F1
+    participant "💬 chat-service\n(STOMP Broker / SockJS)" as ChatSvc #E0F2F1
+end box
+
+box "Persistance (:5433)" #EDE7F6
+    database "🗄️ PostgreSQL\n(project_db)" as ProjDB #D1C4E9
+end box
+
+== 1. Ouverture de la Chatroom depuis l'Icône de Carte Projet & Handshake ==
+
+Etu -> FrontEtu : Clique sur l'icône 💬 Chatroom sur la carte du projet PFE-01
+activate FrontEtu
+
+FrontEtu -> Gateway : GET /ws/chat (HTTP Upgrade: WebSocket + JWT Bearer)
+activate Gateway
+Gateway -> ChatSvc : Reroute Handshake WebSocket
+activate ChatSvc
+
+ChatSvc -> ChatSvc : Valide le token JWT & extrait X-User-Id
+ChatSvc --> Gateway : 101 Switching Protocols
+Gateway --> FrontEtu : 101 Switching Protocols (Connexion WebSocket active)
+
+FrontEtu -> ChatSvc : STOMP CONNECT [Authorization: Bearer <jwt>]
+ChatSvc --> FrontEtu : STOMP CONNECTED (Session ID: wss-4829)
+
+FrontEtu -> ChatSvc : STOMP SUBSCRIBE /topic/project.{projectId}
+Note over FrontEtu, ChatSvc : L'étudiant est abonné au canal de discussion du projet.
+
+== 2. Chargement de l'Historique Récent des Messages ==
+
+FrontEtu -> Gateway : GET /api/v1/projects/{projectId}/chat/messages?page=0&size=50
+Gateway -> ChatSvc : Reroute requête historique
+ChatSvc -> ProjDB : SELECT * FROM project_chat_messages WHERE project_id = ? ORDER BY sent_at ASC
+activate ProjDB
+ProjDB --> ChatSvc : Liste des messages archivés
+deactivate ProjDB
+ChatSvc --> FrontEtu : 200 OK (List<ProjectChatMessageDto>)
+FrontEtu --> Etu : Affichage de la fenêtre modale Chatroom avec historique
+
+== 3. Émission d'un Message par l'Étudiant & Broadcast Temps Réel ==
+
+Etu -> FrontEtu : Tape : "Bonjour Professeur, le schéma relationnel est validé."
+FrontEtu -> ChatSvc : STOMP SEND /app/project/{projectId}/chat\nPayload: { content: "Bonjour Professeur...", senderId: "UUID_ETU" }
+
+ChatSvc -> ProjDB : INSERT INTO project_chat_messages (id, project_id, sender_id, content, sent_at)\nVALUES (gen_random_uuid(), ?, ?, ?, NOW())
+activate ProjDB
+ProjDB --> ChatSvc : Tuple persisté
+deactivate ProjDB
+
+ChatSvc -> ChatSvc : Prépare MessageBroadcastDto (id, content, senderName: "Hamza Arhrid", timestamp)
+ChatSvc -->> FrontEtu : STOMP MESSAGE /topic/project.{projectId} (MessageBroadcastDto)
+ChatSvc -->> FrontProf : STOMP MESSAGE /topic/project.{projectId} (MessageBroadcastDto)
+
+FrontEtu -> FrontEtu : Affiche le message (bulle droite verte)
+FrontProf -> FrontProf : Joue notification sonore & affiche le message (bulle gauche)
+FrontProf --> Prof : Notification toast : "Nouveau message de Hamza dans PFE-01"
+
+== 4. Réponse Directe du Professeur Encadrant ==
+
+Prof -> FrontProf : Répond : "Excellent travail. Nous ferons le point en réunion Meet."
+FrontProf -> ChatSvc : STOMP SEND /app/project/{projectId}/chat\nPayload: { content: "Excellent travail...", senderId: "UUID_PROF" }
+
+ChatSvc -> ProjDB : INSERT INTO project_chat_messages VALUES (...)
+activate ProjDB
+ProjDB --> ChatSvc : Persisté
+deactivate ProjDB
+
+ChatSvc -->> FrontEtu : STOMP MESSAGE /topic/project.{projectId}
+ChatSvc -->> FrontProf : STOMP MESSAGE /topic/project.{projectId}
+
+FrontEtu --> Etu : Réception instantanée de la réponse du professeur dans le salon
+deactivate FrontEtu
+deactivate ChatSvc
+deactivate Gateway
+
+@enduml

@@ -1,0 +1,47 @@
+@startuml UC_Pkg2_Projects_PDF
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 10
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam actor {
+    BackgroundColor #E8F5E9
+    BorderColor #15885a
+    FontColor #1b5e20
+    FontStyle bold
+}
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    FontColor #212121
+    ArrowColor #2E7D32
+}
+
+left to right direction
+title **Module 2 : Gestion des Sujets & Cahier des Charges PDF**
+
+actor "👨‍🏫 Professeur (PROFESSOR)" as Professor
+actor "🎓 Étudiant (STUDENT)" as Student
+
+package "Gestion des Sujets & PFE" {
+    usecase "UC201 : Publier un sujet de projet / PFE" as UC_CreateProj
+    usecase "UC202 : Définir exigences pondérées (w_i)" as UC_DefReq
+    usecase "UC203 : Activer critère obligatoire (Veto)" as UC_SetVeto
+    usecase "UC204 : Téléverser Cahier des Charges (PDF)" as UC_UploadPdf
+    usecase "UC205 : Télécharger / Visualiser Cahier des Charges (PDF)" as UC_DownloadPdf
+    usecase "UC206 : Consulter catalogue des sujets" as UC_BrowseProj
+    usecase "UC207 : Consulter recommandations PFE (Feed IA)" as UC_BrowsePfeRec
+    usecase "UC208 : Clôturer sujet (Statut ASSIGNED)" as UC_LockProj
+}
+
+Professor --> UC_CreateProj
+Professor --> UC_LockProj
+
+Student --> UC_BrowseProj
+Student --> UC_BrowsePfeRec
+Student --> UC_DownloadPdf
+
+UC_CreateProj ..> UC_DefReq : <<include>>
+UC_UploadPdf ..> UC_CreateProj : <<extend>>\n[Condition: Document PDF joint]
+UC_SetVeto ..> UC_DefReq : <<extend>>\n[Condition: Compétence critique]
+@enduml

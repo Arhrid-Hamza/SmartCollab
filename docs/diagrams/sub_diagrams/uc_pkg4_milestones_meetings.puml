@@ -1,0 +1,44 @@
+@startuml UC_Pkg4_Milestones_Meetings
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 10
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam actor {
+    BackgroundColor #E8F5E9
+    BorderColor #15885a
+    FontColor #1b5e20
+    FontStyle bold
+}
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    FontColor #212121
+    ArrowColor #2E7D32
+}
+
+left to right direction
+title **Module 4 : Suivi d'Avancement, Roadmap Checkboxes & Réunions Meet**
+
+actor "👨‍🏫 Professeur Encadrant" as Professor
+actor "🎓 Étudiant (Membre)" as Student
+
+package "Suivi par Jalons & Réunions" {
+    usecase "UC401 : Configurer étapes du projet (Roadmap)" as UC_DefineMilestones
+    usecase "UC402 : Cocher une étape terminée (Checkbox)" as UC_CheckMilestones
+    usecase "UC403 : Suivre jauge de progression (%)" as UC_TrackProgress
+    usecase "UC404 : Planifier réunion (Date/Heure & Google Meet)" as UC_ScheduleMeet
+    usecase "UC405 : Rejoindre réunion Google Meet" as UC_JoinMeet
+}
+
+Professor --> UC_DefineMilestones
+Professor --> UC_ScheduleMeet
+Professor --> UC_JoinMeet
+
+Student --> UC_CheckMilestones
+Student --> UC_TrackProgress
+Student --> UC_JoinMeet
+
+UC_CheckMilestones ..> UC_TrackProgress : <<include>>
+UC_JoinMeet ..> UC_ScheduleMeet : <<extend>>\n[Condition: Date et heure de réunion atteintes]
+@enduml

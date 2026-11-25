@@ -1,0 +1,80 @@
+@startuml Class_Auth_Service
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 6
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    HeaderBackgroundColor #E8F5E9
+    FontColor #212121
+    FontStyle bold
+    AttributeFontColor #37474F
+    MethodFontColor #1B5E20
+    ArrowColor #2E7D32
+}
+
+title **Diagramme de Classes Détaillé 1 : Service d'Authentification & Compétences (`auth-service`)**
+
+package "auth-service (:8081)" {
+
+    enum Role {
+        STUDENT
+        PROFESSOR
+        ADMIN
+    }
+
+    enum SkillCategory {
+        BACKEND
+        FRONTEND
+        DEVOPS
+        DATA_AI
+        MOBILE
+        METHODOLOGY
+    }
+
+    class User {
+        + id: UUID
+        + email: String
+        - passwordHash: String
+        + firstName: String
+        + lastName: String
+        + role: Role
+        + studentIdentifier: String
+        + bio: String
+        + createdAt: Timestamp
+        + updatedAt: Timestamp
+        --
+        + registerSkill(skill: Skill, level: int, xp: double): UserSkill
+        + updateProfile(bio: String, firstName: String, lastName: String): void
+        + hasRole(expected: Role): boolean
+        + getFullName(): String
+    }
+
+    class Skill {
+        + id: UUID
+        + name: String
+        + category: SkillCategory
+        + description: String
+        + createdAt: Timestamp
+        --
+        + updateDefinition(name: String, cat: SkillCategory): void
+    }
+
+    class UserSkill {
+        + userId: UUID
+        + skillId: UUID
+        + proficiencyLevel: int
+        + yearsOfExperience: double
+        --
+        + isProficient(minLevel: int): boolean
+        + isExpert(): boolean
+    }
+
+    User "1" --> "1" Role : possede
+    Skill "1" --> "1" SkillCategory : classifiee par
+    User "1" *-- "0..*" UserSkill : declare
+    Skill "1" -- "0..*" UserSkill : evaluee dans
+}
+@enduml

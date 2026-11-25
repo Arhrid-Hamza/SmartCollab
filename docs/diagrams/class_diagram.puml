@@ -1,0 +1,298 @@
+@startuml EMSICollab_Class_Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 6
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    HeaderBackgroundColor #E8F5E9
+    FontColor #212121
+    FontStyle bold
+    AttributeFontColor #37474F
+    AttributeFontSize 11
+    MethodFontColor #1B5E20
+    MethodFontSize 11
+    ArrowColor #2E7D32
+}
+
+skinparam package {
+    BackgroundColor #FAFAFA
+    BorderColor #9E9E9E
+    FontColor #424242
+    FontStyle bold
+}
+
+skinparam enum {
+    BackgroundColor #FFF9C4
+    BorderColor #FBC02D
+    HeaderBackgroundColor #FFF59D
+}
+
+header EMSICollab — Architecture Métier & Modélisation Statique
+title **Diagramme de Classes Global du Domaine (Class Diagram)**
+footer Conception UML & Domain-Driven Design (DDD) — EMSI 2026-2027
+
+' ===================================================================
+' BOUNDED CONTEXT 1 : AUTHENTIFICATION & COMPÉTENCES (auth-service)
+' ===================================================================
+package "Bounded Context : auth-service (:8081)" as CtxAuth {
+
+    enum Role {
+        STUDENT
+        PROFESSOR
+        ADMIN
+    }
+
+    enum SkillCategory {
+        BACKEND
+        FRONTEND
+        DEVOPS
+        DATA_AI
+        MOBILE
+        METHODOLOGY
+    }
+
+    class User {
+        + id: UUID
+        + email: String
+        - passwordHash: String
+        + firstName: String
+        + lastName: String
+        + role: Role
+        + studentIdentifier: String
+        + bio: String
+        + createdAt: Timestamp
+        + updatedAt: Timestamp
+        --
+        + registerSkill(skill: Skill, level: int, xp: double): UserSkill
+        + updateProfile(bio: String, firstName: String, lastName: String): void
+        + hasRole(expected: Role): boolean
+        + getFullName(): String
+    }
+
+    class Skill {
+        + id: UUID
+        + name: String
+        + category: SkillCategory
+        + description: String
+        + createdAt: Timestamp
+        --
+        + updateDefinition(name: String, cat: SkillCategory): void
+    }
+
+    class UserSkill {
+        + userId: UUID
+        + skillId: UUID
+        + proficiencyLevel: int
+        + yearsOfExperience: double
+        --
+        + isProficient(minLevel: int): boolean
+        + isExpert(): boolean
+    }
+
+    User "1" --> "1" Role : possede
+    Skill "1" --> "1" SkillCategory : classifiee par
+    User "1" *-- "0..*" UserSkill : declare
+    Skill "1" -- "0..*" UserSkill : evaluee dans
+}
+
+' ===================================================================
+' BOUNDED CONTEXT 2 : PROJETS, CAHIER DES CHARGES & JALONS (project-service)
+' ===================================================================
+package "Bounded Context : project-service (:8082)" as CtxProject {
+
+    enum ProjectStatus {
+        DRAFT
+        PUBLISHED
+        ASSIGNED
+        IN_PROGRESS
+        COMPLETED
+        ARCHIVED
+        CANCELLED
+    }
+
+    enum MeetingStatus {
+        SCHEDULED
+        COMPLETED
+        CANCELLED
+    }
+
+    class Project {
+        + id: UUID
+        + title: String
+        + description: String
+        + cahierDesChargesPdfUrl: String
+        + cahierDesChargesFilename: String
+        + professorId: UUID
+        + status: ProjectStatus
+        + minTeamSize: int
+        + maxTeamSize: int
+        + academicYear: String
+        + submissionDeadline: Timestamp
+        + createdAt: Timestamp
+        + updatedAt: Timestamp
+        --
+        + publish(): void
+        + assignTeam(teamId: UUID): void
+        + complete(): void
+        + attachCahierDesCharges(url: String, filename: String): void
+        + calculateProgress(): double
+        + isTeamSizeAcceptable(size: int): boolean
+    }
+
+    class ProjectRequirement {
+        + id: UUID
+        + projectId: UUID
+        + skillId: UUID
+        + minimumLevel: int
+        + weight: double
+        + isMandatory: boolean
+        --
+        + isSatisfied(teamProficiency: int): boolean
+        + getWeightedScore(teamProficiency: int): double
+    }
+
+    class ProjectMilestone {
+        + id: UUID
+        + projectId: UUID
+        + title: String
+        + description: String
+        + stepOrder: int
+        + isCompleted: boolean
+        + completedBy: UUID
+        + completedAt: Timestamp
+        + dueDate: Timestamp
+        --
+        + toggleCompletion(authorId: UUID): boolean
+        + isLate(): boolean
+    }
+
+    class ProjectMeeting {
+        + id: UUID
+        + projectId: UUID
+        + teamId: UUID
+        + organizerId: UUID
+        + title: String
+        + agenda: String
+        + scheduledAt: Timestamp
+        + googleMeetLink: String
+        + status: MeetingStatus
+        --
+        + startSession(): void
+        + cancelSession(): void
+        + isUpcoming(): boolean
+    }
+
+    Project "1" --> "1" ProjectStatus : etat
+    Project "1" *-- "1..*" ProjectRequirement : exige
+    Project "1" *-- "0..*" ProjectMilestone : compose de
+    Project "1" *-- "0..*" ProjectMeeting : planifie
+    ProjectMeeting "1" --> "1" MeetingStatus : statut
+}
+
+' ===================================================================
+' BOUNDED CONTEXT 3 : ÉQUIPES & MATCHING (team-matching-service)
+' ===================================================================
+package "Bounded Context : team-matching-service (:8083)" as CtxMatching {
+
+    enum TeamStatus {
+        FORMING
+        SUBMITTED
+        APPROVED
+        DISBANDED
+    }
+
+    enum TeamRole {
+        LEADER
+        MEMBER
+    }
+
+    class Team {
+        + id: UUID
+        + name: String
+        + projectId: UUID
+        + leaderId: UUID
+        + status: TeamStatus
+        + createdAt: Timestamp
+        + updatedAt: Timestamp
+        --
+        + addMember(studentId: UUID, role: TeamRole): TeamMember
+        + removeMember(studentId: UUID): void
+        + submitForProject(projectId: UUID): void
+        + approve(): void
+        + getMemberCount(): int
+    }
+
+    class TeamMember {
+        + id: UUID
+        + teamId: UUID
+        + studentId: UUID
+        + role: TeamRole
+        + joinedAt: Timestamp
+        --
+        + isLeader(): boolean
+    }
+
+    class MatchingScore {
+        + id: UUID
+        + teamId: UUID
+        + projectId: UUID
+        + overallScore: double
+        + mandatorySkillsSatisfied: boolean
+        + scoreBreakdownJson: String
+        + calculatedAt: Timestamp
+        --
+        + isEligible(): boolean
+        + getClassification(): String
+    }
+
+    Team "1" --> "1" TeamStatus : statut
+    Team "1" *-- "1..*" TeamMember : rassemble
+    TeamMember "1" --> "1" TeamRole : role
+    Team "1" -- "0..*" MatchingScore : evalue
+    MatchingScore "0..*" --> "1" Project : reference logique
+}
+
+' ===================================================================
+' BOUNDED CONTEXT 4 : COLLABORATION TEMPS RÉEL (chat-service)
+' ===================================================================
+package "Bounded Context : chat-service (:8084)" as CtxChat {
+
+    class PrivateMessage {
+        + id: UUID
+        + senderId: UUID
+        + recipientId: UUID
+        + content: String
+        + isRead: boolean
+        + sentAt: Timestamp
+        --
+        + markAsRead(): void
+    }
+
+    class ProjectChatMessage {
+        + id: UUID
+        + projectId: UUID
+        + senderId: UUID
+        + content: String
+        + sentAt: Timestamp
+        --
+        + getFormattedTimestamp(): String
+    }
+
+    Project "1" *-- "0..*" ProjectChatMessage : canal dedie
+    User "1" -- "0..*" PrivateMessage : dialogue 1-a-1
+}
+
+' ===================================================================
+' RELATIONS INTER-SERVICES (UUIDs Logiques & Intégration)
+' ===================================================================
+Project "0..*" ..> User : encadre par (professorId)
+Team "0..*" ..> User : cree par (leaderId)
+TeamMember "0..*" ..> User : represente (studentId)
+ProjectMilestone "0..*" ..> User : valide par (completedBy)
+ProjectMeeting "0..*" ..> User : organise par (organizerId)
+ProjectMeeting "0..*" ..> Team : concerne (teamId)
+
+@enduml

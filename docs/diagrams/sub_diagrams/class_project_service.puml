@@ -1,0 +1,110 @@
+@startuml Class_Project_Service
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 6
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    HeaderBackgroundColor #E8F5E9
+    FontColor #212121
+    FontStyle bold
+    AttributeFontColor #37474F
+    MethodFontColor #1B5E20
+    ArrowColor #2E7D32
+}
+
+title **Diagramme de Classes Détaillé 2 : Gestion des Projets, CDC PDF & Jalons (`project-service`)**
+
+package "project-service (:8082)" {
+
+    enum ProjectStatus {
+        DRAFT
+        PUBLISHED
+        ASSIGNED
+        IN_PROGRESS
+        COMPLETED
+        ARCHIVED
+        CANCELLED
+    }
+
+    enum MeetingStatus {
+        SCHEDULED
+        COMPLETED
+        CANCELLED
+    }
+
+    class Project {
+        + id: UUID
+        + title: String
+        + description: String
+        + cahierDesChargesPdfUrl: String
+        + cahierDesChargesFilename: String
+        + professorId: UUID
+        + status: ProjectStatus
+        + minTeamSize: int
+        + maxTeamSize: int
+        + academicYear: String
+        + submissionDeadline: Timestamp
+        + createdAt: Timestamp
+        + updatedAt: Timestamp
+        --
+        + publish(): void
+        + assignTeam(teamId: UUID): void
+        + complete(): void
+        + attachCahierDesCharges(url: String, filename: String): void
+        + calculateProgress(): double
+        + isTeamSizeAcceptable(size: int): boolean
+    }
+
+    class ProjectRequirement {
+        + id: UUID
+        + projectId: UUID
+        + skillId: UUID
+        + minimumLevel: int
+        + weight: double
+        + isMandatory: boolean
+        --
+        + isSatisfied(teamProficiency: int): boolean
+        + getWeightedScore(teamProficiency: int): double
+    }
+
+    class ProjectMilestone {
+        + id: UUID
+        + projectId: UUID
+        + title: String
+        + description: String
+        + stepOrder: int
+        + isCompleted: boolean
+        + completedBy: UUID
+        + completedAt: Timestamp
+        + dueDate: Timestamp
+        --
+        + toggleCompletion(authorId: UUID): boolean
+        + isLate(): boolean
+    }
+
+    class ProjectMeeting {
+        + id: UUID
+        + projectId: UUID
+        + teamId: UUID
+        + organizerId: UUID
+        + title: String
+        + agenda: String
+        + scheduledAt: Timestamp
+        + googleMeetLink: String
+        + status: MeetingStatus
+        --
+        + startSession(): void
+        + cancelSession(): void
+        + isUpcoming(): boolean
+    }
+
+    Project "1" --> "1" ProjectStatus : etat
+    Project "1" *-- "1..*" ProjectRequirement : exige
+    Project "1" *-- "0..*" ProjectMilestone : compose de
+    Project "1" *-- "0..*" ProjectMeeting : planifie
+    ProjectMeeting "1" --> "1" MeetingStatus : statut
+}
+@enduml

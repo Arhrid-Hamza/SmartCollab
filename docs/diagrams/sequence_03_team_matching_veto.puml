@@ -1,0 +1,117 @@
+@startuml Sequence_03_Team_Matching_Veto
+!theme plain
+autonumber "<b>[00]</b>"
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 8
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam sequence {
+    ArrowColor #15885a
+    ActorBorderColor #15885a
+    LifeLineBorderColor #2E7D32
+    LifeLineBackgroundColor #E8F5E9
+    ParticipantBorderColor #15885a
+    ParticipantBackgroundColor #F1F8E9
+    ParticipantFontColor #1b5e20
+    ParticipantFontStyle bold
+    BoxBackgroundColor #FAFAFA
+    BoxBorderColor #BDBDBD
+}
+
+header EMSICollab — Module Constitution d'Équipe & Matching Algorithmique
+title **Diagramme de Séquence 3 : Ajout d'Équipier & Simulation de Matching avec Règle de Veto**
+footer Cycle d'Ingénierie Logicielle — EMSI 2026-2027
+
+actor "🎓 Étudiant (Leader)" as Leader #E8F5E9
+box "Front-End Client (:5173)" #FFFFFF
+    participant "💻 Frontend React\n(TeamDashboardPage)" as Front #E8F5E9
+end box
+
+box "Passerelle & Services Métier" #F9FBE7
+    participant "🚪 API Gateway (:8080)" as Gateway #E0F2F1
+    participant "⚙️ team-matching-service (:8083)" as MatchSvc #E0F2F1
+    participant "📁 project-service (:8082)" as ProjSvc #E0F2F1
+    participant "🔐 auth-service (:8081)" as AuthSvc #E0F2F1
+end box
+
+box "Persistance (:5434)" #EDE7F6
+    database "🗄️ PostgreSQL\n(team_matching_db)" as MatchDB #D1C4E9
+end box
+
+== Phase 1 : Ajout d'un Camarade au Groupe depuis le Dashboard ==
+
+Leader -> Front : Recherche un camarade par nom ou email (@emsi-edu.ma)
+activate Front
+Leader -> Front : Clique sur "Inviter / Ajouter à l'équipe"
+Front -> Gateway : POST /api/v1/teams/{teamId}/members\nPayload: { studentId: "UUID_ETUDIANT_2", role: "MEMBER" }
+activate Gateway
+
+Gateway -> MatchSvc : Reroute avec headers d'identité
+activate MatchSvc
+
+MatchSvc -> MatchDB : SELECT COUNT(*) FROM team_members WHERE team_id = ?
+activate MatchDB
+MatchDB --> MatchSvc : Effectif actuel = 2 membres
+deactivate MatchDB
+
+MatchSvc -> MatchDB : INSERT INTO team_members (team_id, student_id, role, joined_at)\nVALUES (?, ?, 'MEMBER', NOW())
+activate MatchDB
+MatchDB --> MatchSvc : Tuple inséré
+deactivate MatchDB
+
+MatchSvc --> Gateway : 200 OK (TeamDto avec 3 membres)
+Gateway --> Front : 200 OK
+Front --> Leader : Mise à jour de la liste d'équipe & matrice des compétences
+deactivate Front
+
+== Phase 2 : Simulation Algorithmique de Compatibilité avec un Projet ==
+
+Leader -> Front : Clique sur "Simuler matching pour le projet PFE-01"
+activate Front
+Front -> Gateway : POST /api/v1/matching/calculate?teamId=...&projectId=...
+Gateway -> MatchSvc : Reroute vers MatchingController
+
+MatchSvc -> ProjSvc : GET /api/v1/projects/{projectId} (via OpenFeign)
+activate ProjSvc
+ProjSvc --> MatchSvc : Requirements: [\n  { skill: "Java", minLevel: 4, weight: 1.0, isMandatory: true },\n  { skill: "React", minLevel: 3, weight: 0.8, isMandatory: false }\n]
+deactivate ProjSvc
+
+loop Pour chaque membre de l'équipe (Leader + Membres)
+    MatchSvc -> AuthSvc : GET /api/v1/users/{memberId} (via OpenFeign)
+    activate AuthSvc
+    AuthSvc --> MatchSvc : UserDto avec compétences : { "Java": level, "React": level }
+    deactivate AuthSvc
+end
+
+MatchSvc -> MatchSvc : Exécute SkillMatchingEngine :\nPour chaque compétence s : L_team(s) = max(niveaux membres)
+
+alt CAS A : Compétence obligatoire manquante (ex: L_team("Java") = 2 < 4)
+    MatchSvc -> MatchSvc : Déclenche la règle de VETO bloquant !\nStatut = BLOCKED_MANDATORY_MISSING
+    MatchSvc -> MatchSvc : Identifie le profil type à recruter pour débloquer (ex: Profil Java 4/5)
+    MatchSvc -> MatchDB : INSERT INTO matching_scores (team_id, project_id, overall_score=0,\nmandatory_satisfied=false, score_breakdown, calculated_at)\nVALUES (?, ?, 0.0, false, '{...}', NOW())
+    activate MatchDB
+    MatchDB --> MatchSvc : Enregistré
+    deactivate MatchDB
+
+    MatchSvc --> Gateway : 200 OK { status: "BLOCKED_MANDATORY_MISSING",\nmissingMandatory: ["Java (requis: 4, équipe: 2)"], suggestedProfiles: ["Profil Backend Senior"] }
+    Gateway --> Front : 200 OK
+    Front --> Leader : Alerte Veto (Rouge) : "Candidature bloquée : niveau Java 4/5 requis. Recrutez un profil Backend."
+
+else CAS B : Toutes exigences obligatoires satisfaites (ex: Java ≥ 4 et React ≥ 3)
+    MatchSvc -> MatchSvc : Calcule les ratios : Ratio(s) = min(1.0, L_team(s) / L_req(s))\nCalcule Score Global = [Σ(wi * Ratio) / Σ(wi)] * 100 = 94.4%
+    MatchSvc -> MatchSvc : Attribue statut = EXCELLENT (≥ 85%)
+
+    MatchSvc -> MatchDB : INSERT INTO matching_scores (team_id, project_id, overall_score=94.4,\nmandatory_satisfied=true, score_breakdown, calculated_at)\nVALUES (?, ?, 94.4, true, '{...}', NOW())
+    activate MatchDB
+    MatchDB --> MatchSvc : Enregistré
+    deactivate MatchDB
+
+    MatchSvc --> Gateway : 200 OK { status: "EXCELLENT", overallScore: 94.4, isEligible: true }
+    deactivate MatchSvc
+    Gateway --> Front : 200 OK
+    deactivate Gateway
+    Front --> Leader : Badge Vert : "⭐ 94% Match (EXCELLENT) — Votre équipe est hautement recommandée pour postuler !"
+    deactivate Front
+end
+
+@enduml

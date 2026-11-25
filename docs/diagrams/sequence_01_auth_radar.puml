@@ -1,0 +1,88 @@
+@startuml Sequence_01_Auth_Radar
+!theme plain
+autonumber "<b>[00]</b>"
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 8
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam sequence {
+    ArrowColor #15885a
+    ActorBorderColor #15885a
+    LifeLineBorderColor #2E7D32
+    LifeLineBackgroundColor #E8F5E9
+    ParticipantBorderColor #15885a
+    ParticipantBackgroundColor #F1F8E9
+    ParticipantFontColor #1b5e20
+    ParticipantFontStyle bold
+    BoxBackgroundColor #FAFAFA
+    BoxBorderColor #BDBDBD
+}
+
+header EMSICollab — Module Sécurité & Profil
+title **Diagramme de Séquence 1 : Authentification JWT, Profilage & Radar de Compétences**
+footer Cycle d'Ingénierie Logicielle — EMSI 2026-2027
+
+actor "🎓 Étudiant" as Etu #E8F5E9
+box "Front-End Client (:5173)" #FFFFFF
+    participant "💻 Frontend React\n(Vite / Tailwind)" as Front #E8F5E9
+end box
+
+box "Passerelle & Sécurité (:8080 / :8081)" #F9FBE7
+    participant "🚪 API Gateway\n(Spring Cloud Gateway)" as Gateway #E0F2F1
+    participant "🔐 auth-service\n(Spring Boot 3 / JJWT)" as AuthSvc #E0F2F1
+end box
+
+box "Persistance (:5431)" #EDE7F6
+    database "🗄️ PostgreSQL\n(auth_db)" as AuthDB #D1C4E9
+end box
+
+== 1. Authentification & Génération du Token JWT ==
+
+Etu -> Front : Saisit email institutionnel (@emsi-edu.ma) et mot de passe
+activate Front
+Front -> Gateway : POST /api/v1/auth/login\nPayload: { email, password }
+activate Gateway
+
+Gateway -> AuthSvc : Reroute requête /api/v1/auth/login
+activate AuthSvc
+
+AuthSvc -> AuthDB : SELECT * FROM users WHERE email = ?
+activate AuthDB
+AuthDB --> AuthSvc : Tuple User (id, password_hash, role='STUDENT')
+deactivate AuthDB
+
+AuthSvc -> AuthSvc : Vérification cryptographique : BCrypt.checkpw(password, hash)
+
+alt Identifiants valides et domaine @emsi-edu.ma conforme
+    AuthSvc -> AuthSvc : Génère token JWT signé (HMAC-SHA256, expiration: 24h, claims: id, email, role)
+    AuthSvc --> Gateway : 200 OK { token, user: { id, email, role: 'STUDENT', firstName, lastName } }
+    Gateway --> Front : 200 OK (JWT Token + Profil)
+    Front -> Front : Stocke JWT dans AuthContext et localStorage
+    Front -> Front : Configure intercepteur Axios (Authorization: Bearer <token>)
+else Identifiants erronés ou compte inactif
+    AuthSvc --> Gateway : 401 Unauthorized (BadCredentialsException)
+    Gateway --> Front : 401 Unauthorized
+    Front --> Etu : Affiche alerte : "Identifiants invalides ou domaine non autorisé"
+end
+
+== 2. Chargement du Profil Technique & Radar de Compétences ==
+
+Front -> Gateway : GET /api/v1/users/me (Bearer JWT)
+Gateway -> Gateway : Filtre JwtAuthenticationFilter :\nValide signature, extrait X-User-Id, X-User-Role
+Gateway -> AuthSvc : GET /api/v1/users/me\nHeaders: [X-User-Id, X-User-Role='STUDENT']
+
+AuthSvc -> AuthDB : SELECT s.name, s.category, us.proficiency_level, us.years_of_experience\nFROM user_skills us JOIN skills s ON us.skill_id = s.id\nWHERE us.user_id = ?
+activate AuthDB
+AuthDB --> AuthSvc : Matrice de compétences (ex: Java: 5, React: 4, Docker: 3, SQL: 4)
+deactivate AuthDB
+
+AuthSvc --> Gateway : 200 OK (UserDto avec compétences détaillées)
+deactivate AuthSvc
+Gateway --> Front : 200 OK (UserDto)
+deactivate Gateway
+
+Front -> Front : Traitement graphique : instancie les axes du Radar Chart
+Front --> Etu : Restitution visuelle du Dashboard & Radar d'expertise interactive
+deactivate Front
+
+@enduml

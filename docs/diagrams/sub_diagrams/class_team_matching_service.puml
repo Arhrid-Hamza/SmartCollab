@@ -1,0 +1,78 @@
+@startuml Class_Team_Matching_Service
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 6
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    HeaderBackgroundColor #E8F5E9
+    FontColor #212121
+    FontStyle bold
+    AttributeFontColor #37474F
+    MethodFontColor #1B5E20
+    ArrowColor #2E7D32
+}
+
+title **Diagramme de Classes Détaillé 3 : Équipes & Moteur de Matching (`team-matching-service`)**
+
+package "team-matching-service (:8083)" {
+
+    enum TeamStatus {
+        FORMING
+        SUBMITTED
+        APPROVED
+        DISBANDED
+    }
+
+    enum TeamRole {
+        LEADER
+        MEMBER
+    }
+
+    class Team {
+        + id: UUID
+        + name: String
+        + projectId: UUID
+        + leaderId: UUID
+        + status: TeamStatus
+        + createdAt: Timestamp
+        + updatedAt: Timestamp
+        --
+        + addMember(studentId: UUID, role: TeamRole): TeamMember
+        + removeMember(studentId: UUID): void
+        + submitForProject(projectId: UUID): void
+        + approve(): void
+        + getMemberCount(): int
+    }
+
+    class TeamMember {
+        + id: UUID
+        + teamId: UUID
+        + studentId: UUID
+        + role: TeamRole
+        + joinedAt: Timestamp
+        --
+        + isLeader(): boolean
+    }
+
+    class MatchingScore {
+        + id: UUID
+        + teamId: UUID
+        + projectId: UUID
+        + overallScore: double
+        + mandatorySkillsSatisfied: boolean
+        + scoreBreakdownJson: String
+        + calculatedAt: Timestamp
+        --
+        + isEligible(): boolean
+        + getClassification(): String
+    }
+
+    Team "1" --> "1" TeamStatus : statut
+    Team "1" *-- "1..*" TeamMember : rassemble
+    TeamMember "1" --> "1" TeamRole : role
+    Team "1" -- "0..*" MatchingScore : evalue
+}
+@enduml

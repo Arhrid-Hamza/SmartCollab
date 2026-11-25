@@ -1,0 +1,106 @@
+@startuml Sequence_06_Meetings_Google_Meet
+!theme plain
+autonumber "<b>[00]</b>"
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 8
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam sequence {
+    ArrowColor #15885a
+    ActorBorderColor #15885a
+    LifeLineBorderColor #2E7D32
+    LifeLineBackgroundColor #E8F5E9
+    ParticipantBorderColor #15885a
+    ParticipantBackgroundColor #F1F8E9
+    ParticipantFontColor #1b5e20
+    ParticipantFontStyle bold
+    BoxBackgroundColor #FAFAFA
+    BoxBorderColor #BDBDBD
+}
+
+header EMSICollab — Module Réunions Pédagogiques & Visioconférence
+title **Diagramme de Séquence 6 : Planification de Réunion à Date Fixe & Connexion Google Meet**
+footer Cycle d'Ingénierie Logicielle — EMSI 2026-2027
+
+actor "👨‍🏫 Professeur Encadrant" as Prof #E8F5E9
+actor "🎓 Étudiants (Équipe)" as Etu #E8F5E9
+
+box "Front-End Clients (:5173)" #FFFFFF
+    participant "💻 Front Professeur\n(React SPA)" as FrontProf #E8F5E9
+    participant "💻 Front Étudiant\n(React SPA)" as FrontEtu #E8F5E9
+end box
+
+box "Passerelle & Service Projet (:8080 / :8082)" #F9FBE7
+    participant "🚪 API Gateway" as Gateway #E0F2F1
+    participant "📁 project-service\n(MeetingController)" as ProjSvc #E0F2F1
+end box
+
+box "Persistance & Plateforme Externe" #EDE7F6
+    database "🗄️ PostgreSQL\n(project_db :5433)" as ProjDB #D1C4E9
+    participant "📹 Google Meet\n(meet.google.com)" as Meet #FFE082
+end box
+
+== 1. Programmation de la Réunion Pédagogique par l'Enseignant ==
+
+Prof -> FrontProf : Ouvre le module de planification du projet PFE-01
+activate FrontProf
+
+Prof -> FrontProf : Saisit les informations de la séance :\n- Titre : "Revue d'avancement Sprint 3 & Architecture Microservices"\n- Date & Heure précises : 2026-11-26 à 15h30\n- Ordre du jour : "Validation du schéma Kafka & Démo Frontend"\n- Lien direct : "https://meet.google.com/ems-icol-lab"
+
+FrontProf -> Gateway : POST /api/v1/projects/{projectId}/meetings\nPayload: { title, agenda, scheduledAt: "2026-11-26T15:30:00",\n          googleMeetLink: "https://meet.google.com/ems-icol-lab", teamId }\nHeaders: [Authorization: Bearer <jwt>]
+activate Gateway
+
+Gateway -> Gateway : Valide JWT & extrait X-User-Id du professeur
+Gateway -> ProjSvc : Reroute requête vers MeetingController
+activate ProjSvc
+
+ProjSvc -> ProjDB : INSERT INTO project_meetings (id, project_id, team_id, organizer_id,\ntitle, agenda, scheduled_at, google_meet_link, status)\nVALUES (gen_random_uuid(), ?, ?, ?, ?, ?, '2026-11-26 15:30:00',\n        'https://meet.google.com/ems-icol-lab', 'SCHEDULED')
+activate ProjDB
+ProjDB --> ProjSvc : Réunion enregistrée
+deactivate ProjDB
+
+ProjSvc --> Gateway : 201 Created (MeetingDto)
+deactivate ProjSvc
+Gateway --> FrontProf : 201 Created
+deactivate Gateway
+
+FrontProf --> Prof : Message de confirmation : "Réunion planifiée pour le 26/11 à 15h30. Les étudiants ont été notifiés."
+deactivate FrontProf
+
+== 2. Notification & Affichage du Rendez-vous sur le Dashboard Étudiant ==
+
+Etu -> FrontEtu : Se connecte sur son Dashboard le jour J (ex: 15h25)
+activate FrontEtu
+
+FrontEtu -> Gateway : GET /api/v1/projects/{projectId}/meetings (Bearer JWT)
+activate Gateway
+Gateway -> ProjSvc : Reroute requête meetings
+activate ProjSvc
+ProjSvc -> ProjDB : SELECT * FROM project_meetings WHERE project_id = ? AND status = 'SCHEDULED' ORDER BY scheduled_at ASC
+activate ProjDB
+ProjDB --> ProjSvc : 1 réunion planifiée trouvée
+deactivate ProjDB
+ProjSvc --> Gateway : 200 OK (List<MeetingDto>)
+deactivate ProjSvc
+Gateway --> FrontEtu : 200 OK
+deactivate Gateway
+
+FrontEtu -> FrontEtu : Détecte une réunion imminente (< 15 min)\nAffiche le bandeau d'alerte verte : "Point d'avancement Sprint 3 à 15h30"
+FrontEtu --> Etu : Bouton vert pulsant : **« Rejoindre la réunion Google Meet »**
+
+== 3. Lancement de la Visioconférence en 1 Clic ==
+
+Etu -> FrontEtu : Clique sur le bouton "Rejoindre sur Google Meet"
+FrontEtu -> Meet : Ouvre un nouvel onglet vers "https://meet.google.com/ems-icol-lab"
+activate Meet
+Meet --> Etu : Interface de visio active (Caméra & Micro prêts)
+
+Prof -> FrontProf : Clique sur "Démarrer la visioconférence"
+FrontProf -> Meet : Ouvre l'onglet "https://meet.google.com/ems-icol-lab"
+Meet --> Prof : Salle de réunion ouverte
+
+Note over Meet, Prof : Connexion instantanée de l'équipe et de l'encadrant sans saisie manuelle de code.
+deactivate Meet
+deactivate FrontEtu
+
+@enduml

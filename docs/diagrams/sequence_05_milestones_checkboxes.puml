@@ -1,0 +1,111 @@
+@startuml Sequence_05_Milestones_Checkboxes
+!theme plain
+autonumber "<b>[00]</b>"
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 8
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam sequence {
+    ArrowColor #15885a
+    ActorBorderColor #15885a
+    LifeLineBorderColor #2E7D32
+    LifeLineBackgroundColor #E8F5E9
+    ParticipantBorderColor #15885a
+    ParticipantBackgroundColor #F1F8E9
+    ParticipantFontColor #1b5e20
+    ParticipantFontStyle bold
+    BoxBackgroundColor #FAFAFA
+    BoxBorderColor #BDBDBD
+}
+
+header EMSICollab — Module Roadmap & Suivi d'Avancement
+title **Diagramme de Séquence 5 : Validation d'Étape par Checkbox & Recalcul de Progression**
+footer Cycle d'Ingénierie Logicielle — EMSI 2026-2027
+
+actor "🎓 Étudiant (Membre)" as Etu #E8F5E9
+actor "👨‍🏫 Professeur Encadrant" as Prof #E8F5E9
+
+box "Front-End Clients (:5173)" #FFFFFF
+    participant "💻 Front Étudiant\n(React SPA)" as FrontEtu #E8F5E9
+    participant "💻 Front Professeur\n(React SPA)" as FrontProf #E8F5E9
+end box
+
+box "Passerelle & Services (:8080 / :8082 / :8084)" #F9FBE7
+    participant "🚪 API Gateway" as Gateway #E0F2F1
+    participant "📁 project-service\n(MilestoneController)" as ProjSvc #E0F2F1
+    participant "💬 chat-service\n(WebSocket Broker)" as ChatSvc #E0F2F1
+end box
+
+box "Persistance (:5433)" #EDE7F6
+    database "🗄️ PostgreSQL\n(project_db)" as ProjDB #D1C4E9
+end box
+
+== 1. Consultation de la Roadmap du Projet dans le Dashboard ==
+
+Etu -> FrontEtu : Ouvre l'onglet "Roadmap & Jalons" du projet PFE-01
+activate FrontEtu
+
+FrontEtu -> Gateway : GET /api/v1/projects/{projectId}/milestones (Bearer JWT)
+activate Gateway
+Gateway -> ProjSvc : Reroute requête milestones
+activate ProjSvc
+
+ProjSvc -> ProjDB : SELECT * FROM project_milestones WHERE project_id = ? ORDER BY step_order ASC
+activate ProjDB
+ProjDB --> ProjSvc : 6 étapes retournées (ex: Étape 1, 2, 3 cochées, Étape 4 non cochée)
+deactivate ProjDB
+
+ProjSvc --> Gateway : 200 OK (List<MilestoneDto>)
+Gateway --> FrontEtu : 200 OK
+FrontEtu --> Etu : Rendu de la checklist : 3/6 validées (Barre de progression = 50.0%)
+
+== 2. Action de Cochage de la Checkbox (Validation d'Étape) ==
+
+Etu -> FrontEtu : Coche la case de l'Étape 4 : "Développement Frontend React & Tailwind"
+FrontEtu -> FrontEtu : Optimistic UI : coche visuellement la case (état en attente)
+
+FrontEtu -> Gateway : PATCH /api/v1/projects/{projectId}/milestones/{milestoneId}/toggle\nHeaders: [Authorization: Bearer <jwt>]
+Gateway -> Gateway : Valide JWT & propage X-User-Id: "UUID_HAMZA"
+Gateway -> ProjSvc : Reroute PATCH avec X-User-Id
+
+ProjSvc -> ProjDB : SELECT * FROM project_milestones WHERE id = ?
+activate ProjDB
+ProjDB --> ProjSvc : Tuple jalon (is_completed = false)
+deactivate ProjDB
+
+ProjSvc -> ProjDB : UPDATE project_milestones\nSET is_completed = true, completed_by = 'UUID_HAMZA', completed_at = NOW()\nWHERE id = ?
+activate ProjDB
+ProjDB --> ProjSvc : 1 ligne mise à jour
+deactivate ProjDB
+
+== 3. Recalcul Dynamique de la Progression Globale ==
+
+ProjSvc -> ProjDB : SELECT COUNT(*) as total_steps,\nCOUNT(*) FILTER (WHERE is_completed = true) as completed_steps\nFROM project_milestones WHERE project_id = ?
+activate ProjDB
+ProjDB --> ProjSvc : total_steps = 6, completed_steps = 4
+deactivate ProjDB
+
+ProjSvc -> ProjSvc : Calcul du nouveau pourcentage :\nProgress % = (4 / 6) * 100 = 66.67%
+
+ProjSvc --> Gateway : 200 OK {\n  milestoneId: "...",\n  isCompleted: true,\n  completedByName: "Hamza Arhrid",\n  completedAt: "2026-11-25T14:30:00",\n  newProgressPercentage: 66.67\n}
+deactivate ProjSvc
+Gateway --> FrontEtu : 200 OK
+deactivate Gateway
+
+FrontEtu -> FrontEtu : Confirme la coche verte & anime la jauge à 67%
+FrontEtu --> Etu : Toast succès : "Étape 4 validée avec succès !"
+
+== 4. Diffusion Temps Réel de l'Avancement via WebSocket ==
+
+ProjSvc -> ChatSvc : POST /internal/notifications/project-milestone-toggled\nPayload: { projectId, milestoneTitle: "Étape 4...", authorName: "Hamza Arhrid", progress: 66.67 }
+activate ChatSvc
+
+ChatSvc -->> FrontEtu : STOMP /topic/project.{projectId}/milestones
+ChatSvc -->> FrontProf : STOMP /topic/project.{projectId}/milestones
+deactivate ChatSvc
+
+FrontProf -> FrontProf : Met à jour la barre d'avancement de l'équipe à 67%
+FrontProf --> Prof : Notification toast : "Hamza a validé l'Étape 4 (Progression : 67%)"
+deactivate FrontEtu
+
+@enduml

@@ -1,0 +1,38 @@
+@startuml UC_Pkg6_Administration
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 10
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam actor {
+    BackgroundColor #E8F5E9
+    BorderColor #15885a
+    FontColor #1b5e20
+    FontStyle bold
+}
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    FontColor #212121
+    ArrowColor #2E7D32
+}
+
+left to right direction
+title **Module 6 : Administration & Gouvernance Système**
+
+actor "🛡️ Administrateur (ADMIN)" as Admin
+
+package "Administration & Gouvernance" {
+    usecase "UC601 : Gérer les comptes utilisateurs (CRUD)" as UC_ManageUsers
+    usecase "UC602 : Importer promotions d'étudiants (CSV)" as UC_ImportCSV
+    usecase "UC603 : Administrer catalogue des compétences" as UC_ManageSkills
+    usecase "UC604 : Surveiller santé des microservices" as UC_MonitorSystem
+}
+
+Admin --> UC_ManageUsers
+Admin --> UC_ImportCSV
+Admin --> UC_ManageSkills
+Admin --> UC_MonitorSystem
+
+UC_ImportCSV ..> UC_ManageUsers : <<extend>>\n[Condition: Fichier CSV institutionnel fourni]
+@enduml

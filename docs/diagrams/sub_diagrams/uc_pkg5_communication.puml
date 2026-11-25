@@ -1,0 +1,36 @@
+@startuml UC_Pkg5_Communication
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 10
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam actor {
+    BackgroundColor #E8F5E9
+    BorderColor #15885a
+    FontColor #1b5e20
+    FontStyle bold
+}
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    FontColor #212121
+    ArrowColor #2E7D32
+}
+
+left to right direction
+title **Module 5 : Communication & Collaboration Temps Réel**
+
+actor "🎓 Étudiant (STUDENT)" as Student
+actor "👨‍🏫 Professeur (PROFESSOR)" as Professor
+
+package "Communication & Collaboration" {
+    usecase "UC501 : Échanger en message privé 1-à-1" as UC_PrivateChat
+    usecase "UC502 : Discuter dans la Chatroom Projet (Icône carte)" as UC_ProjectChatroom
+}
+
+Student --> UC_PrivateChat
+Student --> UC_ProjectChatroom
+
+Professor --> UC_PrivateChat
+Professor --> UC_ProjectChatroom
+@enduml

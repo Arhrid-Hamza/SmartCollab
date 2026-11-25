@@ -1,0 +1,171 @@
+@startuml EMSICollab_Use_Cases
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam handwritten false
+skinparam roundcorner 10
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam actor {
+    BackgroundColor #E8F5E9
+    BorderColor #15885a
+    FontColor #1b5e20
+    FontStyle bold
+}
+
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    FontColor #212121
+    ArrowColor #2E7D32
+}
+
+skinparam package {
+    BackgroundColor #F9FBE7
+    BorderColor #827717
+    FontColor #33691E
+    FontStyle bold
+}
+
+left to right direction
+
+header Plateforme EMSICollab
+title **Diagramme Global des Cas d'Utilisation (Use Case Diagram)**
+footer Conception UML & Architecture Logicielle — EMSI 2026-2027
+
+' ==========================================
+' ACTEURS DU SYSTÈME
+' ==========================================
+actor "🎓 Étudiant\n(STUDENT)" as Student
+actor "👨‍🏫 Professeur Encadrant\n(PROFESSOR)" as Professor
+actor "🛡️ Administrateur\n(ADMIN)" as Admin
+actor "⚙️ Moteur Algorithmique\n(Système)" as System <<System>>
+
+' ==========================================
+' PACKAGES FONCTIONNELS
+' ==========================================
+
+package "🔐 Package 1 : Sécurité, Authentification & Profil" {
+    usecase "UC101 : S'authentifier (JWT)" as UC_Login
+    usecase "UC102 : Gérer profil & biographie" as UC_Profile
+    usecase "UC103 : Déclarer compétences (1 à 5 & XP)" as UC_Skills
+    usecase "UC104 : Visualiser Radar d'expertise" as UC_Radar
+}
+
+package "📁 Package 2 : Gestion des Sujets & Cahier des Charges PDF" {
+    usecase "UC201 : Publier un sujet de projet / PFE" as UC_CreateProj
+    usecase "UC202 : Définir exigences pondérées (w_i)" as UC_DefReq
+    usecase "UC203 : Activer critère obligatoire (Veto)" as UC_SetVeto
+    usecase "UC204 : Téléverser Cahier des Charges (PDF)" as UC_UploadPdf
+    usecase "UC205 : Télécharger / Visualiser Cahier des Charges (PDF)" as UC_DownloadPdf
+    usecase "UC206 : Consulter catalogue des sujets publiés" as UC_BrowseProj
+    usecase "UC207 : Consulter recommandations PFE (Feed IA)" as UC_BrowsePfeRec
+    usecase "UC208 : Clôturer / Verrouiller sujet (ASSIGNED)" as UC_LockProj
+}
+
+package "👥 Package 3 : Constitution d'Équipe & Matching Algorithmique" {
+    usecase "UC301 : Créer une équipe (Leader)" as UC_CreateTeam
+    usecase "UC302 : Ajouter des membres (depuis Dashboard)" as UC_AddMembersDash
+    usecase "UC303 : Contrôler quotas d'équipe (min/max)" as UC_CheckTeamSize
+    usecase "UC304 : Simuler affinité équipe-projet" as UC_SimMatch
+    usecase "UC305 : Calculer score d'adéquation pondéré" as UC_CalcScore
+    usecase "UC306 : Suggérer profils à recruter (Assistant IA)" as UC_RecruitHelp
+    usecase "UC307 : Déposer candidature d'équipe" as UC_SubmitTeam
+    usecase "UC308 : Revoir classement des équipes candidates" as UC_ReviewTeams
+    usecase "UC309 : Approuver / Valider candidature d'équipe" as UC_ValidateTeam
+    usecase "UC310 : Rejeter candidature avec motif" as UC_RejectTeam
+}
+
+package "📌 Package 4 : Suivi d'Avancement, Roadmap & Réunions" {
+    usecase "UC401 : Configurer jalons et étapes du projet" as UC_DefineMilestones
+    usecase "UC402 : Cocher une étape terminée (Roadmap Checkbox)" as UC_CheckMilestones
+    usecase "UC403 : Suivre jauge de progression globale (%)" as UC_TrackProgress
+    usecase "UC404 : Planifier réunion (Date/Heure & Google Meet)" as UC_ScheduleMeet
+    usecase "UC405 : Rejoindre visioconférence Google Meet" as UC_JoinMeet
+}
+
+package "💬 Package 5 : Communication & Collaboration Temps Réel" {
+    usecase "UC501 : Échanger en message privé (1-à-1)" as UC_PrivateChat
+    usecase "UC502 : Discuter dans la Chatroom Projet (Icône carte)" as UC_ProjectChatroom
+}
+
+package "⚙️ Package 6 : Administration & Gouvernance" {
+    usecase "UC601 : Gérer les comptes utilisateurs (CRUD)" as UC_ManageUsers
+    usecase "UC602 : Importer promotions d'étudiants (CSV)" as UC_ImportCSV
+    usecase "UC603 : Administrer catalogue des compétences" as UC_ManageSkills
+    usecase "UC604 : Superviser santé des microservices" as UC_MonitorSystem
+}
+
+' ==========================================
+' ASSOCIATIONS ACTEURS -> CAS D'UTILISATION
+' ==========================================
+
+' Étudiant
+Student --> UC_Login
+Student --> UC_Profile
+Student --> UC_Skills
+Student --> UC_BrowseProj
+Student --> UC_BrowsePfeRec
+Student --> UC_CreateTeam
+Student --> UC_AddMembersDash
+Student --> UC_SimMatch
+Student --> UC_SubmitTeam
+Student --> UC_DownloadPdf
+Student --> UC_CheckMilestones
+Student --> UC_JoinMeet
+Student --> UC_PrivateChat
+Student --> UC_ProjectChatroom
+
+' Professeur
+Professor --> UC_Login
+Professor --> UC_Profile
+Professor --> UC_CreateProj
+Professor --> UC_ReviewTeams
+Professor --> UC_ValidateTeam
+Professor --> UC_RejectTeam
+Professor --> UC_DefineMilestones
+Professor --> UC_ScheduleMeet
+Professor --> UC_JoinMeet
+Professor --> UC_PrivateChat
+Professor --> UC_ProjectChatroom
+
+' Administrateur
+Admin --> UC_Login
+Admin --> UC_ManageUsers
+Admin --> UC_ManageSkills
+Admin --> UC_MonitorSystem
+
+' ==========================================
+' RELATIONS <<include>>
+' ==========================================
+UC_Profile ..> UC_Login : <<include>>
+UC_Skills ..> UC_Login : <<include>>
+UC_CreateProj ..> UC_Login : <<include>>
+UC_CreateProj ..> UC_DefReq : <<include>>
+UC_CreateTeam ..> UC_Login : <<include>>
+UC_AddMembersDash ..> UC_CreateTeam : <<include>>
+UC_BrowsePfeRec ..> UC_CalcScore : <<include>>
+UC_SubmitTeam ..> UC_CheckTeamSize : <<include>>
+UC_SimMatch ..> UC_CalcScore : <<include>>
+UC_CalcScore ..> System : <<exécute>>
+UC_ReviewTeams ..> UC_Login : <<include>>
+UC_ValidateTeam ..> UC_Login : <<include>>
+UC_CheckMilestones ..> UC_Login : <<include>>
+UC_CheckMilestones ..> UC_TrackProgress : <<include>>
+UC_ScheduleMeet ..> UC_Login : <<include>>
+UC_PrivateChat ..> UC_Login : <<include>>
+UC_ProjectChatroom ..> UC_Login : <<include>>
+UC_ManageUsers ..> UC_Login : <<include>>
+UC_ManageSkills ..> UC_Login : <<include>>
+
+' ==========================================
+' RELATIONS <<extend>>
+' ==========================================
+UC_Radar ..> UC_Skills : <<extend>>\n[Condition: Profil ≥ 3 compétences]
+UC_UploadPdf ..> UC_CreateProj : <<extend>>\n[Condition: Document PDF fourni]
+UC_SetVeto ..> UC_DefReq : <<extend>>\n[Condition: Compétence critique]
+UC_RecruitHelp ..> UC_SimMatch : <<extend>>\n[Condition: Veto bloquant ou Score < 70%]
+UC_LockProj ..> UC_ValidateTeam : <<extend>>\n[Condition: Quota max validé atteint]
+UC_ImportCSV ..> UC_ManageUsers : <<extend>>\n[Condition: Fichier CSV institutionnel]
+UC_JoinMeet ..> UC_ScheduleMeet : <<extend>>\n[Condition: Date et heure de réunion atteintes]
+
+@enduml

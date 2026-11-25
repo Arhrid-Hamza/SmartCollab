@@ -1,0 +1,85 @@
+@startuml Sequence_02_Publish_Project_PDF
+!theme plain
+autonumber "<b>[00]</b>"
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 8
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam sequence {
+    ArrowColor #15885a
+    ActorBorderColor #15885a
+    LifeLineBorderColor #2E7D32
+    LifeLineBackgroundColor #E8F5E9
+    ParticipantBorderColor #15885a
+    ParticipantBackgroundColor #F1F8E9
+    ParticipantFontColor #1b5e20
+    ParticipantFontStyle bold
+    BoxBackgroundColor #FAFAFA
+    BoxBorderColor #BDBDBD
+}
+
+header EMSICollab — Module Gestion des Sujets & Cadrage
+title **Diagramme de Séquence 2 : Publication de Sujet avec Exigences Pondérées & Cahier des Charges PDF**
+footer Cycle d'Ingénierie Logicielle — EMSI 2026-2027
+
+actor "👨‍🏫 Professeur" as Prof #E8F5E9
+box "Front-End Client (:5173)" #FFFFFF
+    participant "💻 Frontend React\n(ProjectStudioPage)" as Front #E8F5E9
+end box
+
+box "Passerelle & Service Métier (:8080 / :8082)" #F9FBE7
+    participant "🚪 API Gateway\n(Spring Cloud Gateway)" as Gateway #E0F2F1
+    participant "📁 project-service\n(Spring Boot 3 / JPA)" as ProjSvc #E0F2F1
+end box
+
+box "Persistance & Événements" #EDE7F6
+    database "🗄️ PostgreSQL\n(project_db :5433)" as ProjDB #D1C4E9
+    queue "📨 Apache Kafka\n(Broker :9092)" as Kafka #FFE0B2
+end box
+
+== 1. Saisie des Paramètres du Sujet & Téléversement du Cahier des Charges ==
+
+Prof -> Front : Remplit le formulaire de création de projet :\n- Titre, description pédagogique, année (2026-2027)\n- Quotas équipe (min: 2, max: 4)\n- Exigences : [{skillId, minLevel: 4, weight: 1.0, isMandatory: true}, ...]
+activate Front
+
+Prof -> Front : Sélectionne le document officiel "Cahier_Des_Charges_PFE.pdf"
+Front -> Front : Vérification locale : format .pdf, taille < 15MB
+
+Front -> Gateway : POST /api/v1/projects (Multipart/form-data + Bearer JWT)\nParts: projectData (JSON) + file (Binary PDF)
+activate Gateway
+
+Gateway -> Gateway : Valide JWT & vérifie le rôle RBAC = 'PROFESSOR'
+Gateway -> ProjSvc : Reroute avec headers :\n[X-User-Id: <profId>, X-User-Role: 'PROFESSOR']
+activate ProjSvc
+
+== 2. Enregistrement en Base & Attachement du Fichier PDF ==
+
+ProjSvc -> ProjSvc : Génère UUID projet et enregistre le binaire PDF\nStockage: /var/emsicollab/storage/cdc/{projectId}.pdf\nURL d'accès: /api/v1/projects/{id}/cahier-des-charges
+
+ProjSvc -> ProjDB : INSERT INTO projects (id, title, description, cahier_des_charges_pdf_url,\ncahier_des_charges_filename, professor_id, status='PUBLISHED', min_team_size=2, max_team_size=4, ...)\nVALUES (?, ?, ?, ?, 'Cahier_Des_Charges_PFE.pdf', ?, 'PUBLISHED', 2, 4, ...)
+activate ProjDB
+
+loop Pour chaque compétence requise
+    ProjSvc -> ProjDB : INSERT INTO project_requirements (project_id, skill_id, minimum_level, weight, is_mandatory)\nVALUES (?, ?, ?, ?, ?)
+end
+ProjDB --> ProjSvc : Transaction validée (Commit)
+deactivate ProjDB
+
+== 3. Notification Asynchrone via Apache Kafka ==
+
+ProjSvc -> Kafka : Publie ProjectCreatedEvent (Topic: emsicollab.projects.v1)\nPayload: { projectId, title, professorId, requirementsSummary }
+activate Kafka
+Kafka --> ProjSvc : Acknowledgment (Offset validé)
+deactivate Kafka
+
+Note over Kafka : L'événement informe asynchronement le team-matching-service\npour recalculer les flux de recommandation PFE des étudiants.
+
+ProjSvc --> Gateway : 201 Created (ProjectDto avec URL du PDF et requirements[])
+deactivate ProjSvc
+Gateway --> Front : 201 Created
+deactivate Gateway
+
+Front --> Prof : Notification toast : "Sujet PFE publié et Cahier des charges PDF attaché avec succès !"
+deactivate Front
+
+@enduml

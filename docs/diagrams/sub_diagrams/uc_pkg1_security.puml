@@ -1,0 +1,46 @@
+@startuml UC_Pkg1_Security
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 10
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam actor {
+    BackgroundColor #E8F5E9
+    BorderColor #15885a
+    FontColor #1b5e20
+    FontStyle bold
+}
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    FontColor #212121
+    ArrowColor #2E7D32
+}
+
+left to right direction
+title **Module 1 : Sécurité, Authentification & Profils de Compétences**
+
+actor "🎓 Étudiant (STUDENT)" as Student
+actor "👨‍🏫 Professeur (PROFESSOR)" as Professor
+actor "🛡️ Administrateur (ADMIN)" as Admin
+
+package "Sécurité & Profil" {
+    usecase "UC101 : S'authentifier (JWT)" as UC_Login
+    usecase "UC102 : Gérer son profil & bio" as UC_Profile
+    usecase "UC103 : Déclarer compétences (1 à 5 & XP)" as UC_Skills
+    usecase "UC104 : Visualiser Radar d'expertise" as UC_Radar
+}
+
+Student --> UC_Login
+Student --> UC_Profile
+Student --> UC_Skills
+
+Professor --> UC_Login
+Professor --> UC_Profile
+
+Admin --> UC_Login
+
+UC_Profile ..> UC_Login : <<include>>
+UC_Skills ..> UC_Login : <<include>>
+UC_Radar ..> UC_Skills : <<extend>>\n[Condition: Profil ≥ 3 compétences]
+@enduml

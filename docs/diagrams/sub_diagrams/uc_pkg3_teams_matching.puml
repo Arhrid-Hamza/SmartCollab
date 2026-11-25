@@ -1,0 +1,54 @@
+@startuml UC_Pkg3_Teams_Matching
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 10
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+skinparam actor {
+    BackgroundColor #E8F5E9
+    BorderColor #15885a
+    FontColor #1b5e20
+    FontStyle bold
+}
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #15885a
+    FontColor #212121
+    ArrowColor #2E7D32
+}
+
+left to right direction
+title **Module 3 : Constitution d'Équipe & Moteur de Matching Algorithmique**
+
+actor "🎓 Étudiant Leader (LEADER)" as Leader
+actor "👨‍🏫 Professeur (PROFESSOR)" as Professor
+actor "⚙️ Moteur Algorithmique" as System <<System>>
+
+package "Constitution & Matching" {
+    usecase "UC301 : Créer une équipe" as UC_CreateTeam
+    usecase "UC302 : Ajouter des membres (depuis Dashboard)" as UC_AddMembersDash
+    usecase "UC303 : Contrôler quotas taille (min/max)" as UC_CheckTeamSize
+    usecase "UC304 : Simuler affinité équipe-projet" as UC_SimMatch
+    usecase "UC305 : Calculer score d'adéquation pondéré" as UC_CalcScore
+    usecase "UC306 : Suggérer profils à recruter" as UC_RecruitHelp
+    usecase "UC307 : Déposer candidature d'équipe" as UC_SubmitTeam
+    usecase "UC308 : Revoir classement candidatures" as UC_ReviewTeams
+    usecase "UC309 : Approuver candidature d'équipe" as UC_ValidateTeam
+    usecase "UC310 : Rejeter candidature avec motif" as UC_RejectTeam
+}
+
+Leader --> UC_CreateTeam
+Leader --> UC_AddMembersDash
+Leader --> UC_SimMatch
+Leader --> UC_SubmitTeam
+
+Professor --> UC_ReviewTeams
+Professor --> UC_ValidateTeam
+Professor --> UC_RejectTeam
+
+UC_AddMembersDash ..> UC_CreateTeam : <<include>>
+UC_SubmitTeam ..> UC_CheckTeamSize : <<include>>
+UC_SimMatch ..> UC_CalcScore : <<include>>
+UC_CalcScore ..> System : <<exécute>>
+UC_RecruitHelp ..> UC_SimMatch : <<extend>>\n[Condition: Veto bloquant ou Score < 70%]
+@enduml
