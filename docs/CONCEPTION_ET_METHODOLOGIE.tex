@@ -45,7 +45,7 @@
     citecolor=emsiAccent,
     filecolor=primaryBlue,
     urlcolor=emsiDarkGreen,
-    pdfauthor={Hamza Arhrid},
+    pdfauthor={Hamza Arhrid, Issam Bouffa},
     pdftitle={EMSICollab - Cadre Général, Méthodologie Agile & Conception UML},
     pdfsubject={Rapport Académique d'Ingénierie Logicielle},
     pdfkeywords={EMSI, Microservices, UML, Scrum, PlantUML, Matching, PFE}
@@ -56,7 +56,7 @@
 \fancyhf{}
 \fancyhead[L]{\small\color{gray}\textsc{EMSICollab} -- Architecture \& Conception}
 \fancyhead[R]{\small\color{gray}\nouppercase{\leftmark}}
-\fancyfoot[L]{\small\color{gray}Hamza Arhrid -- EMSI 2026/2027}
+\fancyfoot[L]{\small\color{gray}Hamza ARHRID \& Issam BOUFFA -- EMSI 2026/2027}
 \fancyfoot[R]{\small\color{gray}Page \thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
@@ -133,11 +133,11 @@
         
         {\large \textbf{Rapport de Cadre Général, Méthodologie Agile \& Modélisation UML Détaillée}}\\[1.8cm]
 
-        \begin{minipage}{0.48\textwidth}
+        \begin{minipage}{0.52\textwidth}
             \begin{flushleft} \large
                 \textbf{Réalisé par :}\\
-                \textbf{Hamza ARHRID}\\
-                Élève-Ingénieur en Informatique
+                \textbf{Hamza ARHRID} \& \textbf{Issam BOUFFA}\\
+                Élèves-Ingénieurs en Informatique
             \end{flushleft}
         \end{minipage}
         \hfill
@@ -183,32 +183,36 @@ La réalisation des Projets de Fin d'Études (PFE) et des projets d'ingénierie 
 
 Afin de situer notre apport technologique, nous avons conduit une étude comparative rigoureuse des plateformes de gestion de projets et d'équipes les plus répandues sur le marché :
 
+Afin d'évaluer la pertinence de développer une plateforme dédiée, nous avons conduit un benchmarking rigoureux sur six solutions représentatives du marché : Trello, Jira Software, GitHub Projects, Google Classroom, Zoom Video Communications et notre solution EMSICollab :
+
 \begin{table}[htbp]
 \centering
-\small
-\caption{Étude Comparative des Plateformes Existantes vs EMSICollab}
+\scriptsize
+\caption{Étude Comparative Exhaustive : Trello, Jira, GitHub, Google Classroom, Zoom vs EMSICollab}
 \label{tab:benchmarking}
-\begin{tabularx}{\textwidth}{l p{2.8cm} p{2.8cm} p{2.8cm} >{\bfseries\color{emsiDarkGreen}}p{3.2cm}}
+\begin{tabularx}{\textwidth}{p{3.2cm} c c c c c >{\bfseries\color{emsiDarkGreen}}c}
 \toprule
-\textbf{Critère / Fonctionnalité} & \textbf{Trello} & \textbf{Jira Software} & \textbf{GitHub Projects} & \textbf{EMSICollab (Notre Solution)} \\
+\textbf{Critère / Fonctionnalité} & \textbf{Trello} & \textbf{Jira} & \textbf{GitHub} & \textbf{Classroom} & \textbf{Zoom} & \textbf{EMSICollab} \\
 \midrule
-\textbf{Cible prioritaire} & Équipes généralistes & Entreprises Agile / IT & Développeurs Open Source & Projets Académiques \& PFE Ingénieur \\
+\textbf{Gestion PFE / Projets académiques} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{orange}{Partiel} & \textcolor{red}{\texttimes} & \textcolor{emsiGreen}{\checkmark Natif} \\
 \addlinespace
-\textbf{Matching par compétences} & \textcolor{red}{Inexistant} & \textcolor{red}{Inexistant} & \textcolor{red}{Inexistant} & \textcolor{emsiGreen}{Algorithmique avec règles de veto} \\
+\textbf{Profilage \& Radar de compétences} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{orange}{Partiel} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{emsiGreen}{\checkmark Radar 1 à 5} \\
 \addlinespace
-\textbf{Profilage \& Radar de compétences} & \textcolor{red}{Aucun} & \textcolor{red}{Aucun} & \textcolor{orange}{Partiel (repos Git)} & \textcolor{emsiGreen}{Radar interactif normalisé (1 à 5)} \\
+\textbf{Algorithme de matching \& Veto} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{emsiGreen}{\checkmark Pondéré + Veto} \\
 \addlinespace
-\textbf{Cahier des charges officiel} & Pièce jointe basique & Ticket description & Fichier README markdown & \textcolor{emsiGreen}{Visionneuse PDF intégrée \& téléchargeable} \\
+\textbf{Flux de recommandation PFE} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{emsiGreen}{\checkmark Feed personnalisé} \\
 \addlinespace
-\textbf{Jalons \& Roadmaps interactifs} & Checklists de cartes & Sprints \& Épics & Milestones / Issues & \textcolor{emsiGreen}{Roadmap à étapes avec calcul auto \%} \\
+\textbf{Cahier des charges PDF intégré} & \textcolor{orange}{Pièce jointe} & \textcolor{orange}{Ticket} & \textcolor{orange}{Fichier Git} & \textcolor{orange}{Lien Drive} & \textcolor{red}{\texttimes} & \textcolor{emsiGreen}{\checkmark Visionneuse PDF} \\
 \addlinespace
-\textbf{Chatroom dédiée par projet} & \textcolor{red}{Plugin tiers requis} & \textcolor{red}{Intégration Slack} & \textcolor{red}{Discussions async} & \textcolor{emsiGreen}{Canal temps réel en 1 clic sur la carte} \\
+\textbf{Roadmap interactif (\% dynamique)} & \textcolor{orange}{Checklist} & \textcolor{orange}{Sprints} & \textcolor{orange}{Milestones} & \textcolor{orange}{Devoirs} & \textcolor{red}{\texttimes} & \textcolor{emsiGreen}{\checkmark Checkboxes + \%} \\
 \addlinespace
-\textbf{Messagerie privée 1-à-1} & \textcolor{red}{Non} & \textcolor{red}{Non} & \textcolor{red}{Non} & \textcolor{emsiGreen}{Messagerie directe Étudiant $\leftrightarrow$ Prof} \\
+\textbf{Chatroom dédiée (Icône carte projet)} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{orange}{Flux général} & \textcolor{orange}{Team Chat} & \textcolor{emsiGreen}{\checkmark WebSocket 1 clic} \\
 \addlinespace
-\textbf{Visioconférence intégrée} & \textcolor{red}{Power-Up tiers} & \textcolor{red}{Lien manuel} & \textcolor{red}{Non} & \textcolor{emsiGreen}{Google Meet à date fixe en 1 clic} \\
+\textbf{Messagerie privée 1-à-1} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{red}{\texttimes} & \textcolor{orange}{Gmail} & \textcolor{orange}{Chat direct} & \textcolor{emsiGreen}{\checkmark Chat direct} \\
 \addlinespace
-\textbf{Architecture technique} & SaaS propriétaire & SaaS / Data Center & SaaS Cloud GitHub & \textcolor{emsiGreen}{Microservices Spring Boot \& React} \\
+\textbf{Planification Réunions \& Visio} & \textcolor{red}{Plugin tiers} & \textcolor{red}{Plugin tiers} & \textcolor{red}{\texttimes} & \textcolor{orange}{Meet classe} & \textcolor{emsiGreen}{\checkmark Visio seule} & \textcolor{emsiGreen}{\checkmark Meet ciblé projet} \\
+\addlinespace
+\textbf{Architecture technique} & SaaS & SaaS/DC & SaaS Cloud & Workspace & SaaS Cloud & \textcolor{emsiGreen}{\checkmark Microservices} \\
 \bottomrule
 \end{tabularx}
 \end{table}

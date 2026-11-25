@@ -2,7 +2,7 @@
 
 > **Projet de Fin d'Études / Projet Académique d'Ingénierie**  
 > **Institution :** École Marocaine des Sciences de l'Ingénieur (EMSI)  
-> **Auteur :** Hamza Arhrid  
+> **Auteurs :** Hamza ARHRID & Issam BOUFFA  
 > **Plateforme :** Plateforme Microservices Intelligente de Gestion de Projets, Matching de Compétences & Collaboration
 
 ---
@@ -58,26 +58,28 @@
 
 ### 1.1 Étude Comparative (Benchmarking des Solutions Actuelles)
 
-Dans le paysage contemporain des outils collaboratifs et de gestion de projet, plusieurs solutions s'imposent dans les milieux industriels et académiques. Afin d'évaluer la pertinence de développer une plateforme dédiée, nous avons conduit un benchmarking rigoureux sur quatre catégories d'outils représentatifs :
+Dans le paysage contemporain des outils collaboratifs, de gestion de projet et de visioconférence, plusieurs solutions s'imposent dans les milieux industriels et académiques. Afin d'évaluer la pertinence de développer une plateforme dédiée, nous avons conduit un benchmarking rigoureux sur six solutions représentatives :
 1. **Trello (Atlassian)** : Outil de gestion visuelle basé sur la méthode Kanban grand public.
 2. **Jira Software (Atlassian)** : Solution d'entreprise taillée pour le suivi de tickets et les méthodologies agiles avancées.
-3. **GitHub Projects / GitLab** : Outils de suivi orientés code source et gestion du cycle de développement logiciel (ALM).
-4. **Moodle / Google Classroom (LMS)** : Systèmes de gestion de l'apprentissage institutionnels utilisés dans l'enseignement supérieur.
+3. **GitHub Projects** : Outils de suivi orientés code source et gestion du cycle de développement logiciel (ALM).
+4. **Google Classroom** : Plateforme institutionnelle de distribution de devoirs et supports de cours magistraux.
+5. **Zoom Video Communications** : Outil dédié de visioconférence et réunions virtuelles d'entreprise.
+6. **EMSICollab (Notre Solution)** : Plateforme intégrée microservices dédiée aux projets académiques, matching de compétences et espaces collaboratifs temps réel.
 
-| Critère d'Évaluation | Trello | Jira Software | GitHub Projects | LMS (Moodle / Classroom) | **EMSICollab (Notre Solution)** |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Modèle Métier Académique (PFE / Binômes)** | ❌ Non | ❌ Non | ❌ Non | ⚠️ Partiel (Devoirs/Notes) | ✅ **Natif (Sujets, PFE, Quotas, Tuteurs)** |
-| **Profilage & Radar des Compétences** | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ✅ **Natif (Niveaux 1 à 5, Radar Chart)** |
-| **Algorithme de Matching Équipe-Sujet** | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ✅ **Natif (Score pondéré $w_i$, Veto bloquant)** |
-| **Flux de Recommandation PFE Personnalisé** | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ✅ **Natif (Feed trié par Score d'affinité)** |
-| **Aide au Recrutement Prédictif de Profils** | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ✅ **Natif (Suggestion des profils manquants)** |
-| **Attachement & Visualisation CDC PDF** | ⚠️ Pièce jointe basique | ⚠️ Pièce jointe basique | ⚠️ Dépôt Git | ⚠️ Téléversement standard | ✅ **Encart dédié avec visionneuse & versioning** |
-| **Roadmap Interactive à Cases à Cocher** | ⚠️ Checklist statique | ⚠️ Sous-tâches rigides | ⚠️ Checkboxes Markdown | ❌ Non | ✅ **Jalons ordonnés, validation dynamique & jauge %** |
-| **Chatroom Dédiée Projet (Icône sur carte)** | ❌ (Commentaires) | ❌ (Commentaires) | ❌ (Discussions Git) | ❌ (Forums asynchrones) | ✅ **Chatroom temps réel intégrée Prof-Équipe** |
-| **Messagerie Privée 1-à-1** | ❌ Non | ❌ Non | ❌ Non | ⚠️ Messagerie rudimentaire | ✅ **Chat instantané confidentiel 1-à-1** |
-| **Planification Réunions & Google Meet** | ⚠️ Via plugin tiers payant | ⚠️ Via plugin tiers payant | ❌ Non | ⚠️ Via module visio externe | ✅ **Intégration directe lien Meet à date/heure précises** |
-| **Facilité de Prise en Main Étudiante** | ⭐⭐⭐⭐⭐ (Très simple) | ⭐⭐ (Très complexe) | ⭐⭐⭐ (Moyenne) | ⭐⭐⭐ (Moyenne) | ⭐⭐⭐⭐⭐ **(Ergonomique & Dédié EMSI)** |
-| **Coût de Licence pour l'Établissement** | Freemium limité | Coûteux par utilisateur | Gratuit étudiants / Payant équipes | Open-source lourd | **Open-source & Cloud-Native souverain** |
+| Critère d'Évaluation | Trello | Jira Software | GitHub Projects | Google Classroom | Zoom Video | **EMSICollab (Notre Solution)** |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Modèle Métier Académique (PFE / Binômes)** | ❌ Non | ❌ Non | ❌ Non | ⚠️ Partiel (Devoirs/Notes) | ❌ Non | ✅ **Natif (Sujets, PFE, Quotas, Tuteurs)** |
+| **Profilage & Radar des Compétences** | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ✅ **Natif (Niveaux 1 à 5, Radar Chart)** |
+| **Algorithme de Matching Équipe-Sujet** | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ✅ **Natif (Score pondéré $w_i$, Veto bloquant)** |
+| **Flux de Recommandation PFE Personnalisé** | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ✅ **Natif (Feed trié par Score d'affinité)** |
+| **Aide au Recrutement Prédictif de Profils** | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ❌ Non | ✅ **Natif (Suggestion des profils manquants)** |
+| **Attachement & Visualisation CDC PDF** | ⚠️ Pièce jointe basique | ⚠️ Pièce jointe basique | ⚠️ Dépôt Git | ⚠️ Fichier Google Drive | ❌ Partage d'écran temporaire | ✅ **Encart dédié avec visionneuse & versioning** |
+| **Roadmap Interactive à Cases à Cocher** | ⚠️ Checklist statique | ⚠️ Sous-tâches rigides | ⚠️ Checkboxes Markdown | ⚠️ Date limite sans roadmap | ❌ Inexistant | ✅ **Jalons ordonnés, validation dynamique & jauge %** |
+| **Chatroom Dédiée Projet (Icône sur carte)** | ❌ (Commentaires) | ❌ (Commentaires) | ❌ (Discussions Git) | ⚠️ Flux de classe général | ⚠️ Zoom Team Chat (non relié au projet) | ✅ **Chatroom temps réel intégrée Prof-Équipe** |
+| **Messagerie Privée 1-à-1** | ❌ Non | ❌ Non | ❌ Non | ⚠️ Envoi d'email Gmail | ⚠️ Chat interne Zoom | ✅ **Chat instantané confidentiel 1-à-1** |
+| **Planification Réunions & Visioconférence** | ⚠️ Plugin tiers payant | ⚠️ Plugin tiers payant | ❌ Non | ⚠️ Lien Meet général de classe | ✅ Cœur de métier (Visio HD seule) | ✅ **Lien Google Meet à date/heure précises intégré** |
+| **Facilité de Prise en Main Étudiante** | ⭐⭐⭐⭐⭐ (Très simple) | ⭐⭐ (Très complexe) | ⭐⭐⭐ (Moyenne) | ⭐⭐⭐⭐ (Simple) | ⭐⭐⭐⭐⭐ (Très simple) | ⭐⭐⭐⭐⭐ **(Ergonomique & Dédié EMSI)** |
+| **Coût de Licence pour l'Établissement** | Freemium limité | Coûteux par utilisateur | Gratuit étudiants / Payant équipes | Google Workspace for Edu | Payant par licence hôte | **Open-source & Cloud-Native souverain** |
 
 ---
 
