@@ -10,6 +10,7 @@
 \geometry{a4paper, top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm, headheight=14pt}
 
 \usepackage{graphicx}
+\usepackage{float}
 \graphicspath{{images/}{docs/images/}{../docs/images/}}
 \usepackage{xcolor}
 \usepackage{booktabs}
@@ -20,6 +21,14 @@
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 \usepackage{caption}
+\captionsetup{skip=5pt, belowskip=8pt}
+% Adjust spacing for figures and text
+\setlength{\textfloatsep}{10pt}
+\setlength{\floatsep}{12pt}
+\setlength{\intextsep}{10pt}
+\setlength{\parskip}{6pt}
+\renewcommand{\baselinestretch}{1.2}
+\captionsetup{skip=5pt, belowskip=8pt}
 \usepackage{subcaption}
 \usepackage{tcolorbox}
 \tcbuselibrary{skins,breakable}
@@ -362,56 +371,70 @@ La figure \ref{fig:gantt_planning} illustre l'ordonnancement temporel, les inter
 % =========================================================================
 \section{Analyse et Conception du Projet (Modélisation UML)}
 
-\subsection{Diagramme des Cas d'Utilisation (Use Case Diagram)}
+\subsection{Diagrammes des Cas d'Utilisation (Use Case — 3 Parties)}
 
-\subsubsection{Identification des Acteurs}
+\subsubsection{Identification des Acteurs Système}
+
 Le système EMSICollab interagit avec quatre acteurs clairement différenciés :
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Étudiant (\texttt{STUDENT}) :} Acteur principal. Il s'authentifie, déclare ses compétences techniques, consulte le radar d'expertise, explore le catalogue des sujets, consulte le cahier des charges PDF, forme une équipe depuis son dashboard, simule son score de matching, coche les étapes de la roadmap, échange dans la chatroom et rejoint les réunions Google Meet.
-    \item \textbf{Professeur Encadrant (\texttt{PROFESSOR}) :} Acteur métier. Il publie les sujets de PFE, définit les exigences techniques pondérées et les critères obligatoires (veto), attache le document officiel PDF du cahier des charges, évalue et valide les candidatures d'équipes, configure les jalons de la roadmap, planifie les réunions de suivi à date fixe avec lien Google Meet et supervise les échanges dans la chatroom de projet.
-    \item \textbf{Administrateur (\texttt{ADMIN}) :} Acteur de gouvernance. Il assure la gestion des comptes utilisateurs, l'importation massive des promotions d'étudiants par fichier CSV, l'actualisation du catalogue officiel des compétences techniques et la surveillance de l'état de santé des microservices.
-    \item \textbf{Moteur Algorithmique (\texttt{Système}) :} Acteur système interne. Il calcule automatiquement les scores d'adéquation pondérés, vérifie les règles de veto, déclenche les notifications d'incompatibilité et recalcule la progression globale (\%) à chaque étape cochée.
+    \item \textbf{Étudiant (\texttt{STUDENT}) :} Acteur principal. Il s'authentifie, déclare ses compétences, explore les sujets, forme une équipe, simule son matching, coche les jalons de la roadmap et rejoint les réunions Google Meet.
+    \item \textbf{Professeur Encadrant (\texttt{PROFESSOR}) :} Publie les sujets PFE, joint le PDF du cahier des charges, définit les exigences pondérées et les vetos, valide les équipes et planifie les réunions de suivi.
+    \item \textbf{Administrateur (\texttt{ADMIN}) :} Gère les comptes, importe les promotions CSV, maintient le référentiel des compétences et surveille l'état des microservices.
+    \item \textbf{Moteur Algorithmique (\texttt{Système}) :} Évalue les scores d'adéquation, applique les règles de veto bloquantes et recalcule la progression globale (\%).
 \end{itemize}
 
-\subsubsection{Diagramme Global Synthétique des Cas d'Utilisation}
+% ---- UC PARTIE 1 ----
+\newpage
+\subsubsection{Partie 1 — Sécurité, Authentification \& Profils de Compétences}
 
-La figure \ref{fig:use_case_global} présente l'ensemble des cas d'utilisation du système et leurs interactions avec les quatre acteurs identifiés :
+\begin{calloutbox}{Packages couverts}
+\textbf{Package 1 :} Authentification JWT, gestion du profil utilisateur, déclaration des compétences (niveau 1–5) et visualisation du Radar Chart d'expertise individuelle.\\[4pt]
+\textbf{Acteurs :} Étudiant · Professeur Encadrant · Administrateur
+\end{calloutbox}
 
-\begin{figure}[htbp]
+\vspace{10pt}
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{images/use_case_global.jpg}
-    \caption{Diagramme Global Synthétique des Cas d'Utilisation d'EMSICollab}
-    \label{fig:use_case_global}
+    \fbox{\includegraphics[width=0.88\textwidth]{images/use_case_part1.jpg}}
+    \caption{Use Case — Partie 1 : Sécurité, Authentification \& Profils de Compétences}
+    \label{fig:uc_part1}
 \end{figure}
 
+% ---- UC PARTIE 2 ----
 \newpage
-\subsubsection{Décomposition Modulaire des Cas d'Utilisation par Package}
+\subsubsection{Partie 2 — Sujets PFE, Cahier des Charges PDF \& Matching d'Équipe}
 
-Afin de garantir une lisibilité optimale dans le rapport technique, le diagramme général est scindé en **6 packages fonctionnels modulaires** :
+\begin{calloutbox}{Packages couverts}
+\textbf{Package 2 :} Publication des sujets PFE, attachement du PDF officiel, définition des exigences pondérées ($w_i$) et règles de veto.\\[4pt]
+\textbf{Package 3 :} Création d'équipe, ajout de membres, simulation algorithmique de compatibilité avec déclenchement du veto bloquant si compétence obligatoire manquante.\\[4pt]
+\textbf{Acteurs :} Étudiant · Professeur Encadrant · Moteur Algorithmique
+\end{calloutbox}
 
-\paragraph{Package 1 : Sécurité, Authentification \& Profils}
-\textit{Fichier source : \texttt{docs/diagrams/sub_diagrams/uc_pkg1_security.puml}}\\
-Gère la connexion sécurisée par JWT, la mise à jour des informations de profil, la déclaration des compétences techniques avec niveau d'expertise (1 à 5) et la visualisation du Radar Chart d'expertise individuelle.
+\vspace{10pt}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.88\textwidth]{images/use_case_part2.jpg}}
+    \caption{Use Case — Partie 2 : Sujets PFE, Cahier des Charges PDF \& Matching d'Équipe}
+    \label{fig:uc_part2}
+\end{figure}
 
-\paragraph{Package 2 : Gestion des Sujets \& Cahier des Charges PDF}
-\textit{Fichier source : \texttt{docs/diagrams/sub_diagrams/uc_pkg2_projects_pdf.puml}}\\
-Englobe la création de sujets PFE par les enseignants, la définition des exigences techniques pondérées ($w_i$), l'activation des règles de veto, l'attachement du document officiel PDF de cahier des charges et sa consultation/téléchargement par les étudiants.
+% ---- UC PARTIE 3 ----
+\newpage
+\subsubsection{Partie 3 — Suivi d'Avancement, Google Meet \& Collaboration Temps Réel}
 
-\paragraph{Package 3 : Constitution d'Équipe \& Matching Algorithmique}
-\textit{Fichier source : \texttt{docs/diagrams/sub_diagrams/uc_pkg3_teams_matching.puml}}\\
-Permet la création d'équipes, l'ajout dynamique de membres depuis le dashboard étudiant, la simulation de compatibilité algorithmique, le déclenchement de suggestions de recrutement en cas de veto manquant et le dépôt formel de candidatures soumises à la validation de l'enseignant.
+\begin{calloutbox}{Packages couverts}
+\textbf{Package 4 :} Configuration des jalons de roadmap, validation par checkbox, recalcul instantané de la jauge de progression (\%) et planification des réunions à date fixe avec lien Google Meet.\\[4pt]
+\textbf{Package 5 \& 6 :} Chatroom de projet (icône sur la carte), messagerie privée 1-à-1, administration des comptes, import CSV et monitoring des microservices.\\[4pt]
+\textbf{Acteurs :} Étudiant · Professeur Encadrant · Administrateur
+\end{calloutbox}
 
-\paragraph{Package 4 : Suivi d'Avancement, Roadmap Checkboxes \& Réunions Meet}
-\textit{Fichier source : \texttt{docs/diagrams/sub_diagrams/uc_pkg4_milestones_meetings.puml}}\\
-Assure la configuration des étapes clés du projet par l'enseignant, la validation interactive d'une étape par case à cocher (\textit{checkbox}) par un membre de l'équipe, le recalcul instantané de la jauge d'avancement globale (\%), ainsi que la programmation de réunions de cadrage à date fixe avec lien direct Google Meet.
-
-\paragraph{Package 5 : Communication \& Collaboration Temps Réel}
-\textit{Fichier source : \texttt{docs/diagrams/sub_diagrams/uc_pkg5_communication.puml}}\\
-Permet les échanges confidentiels en messagerie privée 1-à-1 entre étudiants et enseignants, ainsi que les discussions collaboratives instantanées au sein de la Chatroom de projet, accessible en un clic sur l'icône présente sur la carte projet.
-
-\paragraph{Package 6 : Administration \& Gouvernance Système}
-\textit{Fichier source : \texttt{docs/diagrams/sub_diagrams/uc_pkg6_administration.puml}}\\
-Régit l'importation de cohortes par fichier CSV, la gestion du dictionnaire de compétences et le monitoring des microservices via Spring Boot Actuator.
+\vspace{10pt}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.88\textwidth]{images/use_case_part3.jpg}}
+    \caption{Use Case — Partie 3 : Suivi d'Avancement, Google Meet \& Collaboration}
+    \label{fig:uc_part3}
+\end{figure}
 
 \newpage
 \subsection{Diagrammes de Séquence Système (Sequence Diagrams)}
@@ -484,43 +507,63 @@ Ce scénario illustre l'organisation des séances pédagogiques : l'enseignant r
 \end{figure}
 
 \newpage
-\subsection{Diagramme de Classes du Domaine (Class Diagram)}
+\subsection{Diagramme de Classes du Domaine (3 Parties — Bounded Contexts)}
 
-\subsubsection{Vue Statique Globale du Domaine Métier}
-Le diagramme de classes global modélise les entités de données, leurs attributs, leurs méthodes et les associations entre les quatre contextes délimités (\textit{Bounded Contexts}) de l'architecture microservices.
+Dans l'esprit du patron d'architecture \textbf{Database-per-Service}, chaque microservice possède son propre modèle de données isolé. Le diagramme de classes est présenté en \textbf{3 parties modulaires} correspondant aux 3 Bounded Contexts principaux.
 
-\begin{figure}[htbp]
+% ---- CLASS PARTIE 1 ----
+\newpage
+\subsubsection{Partie 1 — Sécurité, Utilisateurs \& Compétences (\texttt{auth-service :8081})}
+
+\begin{calloutbox}{Classes du Bounded Context auth-service}
+\textbf{Entités :} \texttt{User} · \texttt{Role} · \texttt{Skill} · \texttt{SkillCategory} · \texttt{UserSkill}\\[4pt]
+\textbf{Rôle :} Administre l'identité cryptographique (JWT/RBAC), la matrice de compétences individuelles ($niveau \in [1,5]$, années d'expérience) et le Radar Chart interactif.
+\end{calloutbox}
+
+\vspace{10pt}
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.98\textwidth]{images/class_diagram_global.jpg}
-    \caption{Diagramme de Classes Global du Domaine Métier EMSICollab}
-    \label{fig:class_global}
+    \fbox{\includegraphics[width=0.88\textwidth]{images/class_part1.jpg}}
+    \caption{Classes — Partie 1 : Sécurité, Utilisateurs \& Compétences (\texttt{auth-service})}
+    \label{fig:class_part1}
+\end{figure}
+
+% ---- CLASS PARTIE 2 ----
+\newpage
+\subsubsection{Partie 2 — Sujets, Cahier des Charges, Jalons \& Meet (\texttt{project-service :8082})}
+
+\begin{calloutbox}{Classes du Bounded Context project-service}
+\textbf{Entités :} \texttt{Project} · \texttt{ProjectStatus} · \texttt{ProjectRequirement} · \texttt{ProjectMilestone} · \texttt{ProjectMeeting} · \texttt{MeetingStatus}\\[4pt]
+\textbf{Rôle :} Supervise le cycle de vie des projets, le PDF officiel du cahier des charges, les exigences pondérées ($w_i$), la roadmap à cocher (\texttt{isCompleted}) et les séances Google Meet.
+\end{calloutbox}
+
+\vspace{10pt}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.88\textwidth]{images/class_part2.jpg}}
+    \caption{Classes — Partie 2 : Sujets, Jalons \& Réunions Google Meet (\texttt{project-service})}
+    \label{fig:class_part2}
+\end{figure}
+
+% ---- CLASS PARTIE 3 ----
+\newpage
+\subsubsection{Partie 3 — Équipes, Matching Algorithmique \& Chat (\texttt{team-matching} \& \texttt{chat-service})}
+
+\begin{calloutbox}{Classes des Bounded Contexts team-matching-service \& chat-service}
+\textbf{Entités (matching) :} \texttt{Team} · \texttt{TeamStatus} · \texttt{TeamMember} · \texttt{TeamRole} · \texttt{MatchingScore}\\[4pt]
+\textbf{Entités (chat) :} \texttt{ProjectChatMessage} · \texttt{PrivateMessage}\\[4pt]
+\textbf{Rôle :} Calcule le score d'adéquation pondéré, applique la clause d'exclusion veto (\texttt{isMandatory=true}) et assure la persistance des messages WebSocket STOMP.
+\end{calloutbox}
+
+\vspace{10pt}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.88\textwidth]{images/class_part3.jpg}}
+    \caption{Classes — Partie 3 : Matching d'Équipe \& Collaboration (\texttt{team-matching} \& \texttt{chat-service})}
+    \label{fig:class_part3}
 \end{figure}
 
 \newpage
-\subsubsection{Décomposition Modulaire par Bounded Context}
-
-Dans l'esprit du patron d'architecture \textbf{Database-per-Service}, les classes sont regroupées selon leurs frontières de cohérence transactionnelle :
-
-\begin{featurebox}{1. Bounded Context : auth-service (:8081)}
-\textbf{Classes :} \texttt{User}, \texttt{Role}, \texttt{Skill}, \texttt{SkillCategory}, \texttt{UserSkill}.\\
-\textbf{Rôle :} Administre l'identité cryptographique des utilisateurs, le modèle RBAC et la matrice de compétences individuelles ($niveau \in [1, 5]$, années d'expérience).
-\end{featurebox}
-
-\begin{featurebox}{2. Bounded Context : project-service (:8082)}
-\textbf{Classes :} \texttt{Project}, \texttt{ProjectStatus}, \texttt{ProjectRequirement}, \texttt{ProjectMilestone}, \texttt{ProjectMeeting}, \texttt{MeetingStatus}.\\
-\textbf{Rôle :} Supervise le cycle de vie des projets, le rattachement de la pièce jointe officielle PDF du cahier des charges, la liste ordonnée des étapes de la roadmap à cocher (\texttt{isCompleted}), et la programmation des séances de cadrage Google Meet.
-\end{featurebox}
-
-\begin{featurebox}{3. Bounded Context : team-matching-service (:8083)}
-\textbf{Classes :} \texttt{Team}, \texttt{TeamStatus}, \texttt{TeamMember}, \texttt{TeamRole}, \texttt{MatchingScore}.\\
-\textbf{Rôle :} Administre la composition des groupes d'étudiants formés depuis le dashboard, calcule le score d'adéquation pondéré face à chaque projet et applique la clause d'exclusion stricte en cas de non-satisfaction d'un critère obligatoire (\texttt{isMandatory = true}).
-\end{featurebox}
-
-\begin{featurebox}{4. Bounded Context : chat-service (:8084)}
-\textbf{Classes :} \texttt{ProjectChatMessage}, \texttt{PrivateMessage}.\\
-\textbf{Rôle :} Assure la persistance NoSQL/PostgreSQL des messages échangés en tête-à-tête (privé) et au sein des salons de discussion rattachés aux cartes de projet.
-\end{featurebox}
-
 \subsubsection{Dictionnaire des Classes et Responsabilités}
 
 \begin{table}[htbp]
